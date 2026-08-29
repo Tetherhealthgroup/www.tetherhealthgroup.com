@@ -40,10 +40,18 @@ const roles = [
   "Something else",
 ];
 
+/*
+ * The border darkens on focus, but that is the *second* indicator, not the
+ * only one. focus:outline-none used to sit here: it removed the global
+ * :focus-visible ring, and WebKit does not apply the replacement border, so a
+ * focused field showed no indicator at all in Safari — on iPhone and on Mac.
+ * Chromium hid the bug by applying the border. Keeping the site's own ring
+ * means the indicator does not depend on one engine's behaviour.
+ */
 const fieldClass =
   "w-full rounded-[14px] border-2 border-hairline bg-paper px-4 py-3.5 text-[1.0625rem] " +
   "text-teal-deep placeholder:text-teal-mid/70 transition-colors " +
-  "focus:border-teal-deep focus:outline-none";
+  "focus:border-teal-deep";
 
 const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
 ---
