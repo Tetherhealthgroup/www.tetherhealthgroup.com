@@ -1,6 +1,6 @@
 ---
 import Legal from "../layouts/Legal.astro";
-import { contact } from "../data/site";
+import SupportEmail from "../components/SupportEmail.astro";
 ---
 
 <Legal
@@ -85,11 +85,9 @@ import { contact } from "../data/site";
   <h2>Tell us about a barrier</h2>
   <p>
     If any part of this site or our products is difficult or impossible for you
-    to use, please tell us at <a href={`mailto:${contact.support}`}
-      >{contact.support}</a
-    >. It helps if you can say what you were trying to do, what happened, and
-    what you were using — but please write to us even if you would rather not go
-    into detail.
+    to use, please tell us at <SupportEmail />. It helps if you can say what you
+    were trying to do, what happened, and what you were using — but please write
+    to us even if you would rather not go into detail.
   </p>
   <p>
     We treat accessibility reports as defects, not as feature requests, and we

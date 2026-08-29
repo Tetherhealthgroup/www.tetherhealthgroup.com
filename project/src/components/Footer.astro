@@ -10,7 +10,8 @@
 
 import TetherLogo from "./TetherLogo.astro";
 import Icon from "./Icon.astro";
-import { site, contact, footerNav, quitlines } from "../data/site";
+import { site, footerNav, quitlines } from "../data/site";
+import SupportEmail from "./SupportEmail.astro";
 
 const year = new Date().getFullYear();
 ---
@@ -73,13 +74,11 @@ const year = new Date().getFullYear();
         >
           {site.description}
         </p>
-        <a
-          href={`mailto:${contact.support}`}
+        <SupportEmail
           class="-mb-2 mt-2 inline-flex min-h-11 items-center gap-2 rounded-xl py-3 text-[0.95rem] font-bold text-paper underline decoration-mint-strong/50 decoration-2 underline-offset-4 transition-colors hover:decoration-lime"
         >
           <Icon name="support" size={18} />
-          {contact.support}
-        </a>
+        </SupportEmail>
       </div>
 
       {

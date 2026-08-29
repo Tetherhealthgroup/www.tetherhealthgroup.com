@@ -1,6 +1,7 @@
 ---
 import Legal from "../layouts/Legal.astro";
 import { contact, site } from "../data/site";
+import SupportEmail from "../components/SupportEmail.astro";
 ---
 
 <Legal
@@ -26,9 +27,7 @@ import { contact, site } from "../data/site";
   <h2>Who we are</h2>
   <p>
     {site.name}, trading as {site.legalName}, is the controller of the personal
-    data described here. You can reach us at <a
-      href={`mailto:${contact.support}`}>{contact.support}</a
-    >.
+    data described here. You can reach us at <SupportEmail />.
   </p>
 
   <h2>What this site collects automatically</h2>
@@ -100,9 +99,7 @@ import { contact, site } from "../data/site";
     act on these requests quickly.
   </p>
   <p>
-    To exercise any of them, write to <a href={`mailto:${contact.support}`}
-      >{contact.support}</a
-    >.
+    To exercise any of them, write to <SupportEmail />.
   </p>
 
   <h2>Children</h2>

@@ -22,6 +22,7 @@ import Button from "./Button.astro";
 import Icon from "./Icon.astro";
 import { waitlist } from "../data/site";
 import { programs } from "../data/programs";
+import SupportEmail from "./SupportEmail.astro";
 
 interface Props {
   class?: string;
@@ -180,11 +181,10 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
       class="mt-6 rounded-3xl border border-hairline bg-paper p-5 text-teal-mid"
     >
       This form needs JavaScript to open your mail client. You can email us
-      directly at <a
-        href={`mailto:${waitlist.email}?subject=${encodeURIComponent(waitlist.subject)}`}
+      directly at <SupportEmail
+        subject={waitlist.subject}
         class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
-        >{waitlist.email}</a
-      >.
+      />.
     </p>
   </noscript>
 </div>

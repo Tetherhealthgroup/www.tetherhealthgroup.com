@@ -1,6 +1,6 @@
 ---
 import Legal from "../layouts/Legal.astro";
-import { contact } from "../data/site";
+import SupportEmail from "../components/SupportEmail.astro";
 ---
 
 <Legal
@@ -85,9 +85,8 @@ import { contact } from "../data/site";
   <h2>Reporting a vulnerability</h2>
   <p>
     If you believe you have found a security issue in this website or in
-    anything else we run, please tell us at <a
-      href={`mailto:${contact.support}`}>{contact.support}</a
-    > with "Security" in the subject line.
+    anything else we run, please tell us at <SupportEmail /> with "Security" in the
+    subject line.
   </p>
   <p>Please include, as far as you can:</p>
   <ul>

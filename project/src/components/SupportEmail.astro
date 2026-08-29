@@ -1,0 +1,62 @@
+---
+/**
+ * The support address, as a mailto link that is allowed to break.
+ *
+ * The address is a single unbreakable token roughly 29 characters long. In a
+ * narrow container it does not wrap, it overhangs — which put /support/ into
+ * horizontal scrolling at 375px and /for-clinicians/ at 320px, the width WCAG
+ * 1.4.10 requires the page to reflow to. It is rendered in nine places, so the
+ * fix belongs in one component rather than at each call site.
+ *
+ * Splitting at the "@" gives the line a natural break point, so a narrow screen
+ * shows "support@" / "tetherhealthgroup.com" rather than a break mid-domain.
+ * wrap-anywhere is the fallback for a container narrower than the domain alone.
+ *
+ * Anything passed as children renders before the address — the footer uses that
+ * for its icon.
+ */
+import { contact } from "../data/site";
+
+interface Props {
+  /** Optional mailto subject line. */
+  subject?: string;
+  /** Eyebrow rendered above the address, e.g. "Email us". */
+  label?: string;
+  /** Classes for the address itself, where it needs its own type scale. */
+  addressClass?: string;
+  class?: string;
+}
+
+const {
+  subject,
+  label,
+  addressClass = "",
+  class: className = "",
+} = Astro.props;
+
+const href = subject
+  ? `mailto:${contact.support}?subject=${encodeURIComponent(subject)}`
+  : `mailto:${contact.support}`;
+
+const [localPart, domain] = contact.support.split("@");
+---
+
+<a href={href} class:list={["wrap-anywhere", className]}>
+  <slot />
+  {
+    label ? (
+      <span>
+        <span class="eyebrow block">{label}</span>
+        <span class:list={["mt-1.5 block", addressClass]}>
+          {localPart}@<wbr />
+          {domain}
+        </span>
+      </span>
+    ) : (
+      <Fragment>
+        {localPart}@<wbr />
+        {domain}
+      </Fragment>
+    )
+  }
+</a>

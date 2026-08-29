@@ -7,6 +7,7 @@ import Card from "../components/Card.astro";
 import Icon from "../components/Icon.astro";
 import PhoneFrame from "../components/PhoneFrame.astro";
 import { contact } from "../data/site";
+import SupportEmail from "../components/SupportEmail.astro";
 
 const boundaries = [
   {
@@ -207,11 +208,9 @@ const boundaries = [
       class="mt-10 flex flex-col items-start gap-6 rounded-3xl border border-hairline-soft bg-paper p-8 sm:flex-row sm:items-center sm:justify-between"
     >
       <p class="text-lg leading-relaxed">
-        Write to us at <a
-          href={`mailto:${contact.support}`}
+        Write to us at <SupportEmail
           class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
-          >{contact.support}</a
-        >, or use the early-access form and tell us you are a clinician.
+        />, or use the early-access form and tell us you are a clinician.
       </p>
       <Button href="/#waitlist" arrow>Get in touch</Button>
     </div>
