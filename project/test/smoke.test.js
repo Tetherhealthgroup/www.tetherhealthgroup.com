@@ -269,3 +269,31 @@ test("updates describe work that has happened, not work that is planned", () => 
     );
   }
 });
+
+test("the share card and robots.txt ship, and the card is not just promised", () => {
+  // twitter:card is "summary_large_image", which promises an image. Declaring
+  // it without one renders an empty card — worse than not declaring it. The
+  // file is asserted to exist, not merely referenced.
+  assert.ok(existsSync(join(dist, "og-image.png")), "og-image.png is missing");
+  assert.ok(existsSync(join(dist, "robots.txt")), "robots.txt is missing");
+
+  const robots = readFileSync(join(dist, "robots.txt"), "utf8");
+  assert.match(
+    robots,
+    /Sitemap:\s*https:\/\/www\.tetherhealthgroup\.com\/sitemap-index\.xml/,
+  );
+
+  for (const page of [
+    "index.html",
+    "programs/index.html",
+    "updates/index.html",
+  ]) {
+    const html = readFileSync(join(dist, page), "utf8");
+    assert.match(
+      html,
+      /<meta property="og:image" content="https:\/\/www\.tetherhealthgroup\.com\/og-image\.png"/,
+      `${page} does not point at the share card`,
+    );
+    assert.match(html, /og:image:alt/, `${page} share card has no alt text`);
+  }
+});
