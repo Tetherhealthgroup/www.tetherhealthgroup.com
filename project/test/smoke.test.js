@@ -37,6 +37,7 @@ const REQUIRED_PAGES = [
   "support/index.html",
   "terms/index.html",
   "updates/index.html",
+  "services/index.html",
   // one page per health area, generated from programs.ts
   "programs/tobacco/index.html",
   "programs/metabolic/index.html",
@@ -295,5 +296,55 @@ test("the share card and robots.txt ship, and the card is not just promised", ()
       `${page} does not point at the share card`,
     );
     assert.match(html, /og:image:alt/, `${page} share card has no alt text`);
+  }
+});
+
+test("no health area is thinner than the others", async () => {
+  // The areas are meant to read as one programme, not as one real area and
+  // nine stubs. A floor of four service lines and three projects keeps a
+  // half-filled area from shipping unnoticed.
+  const { programs } = await import("../src/data/programs.ts");
+  for (const program of programs) {
+    assert.ok(
+      program.services.length >= 4,
+      `${program.id} has ${program.services.length} services, floor is 4`,
+    );
+    assert.ok(
+      program.upcoming.length >= 3,
+      `${program.id} has ${program.upcoming.length} upcoming projects, floor is 3`,
+    );
+  }
+});
+
+test("the services page lists every service and does not read as an offer", async () => {
+  const { programs } = await import("../src/data/programs.ts");
+  const html = readFileSync(join(dist, "services/index.html"), "utf8");
+  for (const program of programs) {
+    for (const service of program.services) {
+      assert.ok(
+        html.includes(service.name),
+        `services page is missing "${service.name}" (${program.id})`,
+      );
+    }
+  }
+  assert.match(
+    html,
+    /None of them is available today/,
+    "the services page does not say the services are unavailable",
+  );
+});
+
+test("meta descriptions are a length a search result will actually show", async () => {
+  // Four pages shipped descriptions over 165 characters, which search results
+  // truncate mid-sentence. Under 50 is too thin to be useful.
+  for (const page of await htmlFiles()) {
+    const html = readFileSync(join(dist, page), "utf8");
+    const match = html.match(/<meta name="description" content="([^"]*)"/);
+    assert.ok(match, `${page} has no meta description`);
+    const length = match[1].length;
+    assert.ok(
+      length >= 50 && length <= 165,
+      `${page} description is ${length} chars; keep it between 50 and 165`,
+    );
   }
 });

@@ -1,0 +1,117 @@
+---
+/**
+ * Every service line across every health area, in one place.
+ *
+ * This page is the one most likely to be misread as an offer, so it says what
+ * it is three times: in the intro, in the count line, and on every planned
+ * area. Nine of the ten areas have no code behind them.
+ */
+
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Icon from "../components/Icon.astro";
+import WaitlistForm from "../components/WaitlistForm.astro";
+import {
+  programs,
+  statusLabels,
+  buildingPrograms,
+  programCount,
+} from "../data/programs";
+
+const serviceCount = programs.reduce((n, p) => n + p.services.length, 0);
+const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
+---
+
+<Base
+  title="Services"
+  description={`The ${serviceCount} service lines Tether Health Group intends to build across ${programCount} health areas. Scope, not availability — one area is in development and nine are planned.`}
+>
+  <PageHero
+    eyebrow="What we would build"
+    title="Every service line, in one place."
+    intro="The work each health area is meant to cover, gathered from all ten. This is scope, not a menu: one area is in development and nine have no implementation at all."
+  />
+
+  <Section space="tight" width="default">
+    <div
+      class="flex flex-col gap-5 rounded-3xl border border-hairline-soft bg-paper p-7 sm:flex-row sm:items-center sm:gap-8"
+    >
+      <span
+        class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-mint text-teal-deep"
+      >
+        <Icon name="info" size={22} />
+      </span>
+      <p class="leading-relaxed text-teal-mid">
+        <strong class="font-bold text-teal-deep"
+          >{serviceCount} service lines and {projectCount} projects across {
+            programCount
+          } areas.</strong
+        > None of them is available today. {buildingPrograms.length} of {
+          programCount
+        } areas has code being written; the rest are a plan. Where a line below sounds
+        like something you could use now, it is not.
+      </p>
+    </div>
+  </Section>
+
+  {
+    programs.map((program) => (
+      <Section space="tight" width="wide">
+        <div class="mb-8 flex flex-wrap items-center gap-4">
+          <span
+            class:list={[
+              "inline-flex h-12 w-12 items-center justify-center rounded-2xl",
+              program.status === "building"
+                ? "bg-teal-deep text-lime"
+                : "bg-mint text-teal-mid",
+            ]}
+          >
+            <Icon name={program.icon} size={22} />
+          </span>
+          <h2 class="text-2xl sm:text-3xl">
+            <a
+              href={`/programs/${program.id}/`}
+              class="underline decoration-mint-strong decoration-2 underline-offset-4 transition-colors hover:decoration-coral"
+            >
+              {program.area}
+            </a>
+          </h2>
+          <span
+            class:list={[
+              "rounded-full px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em]",
+              program.status === "building"
+                ? "bg-lime text-teal-deep"
+                : "bg-mint-pale text-teal-mid ring-1 ring-hairline-soft",
+            ]}
+          >
+            {statusLabels[program.status]}
+          </span>
+        </div>
+
+        <ul class="grid gap-5 md:grid-cols-2">
+          {program.services.map((service) => (
+            <li class="rounded-3xl border border-hairline-soft bg-paper p-6">
+              <h3 class="text-lg">{service.name}</h3>
+              <p class="mt-2 leading-relaxed text-teal-mid">
+                {service.description}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    ))
+  }
+
+  <Section tone="mint" width="default" id="waitlist">
+    <div class="mb-10 max-w-2xl">
+      <p class="eyebrow mb-5">Early access</p>
+      <h2 class="text-3xl sm:text-4xl">Which of these matters to you?</h2>
+      <p class="mt-5 leading-relaxed text-teal-mid">
+        Tell us the area. It genuinely affects what we build after the first
+        one.
+      </p>
+    </div>
+    <WaitlistForm />
+  </Section>
+</Base>

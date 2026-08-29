@@ -174,6 +174,12 @@ export const programs: Program[] = [
           "Commissioning review of the educational content by qualified clinicians, ahead of any build.",
         horizon: "Later",
       },
+      {
+        title: "Shared education review",
+        description:
+          "Putting the education content through clinical review once, so it can be reused across the metabolic, cardiovascular and nutrition areas rather than reviewed three times.",
+        horizon: "Later",
+      },
     ],
   },
   {
@@ -225,6 +231,12 @@ export const programs: Program[] = [
           "Finding clinical partners willing to own the content, because this is not an area to build from secondary sources.",
         horizon: "Later",
       },
+      {
+        title: "Survivorship scope",
+        description:
+          "Deciding what the survivorship period actually needs, which is the part most often left out of both care and software.",
+        horizon: "Later",
+      },
     ],
   },
   {
@@ -256,6 +268,11 @@ export const programs: Program[] = [
         description:
           "Support for readings a person takes at home, and clear guidance on when a number means calling someone rather than logging it.",
       },
+      {
+        name: "Care-team coordination",
+        description:
+          "Letting a person hand readings and history to a clinician when they choose to, and never by default.",
+      },
     ],
     upcoming: [
       {
@@ -268,6 +285,12 @@ export const programs: Program[] = [
         title: "Home-reading safety rules",
         description:
           "Deciding the thresholds at which the product stops logging and starts telling someone to seek help.",
+        horizon: "Later",
+      },
+      {
+        title: "Consent and sharing model",
+        description:
+          "Reusing the sharing controls from BreatheFree so nothing reaches a care team unless the person sends it.",
         horizon: "Later",
       },
     ],
@@ -301,6 +324,11 @@ export const programs: Program[] = [
         description:
           "Activity support that starts from what the person can do now, not from a target.",
       },
+      {
+        name: "Support between appointments",
+        description:
+          "The long stretches where nothing is scheduled and most of the difficulty actually sits.",
+      },
     ],
     upcoming: [
       {
@@ -313,6 +341,12 @@ export const programs: Program[] = [
         title: "Shared progress model",
         description:
           "Reusing the progress model from BreatheFree, which is designed so a bad day never erases prior progress.",
+        horizon: "Later",
+      },
+      {
+        title: "Non-tracking baseline",
+        description:
+          "Establishing what the area can do for someone who will not log meals, before building anything that assumes they will.",
         horizon: "Later",
       },
     ],
@@ -346,6 +380,11 @@ export const programs: Program[] = [
         description:
           "Helping a person keep a care team informed, with nothing shared unless they choose to share it.",
       },
+      {
+        name: "Education and self-management",
+        description:
+          "Reviewed, plain-language material on managing a long-term respiratory condition day to day.",
+      },
     ],
     upcoming: [
       {
@@ -358,6 +397,12 @@ export const programs: Program[] = [
         title: "Clinician-facing summary",
         description:
           "A summary a person can choose to hand to a clinician, reviewed before release.",
+        horizon: "Later",
+      },
+      {
+        title: "Symptom model",
+        description:
+          "Deciding what is worth tracking and what is noise, with clinicians, before building any tracking at all.",
         horizon: "Later",
       },
     ],
@@ -387,12 +432,29 @@ export const programs: Program[] = [
         description:
           "Plain-language education on what protects these organs, without overstating what any single change achieves.",
       },
+      {
+        name: "Care-team coordination",
+        description:
+          "Helping a person keep results and history in one place and share them with a clinician on their terms.",
+      },
     ],
     upcoming: [
       {
         title: "Area scoping",
         description:
           "Establishing what is genuinely useful here versus what belongs in the cardiovascular and metabolic areas.",
+        horizon: "Later",
+      },
+      {
+        title: "Results explanation",
+        description:
+          "Plain-language explanation of the common test results, reviewed clinically, as the first useful thing this area could ship.",
+        horizon: "Later",
+      },
+      {
+        title: "Overlap review",
+        description:
+          "Settling what belongs here versus in the cardiovascular and metabolic areas, so the same work is not built twice.",
         horizon: "Later",
       },
     ],
@@ -426,6 +488,11 @@ export const programs: Program[] = [
         description:
           "Clear, fast routes to qualified people, and unambiguous escalation to emergency services when that is what is needed.",
       },
+      {
+        name: "Crisis routing",
+        description:
+          "Unambiguous escalation to emergency services and crisis lines, designed before anything else in this area.",
+      },
     ],
     upcoming: [
       {
@@ -439,6 +506,12 @@ export const programs: Program[] = [
         description:
           "Writing down what this area will never attempt, so scope cannot drift towards therapy by accident.",
         horizon: "Next",
+      },
+      {
+        title: "Instrument selection",
+        description:
+          "Choosing which validated screening instruments are appropriate, with clinicians, and how results are worded so they prompt help rather than imply diagnosis.",
+        horizon: "Later",
       },
     ],
   },
@@ -471,6 +544,11 @@ export const programs: Program[] = [
         description:
           "Guidance shaped to the person rather than a generic checklist.",
       },
+      {
+        name: "A record the person owns",
+        description:
+          "One place to see what has been done and what is due, exportable and deletable by the person it describes.",
+      },
     ],
     upcoming: [
       {
@@ -483,6 +561,12 @@ export const programs: Program[] = [
         title: "Guideline sourcing",
         description:
           "Deciding whose guidelines are followed and how updates to them reach the product.",
+        horizon: "Later",
+      },
+      {
+        title: "Reminder engine",
+        description:
+          "Reusing the notification model from BreatheFree, whose default copy reveals nothing about the subject on a lock screen.",
         horizon: "Later",
       },
     ],
@@ -512,6 +596,11 @@ export const programs: Program[] = [
         description:
           "Structured activity and support built for the range of ability this area actually covers.",
       },
+      {
+        name: "Supporter involvement",
+        description:
+          "Letting a family member or carer help without taking the person's decisions away from them.",
+      },
     ],
     upcoming: [
       {
@@ -524,6 +613,12 @@ export const programs: Program[] = [
         title: "Supporter roles",
         description:
           "Extending the supporter model from BreatheFree so a family member can help without taking over.",
+        horizon: "Later",
+      },
+      {
+        title: "Falls scope",
+        description:
+          "Deciding what is genuinely useful on falls without turning a home into a monitored ward.",
         horizon: "Later",
       },
     ],

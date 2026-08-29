@@ -14,7 +14,7 @@ export const site = {
   url: "https://www.tetherhealthgroup.com",
   tagline: "Care that meets people where they are.",
   description:
-    "Tether Health Group builds calm, private, evidence-informed digital health tools. Our first product, BreatheFree, supports people through quitting smoking without judgment.",
+    "Tether Health Group builds calm, private, evidence-informed digital health tools. Our first product, BreatheFree, supports people quitting smoking without judgment.",
 } as const;
 
 /**
@@ -52,6 +52,7 @@ export interface NavLink {
 
 export const primaryNav: NavLink[] = [
   { label: "Health areas", href: "/programs/" },
+  { label: "Services", href: "/services/" },
   { label: "BreatheFree", href: "/breathefree/" },
   { label: "How it works", href: "/breathefree/how-it-works/" },
   { label: "For clinicians", href: "/for-clinicians/" },
@@ -64,6 +65,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
     title: "Product",
     links: [
       { label: "All health areas", href: "/programs/" },
+      { label: "All services", href: "/services/" },
       { label: "BreatheFree overview", href: "/breathefree/" },
       { label: "How it works", href: "/breathefree/how-it-works/" },
       { label: "Screen tour", href: "/breathefree/tour/" },
