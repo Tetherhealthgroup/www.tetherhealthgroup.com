@@ -171,3 +171,25 @@ test("no page claims the product is available to download", async () => {
     }
   }
 });
+
+test("the support address can break instead of overflowing the viewport", () => {
+  // At 375px the address rendered 350px wide inside a card starting at x=54,
+  // pushing the document to 404px and giving /support/ a horizontal scrollbar.
+  //
+  // Layout cannot be measured from static HTML, so this asserts the two things
+  // that prevent it: a break opportunity at the "@", and overflow-wrap as the
+  // fallback for a viewport too narrow even for the domain alone. It is a proxy
+  // for the real defect — it fails if the fix is removed, not if a future
+  // change reintroduces overflow some other way.
+  const html = readFileSync(join(dist, "support/index.html"), "utf8");
+  assert.match(
+    html,
+    /support@<wbr>tetherhealthgroup\.com/,
+    "the support address lost its break opportunity at the @",
+  );
+  assert.match(
+    html,
+    /class="[^"]*\bwrap-anywhere\b[^"]*"[^>]*>support@/,
+    "the support address lost its overflow-wrap fallback",
+  );
+});

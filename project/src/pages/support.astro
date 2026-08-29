@@ -6,6 +6,11 @@ import Card from "../components/Card.astro";
 import Icon from "../components/Icon.astro";
 import WaitlistForm from "../components/WaitlistForm.astro";
 import { contact, quitlines } from "../data/site";
+
+// Split at the "@" so a narrow screen breaks the address at its natural seam.
+// wrap-anywhere below is the fallback for a viewport too narrow even for the
+// domain alone.
+const [supportLocalPart, supportDomain] = contact.support.split("@");
 ---
 
 <Base
@@ -105,8 +110,8 @@ import { contact, quitlines } from "../data/site";
       <span>
         <span class="eyebrow block">Email us</span>
         <span
-          class="mt-1.5 block text-2xl font-extrabold tracking-[-0.035em] text-teal-deep sm:text-3xl"
-          >{contact.support}</span
+          class="mt-1.5 block wrap-anywhere text-xl font-extrabold tracking-[-0.035em] text-teal-deep sm:text-2xl md:text-3xl"
+          >{supportLocalPart}@<wbr />{supportDomain}</span
         >
       </span>
     </a>
