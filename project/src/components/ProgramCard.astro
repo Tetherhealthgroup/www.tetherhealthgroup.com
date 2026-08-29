@@ -76,15 +76,25 @@ const isBuilding = program.status === "building";
     )
   }
 
-  {
-    program.product && (
-      <a
-        href={program.product.href}
-        class="-mb-2 mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl py-3 text-[0.95rem] font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4 transition-colors hover:decoration-coral"
-      >
-        Meet {program.product.name}
-        <Icon name="arrow-right" size={17} />
-      </a>
-    )
-  }
+  <div class="mt-auto flex flex-wrap items-center gap-x-5">
+    <a
+      href={`/programs/${program.id}/`}
+      class="-mb-2 mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl py-3 text-[0.95rem] font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4 transition-colors hover:decoration-coral"
+    >
+      <span class="sr-only">{program.area}: </span>Services and what is next
+      <Icon name="arrow-right" size={17} />
+    </a>
+
+    {
+      program.product && (
+        <a
+          href={program.product.href}
+          class="-mb-2 mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl py-3 text-[0.95rem] font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4 transition-colors hover:decoration-coral"
+        >
+          Meet {program.product.name}
+          <Icon name="arrow-right" size={17} />
+        </a>
+      )
+    }
+  </div>
 </article>

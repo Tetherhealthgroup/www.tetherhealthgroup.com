@@ -36,6 +36,18 @@ const REQUIRED_PAGES = [
   "security/index.html",
   "support/index.html",
   "terms/index.html",
+  "updates/index.html",
+  // one page per health area, generated from programs.ts
+  "programs/tobacco/index.html",
+  "programs/metabolic/index.html",
+  "programs/cancer/index.html",
+  "programs/cardiovascular/index.html",
+  "programs/nutrition/index.html",
+  "programs/respiratory/index.html",
+  "programs/kidney-liver/index.html",
+  "programs/behavioral/index.html",
+  "programs/preventive/index.html",
+  "programs/aging/index.html",
 ];
 
 /**
@@ -213,6 +225,47 @@ test("no page skips a heading level", async () => {
       skips,
       [],
       `${page} skips a heading level: ${skips.join(", ")}`,
+    );
+  }
+});
+
+test("every health area has a page, and it is honest about status", async () => {
+  // Nine of the ten areas have no implementation. The page for each must not
+  // read like the one area that does, so the status label is asserted per page
+  // rather than assumed from the template.
+  const { programs, statusLabels } = await import("../src/data/programs.ts");
+  for (const program of programs) {
+    const html = readFileSync(
+      join(dist, `programs/${program.id}/index.html`),
+      "utf8",
+    );
+    assert.match(
+      html,
+      new RegExp(statusLabels[program.status]),
+      `programs/${program.id}/ does not state its status`,
+    );
+    for (const service of program.services) {
+      assert.ok(
+        html.includes(service.name),
+        `programs/${program.id}/ is missing the "${service.name}" service`,
+      );
+    }
+    assert.ok(
+      program.upcoming.length > 0,
+      `${program.id} has no upcoming work listed`,
+    );
+  }
+});
+
+test("updates describe work that has happened, not work that is planned", () => {
+  // The updates page is the checkable one. If it ever starts carrying intent,
+  // the distinction the site rests on has collapsed.
+  const html = readFileSync(join(dist, "updates/index.html"), "utf8");
+  assert.match(html, /What has actually changed/);
+  for (const banned of [/coming soon/i, /will launch/i, /launching soon/i]) {
+    assert.ok(
+      !banned.test(html),
+      `the updates page promises future work: ${banned}`,
     );
   }
 });
