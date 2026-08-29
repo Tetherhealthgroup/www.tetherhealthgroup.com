@@ -1,0 +1,368 @@
+---
+import Base from "../layouts/Base.astro";
+import Section from "../components/Section.astro";
+import Button from "../components/Button.astro";
+import Card from "../components/Card.astro";
+import Icon from "../components/Icon.astro";
+import Logo from "../components/Logo.astro";
+import PhoneFrame from "../components/PhoneFrame.astro";
+import ProgramCard from "../components/ProgramCard.astro";
+import WaitlistForm from "../components/WaitlistForm.astro";
+import { site } from "../data/site";
+import { programs, programCount, plannedPrograms } from "../data/programs";
+
+const principles = [
+  {
+    icon: "lock" as const,
+    title: "Private by design",
+    body: "No ads. No selling health data. Sensitive notification text is off by default, so a lock screen never announces someone's health to the room.",
+  },
+  {
+    icon: "users" as const,
+    title: "No judgment, just support",
+    body: "A setback never erases progress. Our tools are built to respond to a difficult day with help rather than a broken streak.",
+  },
+  {
+    icon: "offline" as const,
+    title: "Works when it is needed",
+    body: "The hardest moments do not wait for a signal. Core support tools are designed to work offline and one-handed.",
+  },
+  {
+    icon: "accessibility" as const,
+    title: "Built to be usable",
+    body: "Plain language, screen-reader support, large touch targets, reduced-motion and text-scaling support, and Spanish alongside English.",
+  },
+];
+---
+
+<Base
+  title="Tether Health Group — care that meets people where they are"
+  description={site.description}
+  bareTitle
+>
+  <!-- ===================================================================
+       Hero
+  ==================================================================== -->
+  <Section width="wide" space="loose" class="relative overflow-hidden">
+    <!-- Calm breathing rings, echoing the app's welcome illustration. -->
+    <div
+      class="pointer-events-none absolute right-[-14rem] top-[-8rem] hidden h-[42rem] w-[42rem] lg:block"
+      aria-hidden="true"
+    >
+      <div
+        class="animate-breathe absolute inset-0 rounded-full bg-mint-strong/25 blur-3xl"
+      >
+      </div>
+      <div
+        class="absolute inset-[12%] rounded-full border border-mint-strong/40"
+      >
+      </div>
+      <div
+        class="absolute inset-[24%] rounded-full border border-dashed border-mint-strong/50"
+      >
+      </div>
+    </div>
+
+    <div class="relative grid items-center gap-16 lg:grid-cols-[1.05fr_0.95fr]">
+      <div class="animate-rise">
+        <p
+          class="mb-7 inline-flex items-center gap-2.5 rounded-full border border-mint-strong bg-mint px-4 py-2 text-[0.78rem] font-extrabold uppercase tracking-[0.16em] text-teal-deep"
+        >
+          <span class="relative flex h-2 w-2" aria-hidden="true">
+            <span
+              class="absolute inline-flex h-full w-full animate-ping rounded-full bg-coral opacity-70"
+            ></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-coral"
+            ></span>
+          </span>
+          In development — first program coming soon
+        </p>
+
+        <h1 class="text-[2.75rem] sm:text-[3.75rem] lg:text-[4.25rem]">
+          Care that meets people where they are.
+        </h1>
+
+        <p class="mt-7 max-w-xl text-xl leading-relaxed">
+          Tether Health Group is building calm, private, evidence-informed
+          digital health tools — starting with smoking cessation and extending
+          across {programCount} areas of health. Small steps, practical support, and
+          no judgment.
+        </p>
+
+        <div class="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Button href="#waitlist" arrow>Request early access</Button>
+          <Button href="/breathefree/" variant="secondary">
+            See our first program
+          </Button>
+        </div>
+
+        <p
+          class="mt-7 flex items-center gap-2.5 text-[0.95rem] text-teal-muted"
+        >
+          <Icon name="shield" size={18} class="text-teal-mid" />
+          No trackers on this site. We ask for an email address and nothing else.
+        </p>
+      </div>
+
+      <div class="flex justify-center lg:justify-end">
+        <PhoneFrame screen={1} width={296} priority />
+      </div>
+    </div>
+  </Section>
+
+  <!-- ===================================================================
+       What we are building
+  ==================================================================== -->
+  <Section tone="deep" width="wide">
+    <div class="grid gap-14 lg:grid-cols-[0.9fr_1.1fr]">
+      <div>
+        <p class="eyebrow eyebrow-on-dark mb-5">What we are building</p>
+        <h2 class="text-4xl text-paper sm:text-5xl">
+          One system. Many areas of health.
+        </h2>
+        <p class="mt-6 max-w-md text-lg leading-relaxed text-mint-strong">
+          The hard parts of behaviour change are the same whether someone is
+          quitting cigarettes, managing blood glucose or keeping up with a
+          screening schedule: a plan you actually believe in, help in the moment
+          it is needed, and a record that survives a bad week.
+        </p>
+        <p class="mt-5 max-w-md text-lg leading-relaxed text-mint-strong">
+          We are building that once — consent, plain-language education, coping
+          tools, progress without punishment, and routes to real people — then
+          shaping it to each health area.
+        </p>
+      </div>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        {
+          [
+            {
+              icon: "check" as const,
+              title: "A plan people own",
+              body: "Built from someone's own reasons, their own date, their own supporter.",
+            },
+            {
+              icon: "wave" as const,
+              title: "Help in the moment",
+              body: "Short, guided tools for the minutes that decide the outcome.",
+            },
+            {
+              icon: "progress" as const,
+              title: "Progress without punishment",
+              body: "Patterns and estimates that a setback never wipes out.",
+            },
+            {
+              icon: "support" as const,
+              title: "A route to a person",
+              body: "Quitlines, supporters, coaches and care teams — never a dead end.",
+            },
+          ].map((item) => (
+            <div class="rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
+              <span class="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-raised text-lime">
+                <Icon name={item.icon} size={21} />
+              </span>
+              <h3 class="text-lg text-paper">{item.title}</h3>
+              <p class="mt-2 text-[0.95rem] leading-relaxed text-mint-strong/85">
+                {item.body}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </Section>
+
+  <!-- ===================================================================
+       Health areas
+  ==================================================================== -->
+  <Section id="programs" width="wide">
+    <div class="mb-14 max-w-3xl">
+      <p class="eyebrow mb-5">Where we are headed</p>
+      <h2 class="text-4xl sm:text-5xl">
+        {programCount} areas of health, one at a time.
+      </h2>
+      <p class="mt-6 text-lg leading-relaxed">
+        We would rather do one thing properly than ten things thinly. Tobacco
+        and nicotine is in active development now. The remaining {
+          plannedPrograms.length
+        } areas are planned, and the order will follow where the need and the evidence
+        are strongest.
+      </p>
+    </div>
+
+    <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {
+        programs.map((program) => (
+          <li>
+            <ProgramCard program={program} />
+          </li>
+        ))
+      }
+    </ul>
+
+    <p
+      class="mt-10 flex items-start gap-3 rounded-3xl border border-hairline-soft bg-paper p-6 text-[0.95rem] leading-relaxed text-teal-mid"
+    >
+      <Icon name="info" size={20} class="mt-0.5 shrink-0 text-teal-muted" />
+      <span>
+        Planned areas describe what we intend to build. Nothing on this page is
+        available for clinical use today, and no Tether Health Group product
+        diagnoses, treats or prescribes.
+      </span>
+    </p>
+  </Section>
+
+  <!-- ===================================================================
+       BreatheFree spotlight
+  ==================================================================== -->
+  <Section tone="mint" width="wide">
+    <div class="grid items-center gap-16 lg:grid-cols-[1fr_1fr]">
+      <div>
+        <p class="eyebrow mb-5">Our first program</p>
+        <Logo size={52} withWordmark class="mb-6" />
+        <h2 class="text-4xl sm:text-5xl">Your next breath can be different.</h2>
+        <p class="mt-6 text-lg leading-relaxed">
+          BreatheFree supports people through quitting smoking — from the first
+          honest look at a habit, through building a plan, to the craving that
+          arrives at 11pm on a Tuesday. Twenty-eight screens are designed and
+          approved, and we are building them into a working application now.
+        </p>
+
+        <ul class="mt-8 grid gap-4 sm:grid-cols-2">
+          {
+            [
+              {
+                icon: "plus" as const,
+                label: "Help when cravings hit",
+                sub: "Quick tools that work anywhere",
+              },
+              {
+                icon: "check" as const,
+                label: "Progress that stays",
+                sub: "A slip never erases your wins",
+              },
+              {
+                icon: "lock" as const,
+                label: "Private by design",
+                sub: "No ads, no selling health data",
+              },
+              {
+                icon: "globe" as const,
+                label: "English and Spanish",
+                sub: "Plain language in both",
+              },
+            ].map((item) => (
+              <li class="flex items-start gap-3">
+                <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-paper text-teal-deep ring-1 ring-mint-strong">
+                  <Icon name={item.icon} size={19} />
+                </span>
+                <span>
+                  <span class="block font-bold text-teal-deep">
+                    {item.label}
+                  </span>
+                  <span class="block text-[0.9rem] text-teal-muted">
+                    {item.sub}
+                  </span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="mt-10 flex flex-col gap-3 sm:flex-row">
+          <Button href="/breathefree/" arrow>Explore BreatheFree</Button>
+          <Button href="/breathefree/tour/" variant="secondary">
+            See all 28 screens
+          </Button>
+        </div>
+      </div>
+
+      <div
+        class="flex items-end justify-center gap-5 sm:gap-8"
+        role="group"
+        aria-label="Three BreatheFree screens: craving rescue, quit-day home and progress"
+      >
+        <PhoneFrame screen={19} width={188} class="hidden sm:flex" />
+        <PhoneFrame screen={22} width={222} />
+        <PhoneFrame screen={26} width={188} class="hidden sm:flex" />
+      </div>
+    </div>
+  </Section>
+
+  <!-- ===================================================================
+       Principles
+  ==================================================================== -->
+  <Section width="wide">
+    <div class="mb-14 max-w-3xl">
+      <p class="eyebrow mb-5">How we build</p>
+      <h2 class="text-4xl sm:text-5xl">
+        Four commitments we will not trade away.
+      </h2>
+    </div>
+
+    <ul class="grid gap-6 md:grid-cols-2">
+      {
+        principles.map((principle) => (
+          <li>
+            <Card icon={principle.icon} title={principle.title}>
+              {principle.body}
+            </Card>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <!-- ===================================================================
+       For clinicians
+  ==================================================================== -->
+  <Section tone="paper" width="default">
+    <div class="grid items-center gap-12 md:grid-cols-[auto_1fr]">
+      <span
+        class="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-mint text-teal-deep"
+      >
+        <Icon name="stethoscope" size={36} />
+      </span>
+      <div>
+        <h2 class="text-3xl sm:text-4xl">
+          Building this with clinicians, not around them.
+        </h2>
+        <p class="mt-5 text-lg leading-relaxed">
+          Our tools educate and support self-management. They do not prescribe,
+          diagnose or replace a clinician. If you work in tobacco treatment,
+          primary care or public health and want to shape what we build, we
+          would like to hear from you.
+        </p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button href="/for-clinicians/" arrow>For clinicians</Button>
+          <Button href="/security/" variant="secondary">
+            Our privacy and security posture
+          </Button>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- ===================================================================
+       Waitlist
+  ==================================================================== -->
+  <Section id="waitlist" tone="mint" width="default">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="eyebrow mb-5">Early access</p>
+      <h2 id="waitlist-heading" class="text-4xl sm:text-5xl">
+        Be there when the first program opens.
+      </h2>
+      <p class="mt-6 text-lg leading-relaxed">
+        We are building in the open and would rather hear from you early than
+        launch at you later. Tell us who you are and what would make this
+        genuinely useful.
+      </p>
+    </div>
+
+    <div
+      class="mx-auto mt-12 max-w-3xl rounded-3xl border border-hairline-soft bg-paper p-7 shadow-[var(--shadow-card)] sm:p-10"
+    >
+      <WaitlistForm />
+    </div>
+  </Section>
+</Base>

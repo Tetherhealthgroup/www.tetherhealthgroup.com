@@ -1,0 +1,307 @@
+---
+/**
+ * Early-access / waitlist form.
+ *
+ * Delivery has two modes, decided at build time:
+ *
+ *   1. PUBLIC_WAITLIST_ENDPOINT is set — the form POSTs JSON to that URL.
+ *   2. It is not set (the default) — the form composes the message in the
+ *      visitor's own mail client, addressed to support@tetherhealthgroup.com.
+ *
+ * Mode 2 is the default deliberately. The site is statically hosted with no
+ * backend, and a form that silently drops submissions is worse than one that
+ * hands the visitor a message they can see themselves send. The address is
+ * also printed in plain text, so the form still works with JavaScript off.
+ *
+ * No health information is requested. The prompt asks which area someone is
+ * interested in, not whether they have a condition — an important distinction
+ * for a form that travels by ordinary email.
+ */
+
+import Button from "./Button.astro";
+import Icon from "./Icon.astro";
+import { waitlist } from "../data/site";
+import { programs } from "../data/programs";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" }: Props = Astro.props;
+
+const endpoint = import.meta.env.PUBLIC_WAITLIST_ENDPOINT ?? "";
+
+const roles = [
+  "Someone who wants to quit or make a change",
+  "Clinician or care-team member",
+  "Employer, health plan or public-health organisation",
+  "Researcher or academic",
+  "Something else",
+];
+
+const fieldClass =
+  "w-full rounded-[14px] border-2 border-hairline bg-paper px-4 py-3.5 text-[1.0625rem] " +
+  "text-teal-deep placeholder:text-teal-muted/70 transition-colors " +
+  "focus:border-teal-deep focus:outline-none";
+
+const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
+---
+
+<div class={className}>
+  <form
+    id="waitlist-form"
+    class="grid gap-5 sm:grid-cols-2"
+    data-endpoint={endpoint}
+    data-email={waitlist.email}
+    data-subject={waitlist.subject}
+    novalidate
+  >
+    <div class="sm:col-span-1">
+      <label class={labelClass} for="wl-name"
+        >Name <span class="font-normal text-teal-muted">(optional)</span></label
+      >
+      <input
+        class={fieldClass}
+        id="wl-name"
+        name="name"
+        type="text"
+        autocomplete="name"
+        placeholder="Your name"
+      />
+    </div>
+
+    <div class="sm:col-span-1">
+      <label class={labelClass} for="wl-email">Email</label>
+      <input
+        class={fieldClass}
+        id="wl-email"
+        name="email"
+        type="email"
+        required
+        autocomplete="email"
+        placeholder="you@example.com"
+        aria-describedby="wl-email-error"
+      />
+      <p
+        id="wl-email-error"
+        class="mt-2 hidden items-center gap-1.5 text-sm font-bold text-coral"
+        role="alert"
+      >
+        <Icon name="alert" size={16} />
+        <span>Please enter an email address so we can reply.</span>
+      </p>
+    </div>
+
+    <div class="sm:col-span-1">
+      <label class={labelClass} for="wl-role">I am</label>
+      <select class={fieldClass} id="wl-role" name="role">
+        {roles.map((role) => <option value={role}>{role}</option>)}
+      </select>
+    </div>
+
+    <div class="sm:col-span-1">
+      <label class={labelClass} for="wl-interest">
+        Health area of interest
+      </label>
+      <select class={fieldClass} id="wl-interest" name="interest">
+        <option value="Any / not sure yet">Any — not sure yet</option>
+        {
+          programs.map((program) => (
+            <option value={program.area}>{program.area}</option>
+          ))
+        }
+      </select>
+    </div>
+
+    <div class="sm:col-span-2">
+      <label class={labelClass} for="wl-message">
+        Anything you would like us to know <span
+          class="font-normal text-teal-muted">(optional)</span
+        >
+      </label>
+      <textarea
+        class={`${fieldClass} min-h-28 resize-y`}
+        id="wl-message"
+        name="message"
+        rows="3"
+        placeholder="What would make this genuinely useful for you?"></textarea>
+      <p class="mt-2 text-sm leading-relaxed text-teal-muted">
+        Please do not include medical details. This message travels by ordinary
+        email.
+      </p>
+    </div>
+
+    {/* Honeypot: a field no person sees and no person fills in. */}
+    <div class="hidden" aria-hidden="true">
+      <label for="wl-company">Company</label>
+      <input
+        id="wl-company"
+        name="company"
+        type="text"
+        tabindex="-1"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="sm:col-span-2">
+      <Button type="submit" arrow full class="sm:w-auto">
+        Request early access
+      </Button>
+      <p class="mt-4 text-sm leading-relaxed text-teal-muted">
+        We use your address to reply about early access and nothing else. No
+        marketing lists, no third-party trackers, and we never sell contact
+        details. Read the <a
+          href="/privacy/"
+          class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+          >privacy notice</a
+        >.
+      </p>
+    </div>
+  </form>
+
+  <!-- Shown after a successful submission. -->
+  <div
+    id="waitlist-success"
+    class="hidden rounded-3xl border border-mint-strong bg-mint p-7"
+    role="status"
+  >
+    <span
+      class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-deep text-lime"
+    >
+      <Icon name="check" size={24} />
+    </span>
+    <h3 class="mb-2 text-xl">Thank you — that is everything we need.</h3>
+    <p id="waitlist-success-body" class="text-teal-mid"></p>
+  </div>
+
+  <!-- The address in plain text: the form's fallback with JavaScript off. -->
+  <noscript>
+    <p
+      class="mt-6 rounded-3xl border border-hairline bg-paper p-5 text-teal-mid"
+    >
+      This form needs JavaScript to open your mail client. You can email us
+      directly at <a
+        href={`mailto:${waitlist.email}?subject=${encodeURIComponent(waitlist.subject)}`}
+        class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+        >{waitlist.email}</a
+      >.
+    </p>
+  </noscript>
+</div>
+
+<script>
+  const form = document.getElementById("waitlist-form");
+  const success = document.getElementById("waitlist-success");
+  const successBody = document.getElementById("waitlist-success-body");
+  const emailError = document.getElementById("wl-email-error");
+
+  if (
+    form instanceof HTMLFormElement &&
+    success instanceof HTMLElement &&
+    successBody instanceof HTMLElement &&
+    emailError instanceof HTMLElement
+  ) {
+    const endpoint = form.dataset.endpoint ?? "";
+    const address = form.dataset.email ?? "";
+    const subject = form.dataset.subject ?? "Early access request";
+
+    const emailField = form.elements.namedItem("email");
+
+    const showError = (show: boolean) => {
+      emailError.classList.toggle("hidden", !show);
+      emailError.classList.toggle("flex", show);
+      if (emailField instanceof HTMLInputElement) {
+        emailField.setAttribute("aria-invalid", show ? "true" : "false");
+        emailField.classList.toggle("border-coral", show);
+      }
+    };
+
+    const finish = (message: string) => {
+      form.classList.add("hidden");
+      success.classList.remove("hidden");
+      successBody.textContent = message;
+      /* Move focus to the confirmation so screen-reader users are told the
+         submission worked, rather than being left on a form that vanished. */
+      success.setAttribute("tabindex", "-1");
+      success.focus();
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const data = new FormData(form);
+
+      /* A filled honeypot means a bot. Show the same confirmation a person
+         sees rather than an error, so the bot learns nothing. */
+      if ((data.get("company") as string)?.trim()) {
+        finish("Thank you — we will be in touch.");
+        return;
+      }
+
+      const email = ((data.get("email") as string) ?? "").trim();
+      if (!email || !email.includes("@") || email.startsWith("@")) {
+        showError(true);
+        if (emailField instanceof HTMLInputElement) emailField.focus();
+        return;
+      }
+      showError(false);
+
+      const payload = {
+        name: ((data.get("name") as string) ?? "").trim(),
+        email,
+        role: (data.get("role") as string) ?? "",
+        interest: (data.get("interest") as string) ?? "",
+        message: ((data.get("message") as string) ?? "").trim(),
+      };
+
+      if (endpoint) {
+        try {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          finish(
+            "We have your request and will reply to " +
+              payload.email +
+              " when early access opens.",
+          );
+          return;
+        } catch (error) {
+          /* Fall through to the mail-client route rather than losing the
+             submission. The visitor still gets a way to reach us. */
+          console.error(
+            "Waitlist endpoint failed, falling back to email",
+            error,
+          );
+        }
+      }
+
+      const lines = [
+        `Name: ${payload.name || "(not given)"}`,
+        `Email: ${payload.email}`,
+        `I am: ${payload.role}`,
+        `Health area of interest: ${payload.interest}`,
+        "",
+        payload.message || "(no message)",
+      ];
+
+      window.location.href =
+        `mailto:${address}` +
+        `?subject=${encodeURIComponent(subject)}` +
+        `&body=${encodeURIComponent(lines.join("\n"))}`;
+
+      finish(
+        `Your email app should now be open with a message to ${address}. ` +
+          "Send it and we will reply when early access opens. If nothing " +
+          `opened, email ${address} directly.`,
+      );
+    });
+
+    /* Clear the error as soon as the visitor starts correcting it. */
+    if (emailField instanceof HTMLInputElement) {
+      emailField.addEventListener("input", () => showError(false));
+    }
+  }
+</script>

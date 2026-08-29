@@ -1,0 +1,108 @@
+---
+import Legal from "../layouts/Legal.astro";
+import { contact } from "../data/site";
+---
+
+<Legal
+  title="Security"
+  description="How this site is built to minimise risk, the security commitments BreatheFree must meet before release, and how to report a vulnerability."
+  eyebrow="Trust"
+  intro="This page describes two different things: how this website is secured today, and the security bar our products must clear before anyone can use them."
+  updated="2026-08-29"
+  scopeNote="We make no claim to hold any security certification. Where this page describes controls for BreatheFree, it describes release requirements that have not yet been met — not controls that are in place today."
+>
+  <h2>This website</h2>
+  <p>
+    The site is deliberately boring, because boring is the most reliable
+    security property available to a marketing site.
+  </p>
+  <ul>
+    <li>
+      <strong>Static output.</strong> Every page is pre-rendered HTML. There is no
+      application server, no database, and no server-side code that processes your
+      input — so there is no query to inject into and no session to steal.
+    </li>
+    <li>
+      <strong>No third-party code.</strong> The site loads no external scripts, fonts,
+      images or stylesheets. A supply-chain compromise of an analytics or font vendor
+      cannot reach visitors of this site, because there is no such vendor in the page.
+    </li>
+    <li>
+      <strong>No accounts, no cookies.</strong> There is nothing to log in to and
+      no session state, so there are no credentials here to lose.
+    </li>
+    <li>
+      <strong>Minimal data.</strong> The early-access form composes a message in your
+      own email client rather than posting to a server we run. We hold what you chose
+      to send, and nothing else.
+    </li>
+  </ul>
+
+  <h2>What BreatheFree must satisfy before release</h2>
+  <p>
+    BreatheFree handles information people would not want disclosed. It is not
+    released, and it will not be released until the following are in place and
+    independently checked:
+  </p>
+  <ul>
+    <li>
+      Data-flow mapping, threat modelling and a privacy impact assessment
+      completed.
+    </li>
+    <li>
+      Authentication built on OAuth/OIDC with short-lived tokens and secure
+      device storage.
+    </li>
+    <li>Protected data encrypted in transit and at rest.</li>
+    <li>
+      Consent versioning, purpose limitation and revocation enforced on the
+      server, not merely reflected in the interface.
+    </li>
+    <li>
+      Verified export and deletion, with completion that can be audited rather
+      than assumed.
+    </li>
+    <li>
+      Sensitive notification text off by default, so a lock screen never
+      discloses someone's health status.
+    </li>
+    <li>
+      Crash reporting and diagnostics that carry no health-entry payloads.
+    </li>
+    <li>
+      Abuse prevention, rate limiting, monitoring and a written
+      incident-response procedure.
+    </li>
+    <li>
+      Independent penetration testing of the mobile application, the API and the
+      cloud environment.
+    </li>
+  </ul>
+  <p>
+    These are release gates. If one is not met, the release does not happen.
+  </p>
+
+  <h2>Reporting a vulnerability</h2>
+  <p>
+    If you believe you have found a security issue in this website or in
+    anything else we run, please tell us at <a
+      href={`mailto:${contact.support}`}>{contact.support}</a
+    > with "Security" in the subject line.
+  </p>
+  <p>Please include, as far as you can:</p>
+  <ul>
+    <li>What the issue is and where you found it.</li>
+    <li>Steps that reproduce it.</li>
+    <li>What an attacker could achieve with it.</li>
+  </ul>
+  <p>
+    We will acknowledge your report, keep you informed while we investigate, and
+    credit you if you would like to be credited. Please give us a reasonable
+    opportunity to fix an issue before disclosing it publicly, and please do not
+    access or modify anyone else's data, degrade our service, or run automated
+    scanning that would.
+  </p>
+  <p>
+    We do not currently run a paid bug-bounty programme. We are grateful anyway.
+  </p>
+</Legal>

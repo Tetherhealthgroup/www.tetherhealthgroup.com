@@ -1,0 +1,73 @@
+---
+/**
+ * An approved BreatheFree screen inside a device bezel.
+ *
+ * This mirrors what the Flutter app already does on desktop: it "places the
+ * same experience inside an iPhone-sized preview" (app README, "What is
+ * included"). The artwork is the same 1290 x 2796 source the app ships, so the
+ * site never shows a redrawn approximation of a screen.
+ */
+
+import { Image } from "astro:assets";
+import { artworkFor, screenByNumber } from "../data/screens";
+
+interface Props {
+  /** Screen number from the approved catalog, 1-28. */
+  screen: number;
+  /** Rendered width of the device in pixels; height follows the 1290:2796 ratio. */
+  width?: number;
+  /** Give the browser a fetch priority hint. Use for above-the-fold screens. */
+  priority?: boolean;
+  /** Caption shown under the device. */
+  caption?: string;
+  class?: string;
+}
+
+const {
+  screen,
+  width = 300,
+  priority = false,
+  caption,
+  class: className = "",
+} = Astro.props;
+
+const spec = screenByNumber(screen);
+const image = artworkFor(screen);
+
+/* The bezel is ~3.5% of the device width on each side, matching the frame
+   proportions of the 430 x 932 pt reference viewport the app documents in
+   DEVELOPMENT_NOTES.md. */
+const bezel = Math.max(6, Math.round(width * 0.035));
+const outerRadius = Math.round(width * 0.135);
+const innerRadius = outerRadius - bezel;
+---
+
+<figure class={`flex flex-col items-center ${className}`}>
+  <div
+    class="relative bg-teal-deep shadow-[var(--shadow-raised)] ring-1 ring-teal-deep/10"
+    style={`width:${width}px;padding:${bezel}px;border-radius:${outerRadius}px;`}
+  >
+    <Image
+      src={image}
+      alt={`BreatheFree screen ${spec.number}: ${spec.title}. ${spec.description}`}
+      width={width * 2}
+      densities={[1, 2]}
+      loading={priority ? "eager" : "lazy"}
+      fetchpriority={priority ? "high" : "auto"}
+      class="block h-auto w-full bg-cream"
+      style={`border-radius:${innerRadius}px;`}
+    />
+    {
+      /* No speaker slot or notch is drawn here: the approved artwork is a full
+        1290 x 2796 screenshot that already contains its own status bar, and
+        overlaying a second one covers the app's own chrome. */
+    }
+  </div>
+  {
+    caption && (
+      <figcaption class="mt-5 max-w-xs text-center text-sm leading-relaxed text-teal-muted">
+        {caption}
+      </figcaption>
+    )
+  }
+</figure>

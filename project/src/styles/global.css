@@ -1,0 +1,253 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens
+   ---------------------------------------------------------------------------
+   Colour values are ported verbatim from the BreatheFree mobile application so
+   the site and the app read as one product. Sources:
+
+     lib/theme/app_colors.dart      — the eleven named application colours
+     design/approved/*.svg          — gradients, strokes and shadow values that
+                                      exist only in the approved artwork
+
+   Do not "improve" a value here without changing it in the app first; the two
+   are meant to stay identical.
+--------------------------------------------------------------------------- */
+
+@theme {
+  /* --- Brand palette: exact values from lib/theme/app_colors.dart --------- */
+  --color-teal-deep: #123c37; /* AppColors.deepTeal      — headings, dark sections */
+  --color-teal-mid: #536f69; /* AppColors.tealSecondary — body copy */
+  --color-teal-muted: #718a84; /* AppColors.mutedTeal     — captions, eyebrows */
+  --color-mint: #dff2e7; /* AppColors.mint          — icon chips, soft fills */
+  --color-mint-strong: #bfe1d2; /* AppColors.mintStrong    — gradient partner */
+  --color-cream: #f8f5ec; /* AppColors.cream         — app scaffold background */
+  --color-paper: #fffdf7; /* AppColors.paper         — cards and surfaces */
+  --color-coral: #ff7d61; /* AppColors.coral         — accent, alerts */
+  --color-coral-light: #fff0eb; /* AppColors.coralLight    — accent chip fill */
+  --color-lime: #d5ef75; /* AppColors.lime          — affirmative highlight */
+  --color-hairline: #b6c8c2; /* AppColors.border        — borders */
+
+  /* --- Values observed only in the approved SVG artwork ------------------- */
+  --color-teal-raised: #234e48; /* raised surface inside dark teal panels */
+  --color-teal-deepest: #285850; /* deepest panel tone */
+  --color-mint-pale: #e6f1ea; /* palest mint wash */
+  --color-mint-tint: #eff5f1; /* near-white mint tint */
+  --color-hairline-soft: #dce6e0; /* low-contrast divider */
+  --color-hairline-mint: #c8d8d1; /* stroke on paper chips */
+  --color-canvas-from: #fbf8f0; /* page gradient start */
+  --color-canvas-to: #f5f2e8; /* page gradient end */
+  --color-leaf-from: #ff947d; /* brand leaf gradient start */
+  --color-leaf-to: #ff6f54; /* brand leaf gradient end */
+
+  /* --- Type ---------------------------------------------------------------
+     The approved artwork specifies "Nimbus Sans, Arial, sans-serif" and
+     "Georgia, serif". Both are honoured with system stacks: no webfont is
+     downloaded, so the site makes zero third-party requests. That is a
+     deliberate privacy decision for a health product, not only a speed one. */
+  --font-sans:
+    "Nimbus Sans", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --font-quote: Georgia, "Times New Roman", serif;
+
+  /* --- Radii: from BorderRadius.circular(...) in the native screens -------- */
+  --radius-control: 14px; /* buttons */
+  --radius-card: 15px; /* cards */
+  --radius-pill: 22px; /* chips and pills */
+
+  /* --- Elevation: flood-color #123C37 from the approved filters ----------- */
+  --shadow-card: 0 12px 20px -8px rgb(18 60 55 / 0.11);
+  --shadow-raised: 0 24px 36px -12px rgb(18 60 55 / 0.14);
+
+  /* --- Motion ------------------------------------------------------------- */
+  --ease-calm: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Offset in-page anchors so the sticky header never covers a heading. */
+    scroll-padding-top: 6rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: linear-gradient(
+        160deg,
+        var(--color-canvas-from) 0%,
+        var(--color-canvas-to) 100%
+      )
+      fixed;
+    color: var(--color-teal-mid);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--color-teal-deep);
+    font-weight: 800;
+    /* The app sets letterSpacing -1.7 at 40px (displayLarge). Expressed as a
+       ratio that holds at any size: -1.7 / 40 = -0.0425em. */
+    letter-spacing: -0.0425em;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+
+  h5,
+  h6 {
+    color: var(--color-teal-deep);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* A single, consistent focus ring everywhere, including inside dark panels. */
+  :focus-visible {
+    outline: 3px solid var(--color-coral);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-lime);
+    color: var(--color-teal-deep);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Components
+--------------------------------------------------------------------------- */
+
+@layer components {
+  /* Small uppercase label above a heading — used throughout the app artwork
+     (e.g. "WELCOME TO BREATHEFREE", "CURRENT QUIT PLAN"). */
+  .eyebrow {
+    font-size: 0.75rem; /* 12px, as lib/screens/welcome_screen.dart */
+    font-weight: 800;
+    letter-spacing: 0.183em; /* 2.2 / 12 */
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: var(--color-teal-muted);
+  }
+
+  .eyebrow-on-dark {
+    color: var(--color-mint-strong);
+  }
+
+  /* Long-form legal and article copy. */
+  .prose-tether {
+    color: var(--color-teal-mid);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  .prose-tether > * + * {
+    margin-top: 1.25rem;
+  }
+  .prose-tether h2 {
+    font-size: 1.75rem;
+    margin-top: 3rem;
+    margin-bottom: 0.25rem;
+  }
+  .prose-tether h3 {
+    font-size: 1.25rem;
+    margin-top: 2rem;
+    margin-bottom: 0.25rem;
+  }
+  .prose-tether ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  .prose-tether ul > li {
+    position: relative;
+    padding-left: 1.6rem;
+    margin-top: 0.6rem;
+  }
+  .prose-tether ul > li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--color-coral);
+  }
+  .prose-tether a {
+    color: var(--color-teal-deep);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-mint-strong);
+  }
+  .prose-tether a:hover {
+    text-decoration-color: var(--color-coral);
+  }
+  .prose-tether strong {
+    color: var(--color-teal-deep);
+    font-weight: 700;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Motion — every animation here is opt-out via prefers-reduced-motion.
+   The app states "Reduced motion follows your phone setting"
+   (design/approved/screen-19-active-craving-rescue-iphone.svg); the site
+   honours the same contract.
+--------------------------------------------------------------------------- */
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.85;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-breathe {
+  animation: breathe 10s var(--ease-calm) infinite;
+}
+
+.animate-rise {
+  animation: rise 0.7s var(--ease-calm) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

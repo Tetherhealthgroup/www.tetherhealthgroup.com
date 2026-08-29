@@ -1,0 +1,142 @@
+---
+import Base from "../../layouts/Base.astro";
+import PageHero from "../../components/PageHero.astro";
+import Section from "../../components/Section.astro";
+import Button from "../../components/Button.astro";
+import Icon from "../../components/Icon.astro";
+import PhoneFrame from "../../components/PhoneFrame.astro";
+import { phases, screensInPhase, screens } from "../../data/screens";
+
+/**
+ * One representative screen per phase, chosen as the screen that best shows
+ * what the phase is for.
+ */
+const heroScreenForPhase: Record<string, number> = {
+  welcome: 1,
+  onboarding: 5,
+  quitPlan: 11,
+  dailySupport: 13,
+  cravingRescue: 19,
+  quitDay: 23,
+  resources: 26,
+  account: 28,
+};
+---
+
+<Base
+  title="How BreatheFree works"
+  description="The BreatheFree journey in eight phases: welcome, onboarding, quit plan, daily support, craving rescue, quit day, resources and account — across all 28 approved screens."
+>
+  <PageHero
+    eyebrow="How it works"
+    title="Eight phases, from first look to long haul."
+    intro={`BreatheFree is ${screens.length} screens grouped into eight phases. Each one answers a different question, and nobody is asked to do the later ones before they are ready.`}
+  >
+    <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+      <Button href="/breathefree/tour/" arrow>See every screen</Button>
+      <Button href="/#waitlist" variant="secondary">Request early access</Button
+      >
+    </div>
+  </PageHero>
+
+  <!-- Phase index -->
+  <Section space="tight" width="wide">
+    <nav aria-label="Journey phases">
+      <ol class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          phases.map((phase, index) => (
+            <li>
+              <a
+                href={`#${phase.id}`}
+                class="flex h-full items-center gap-3.5 rounded-3xl border border-hairline-soft bg-paper p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-mint-strong hover:shadow-[var(--shadow-card)]"
+              >
+                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mint text-[0.9rem] font-extrabold text-teal-deep">
+                  {index + 1}
+                </span>
+                <span class="font-bold text-teal-deep">{phase.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+  </Section>
+
+  <!-- Phases -->
+  {
+    phases.map((phase, index) => {
+      const phaseScreens = screensInPhase(phase.id);
+      const isAlternate = index % 2 === 1;
+      return (
+        <Section
+          id={phase.id}
+          tone={isAlternate ? "paper" : "canvas"}
+          width="wide"
+          space="tight"
+        >
+          <div class="grid items-start gap-12 lg:grid-cols-[1fr_auto] lg:gap-20">
+            <div>
+              <p class="eyebrow mb-5">
+                Phase {index + 1} of {phases.length} · {phaseScreens.length}{" "}
+                {phaseScreens.length === 1 ? "screen" : "screens"}
+              </p>
+              <h2 class="text-4xl">{phase.label}</h2>
+              <p class="mt-6 max-w-xl text-lg leading-relaxed">
+                {phase.summary}
+              </p>
+
+              <ol class="mt-9 grid gap-3">
+                {phaseScreens.map((screen) => (
+                  <li class="flex items-start gap-4 rounded-3xl border border-hairline-soft bg-paper/80 p-5">
+                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mint-pale text-[0.85rem] font-extrabold text-teal-mid">
+                      {screen.number}
+                    </span>
+                    <span>
+                      <span class="block font-bold text-teal-deep">
+                        {screen.title}
+                      </span>
+                      <span class="mt-1 block text-[0.95rem] leading-relaxed text-teal-mid">
+                        {screen.description}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div class="mx-auto lg:sticky lg:top-28">
+              <PhoneFrame
+                screen={heroScreenForPhase[phase.id]}
+                width={252}
+                priority={index === 0}
+              />
+            </div>
+          </div>
+        </Section>
+      );
+    })
+  }
+
+  <!-- Closing -->
+  <Section tone="deep" width="default">
+    <div class="max-w-2xl">
+      <p class="eyebrow eyebrow-on-dark mb-5">One more thing</p>
+      <h2 class="text-4xl text-paper">Nobody has to do all of this.</h2>
+      <p class="mt-6 text-lg leading-relaxed text-mint-strong">
+        Someone can open BreatheFree for the first time in the middle of a
+        craving, use one two-minute breathing exercise, and close it again. The
+        plan, the check-ins and the dashboard are there when they are wanted —
+        not a queue to get through first.
+      </p>
+      <p
+        class="mt-8 flex items-start gap-3 text-[0.95rem] leading-relaxed text-mint-strong/80"
+      >
+        <Icon name="offline" size={19} class="mt-0.5 shrink-0 text-lime" />
+        <span>
+          Craving rescue is designed to work offline, one-handed, with no typing
+          required.
+        </span>
+      </p>
+    </div>
+  </Section>
+</Base>

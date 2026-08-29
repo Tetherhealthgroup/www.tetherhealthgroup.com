@@ -1,0 +1,73 @@
+---
+/**
+ * The BreatheFree leaf mark.
+ *
+ * The circle and the two paths are copied verbatim from the approved artwork
+ * at design/approved/screen-01-welcome-iphone.svg (the `translate(72 142)`
+ * brand group), so the site mark and the in-app mark are the same drawing.
+ * The gradient stops #FF947D -> #FF6F54 are that file's `leaf` gradient.
+ */
+
+interface Props {
+  /** Rendered size of the mark in pixels. */
+  size?: number;
+  /** Show the "BreatheFree" wordmark beside the leaf. */
+  withWordmark?: boolean;
+  /** Draw for placement on a dark teal surface. */
+  onDark?: boolean;
+  class?: string;
+}
+
+const {
+  size = 40,
+  withWordmark = false,
+  onDark = false,
+  class: className = "",
+} = Astro.props;
+
+/* Gradient ids must be unique: several logos can appear on one page (header,
+   footer, product cards) and duplicate ids would make all of them resolve to
+   whichever definition the browser parsed first. */
+const gradientId = `leaf-${Math.random().toString(36).slice(2, 9)}`;
+
+const ring = onDark ? "#DFF2E7" : "#123C37";
+const vein = onDark ? "#123C37" : "#FFFDF7";
+---
+
+<span class={`inline-flex items-center gap-2.5 ${className}`}>
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 76 76"
+    fill="none"
+    aria-hidden="true"
+    class="shrink-0"
+  >
+    <defs>
+      <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#FF947D"></stop>
+        <stop offset="1" stop-color="#FF6F54"></stop>
+      </linearGradient>
+    </defs>
+    <circle cx="38" cy="38" r="36" fill="none" stroke={ring} stroke-width="4"
+    ></circle>
+    <path
+      d="M47 18c-22 7-29 25-15 41 20-2 31-18 24-38-2-5-5-6-9-3z"
+      fill={`url(#${gradientId})`}></path>
+    <path
+      d="M32 58c6-14 14-24 25-33"
+      fill="none"
+      stroke={vein}
+      stroke-width="3"
+      stroke-linecap="round"></path>
+  </svg>
+  {
+    withWordmark && (
+      <span
+        class={`text-[1.35rem] font-bold tracking-[-0.03em] ${onDark ? "text-mint" : "text-teal-deep"}`}
+      >
+        BreatheFree
+      </span>
+    )
+  }
+</span>

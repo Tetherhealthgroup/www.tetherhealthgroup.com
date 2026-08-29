@@ -1,0 +1,55 @@
+---
+/**
+ * A full-width page section with a centred content column.
+ *
+ * `tone` selects one of the four surfaces the app uses: the page canvas, a
+ * paper card field, a mint wash, or the dark teal panel that the app reserves
+ * for the current quit plan and other affirmative moments.
+ */
+
+interface Props {
+  tone?: "canvas" | "paper" | "mint" | "deep";
+  /** Content column width. "wide" suits card grids, "narrow" suits prose. */
+  width?: "narrow" | "default" | "wide";
+  /** Vertical rhythm. "tight" for stacked sections that belong together. */
+  space?: "tight" | "default" | "loose";
+  id?: string;
+  class?: string;
+  /** Element to render as, when the section is a landmark. */
+  as?: "section" | "div" | "article" | "aside" | "footer" | "header";
+}
+
+const {
+  tone = "canvas",
+  width = "default",
+  space = "default",
+  id,
+  class: className = "",
+  as: Tag = "section",
+}: Props = Astro.props;
+
+const tones = {
+  canvas: "",
+  paper: "bg-paper",
+  mint: "bg-mint-pale",
+  deep: "bg-teal-deep text-mint-strong",
+} as const;
+
+const widths = {
+  narrow: "max-w-3xl",
+  default: "max-w-6xl",
+  wide: "max-w-7xl",
+} as const;
+
+const spaces = {
+  tight: "py-12 sm:py-16",
+  default: "py-20 sm:py-28",
+  loose: "py-24 sm:py-36",
+} as const;
+---
+
+<Tag id={id} class={`${tones[tone]} ${className}`}>
+  <div class={`mx-auto ${widths[width]} px-5 sm:px-8 ${spaces[space]}`}>
+    <slot />
+  </div>
+</Tag>

@@ -1,0 +1,53 @@
+---
+import Base from "../layouts/Base.astro";
+import Section from "../components/Section.astro";
+import Button from "../components/Button.astro";
+import Icon from "../components/Icon.astro";
+import { primaryNav } from "../data/site";
+---
+
+<Base
+  title="Page not found"
+  description="That page does not exist. Here is the way back."
+  noindex
+>
+  <Section width="default" space="loose">
+    <div class="mx-auto max-w-2xl text-center">
+      <span
+        class="mb-8 inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-mint text-teal-deep"
+      >
+        <Icon name="offline" size={36} />
+      </span>
+
+      <p class="eyebrow mb-5">404</p>
+      <h1 class="text-[2.5rem] sm:text-[3.5rem]">That page is not here.</h1>
+      <p class="mt-6 text-xl leading-relaxed">
+        The link may be out of date, or the page may have moved. Nothing is
+        wrong on your end.
+      </p>
+
+      <div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+        <Button href="/" arrow>Back to the home page</Button>
+        <Button href="/support/" variant="secondary">Contact support</Button>
+      </div>
+
+      <nav aria-label="Main pages" class="mt-14">
+        <p class="eyebrow mb-5">Or try one of these</p>
+        <ul class="flex flex-wrap justify-center gap-2.5">
+          {
+            primaryNav.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="inline-block rounded-full border border-hairline-soft bg-paper px-4 py-2 text-[0.9rem] font-bold text-teal-mid transition-colors hover:border-mint-strong hover:bg-mint hover:text-teal-deep"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+  </Section>
+</Base>

@@ -1,0 +1,159 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Card from "../components/Card.astro";
+import Icon from "../components/Icon.astro";
+import WaitlistForm from "../components/WaitlistForm.astro";
+import { contact, quitlines } from "../data/site";
+---
+
+<Base
+  title="Support"
+  description="How to reach Tether Health Group, and where to find immediate help with quitting smoking while BreatheFree is still in development."
+>
+  <PageHero
+    eyebrow="Support"
+    title="How to reach us — and where to get help now."
+    intro="BreatheFree is not yet available, so we cannot be your support in a craving today. Here is who can be, and here is how to reach us about everything else."
+  />
+
+  <!-- Immediate help, first. -->
+  <Section space="tight" width="wide">
+    <div
+      class="rounded-3xl border-2 border-coral/30 bg-coral-light p-7 sm:p-10"
+    >
+      <p class="eyebrow mb-4">If you need help right now</p>
+      <h2 class="text-3xl">Free, confidential help is available today.</h2>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed">
+        You do not need to wait for us. Trained quitline counsellors provide
+        free and confidential support, and they are available now.
+      </p>
+
+      <ul class="mt-8 grid gap-5 sm:grid-cols-2">
+        <li
+          class="flex items-start gap-4 rounded-3xl border-2 border-coral/40 bg-paper p-6"
+        >
+          <span
+            class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-coral text-paper"
+          >
+            <Icon name="alert" size={22} />
+          </span>
+          <span>
+            <span class="eyebrow block">Medical emergency</span>
+            <a
+              href="tel:911"
+              class="mt-1.5 block text-2xl font-extrabold tracking-[-0.03em] text-teal-deep underline decoration-coral decoration-2 underline-offset-4"
+              >911</a
+            >
+            <span class="mt-1.5 block text-[0.9rem] text-teal-muted">
+              Or your local emergency number
+            </span>
+          </span>
+        </li>
+
+        {
+          quitlines.map((line) => (
+            <li class="flex items-start gap-4 rounded-3xl border border-hairline-soft bg-paper p-6">
+              <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-mint text-teal-deep">
+                <Icon name="phone" size={22} />
+              </span>
+              <span>
+                <span class="eyebrow block">Quitline · {line.language}</span>
+                <a
+                  href={`tel:${line.tel}`}
+                  class="mt-1.5 block text-xl font-extrabold tracking-[-0.03em] text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+                >
+                  {line.name}
+                </a>
+                <span class="mt-1 block text-[0.95rem] text-teal-mid">
+                  {line.number}
+                </span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="mt-6 text-[0.95rem] leading-relaxed text-teal-mid">
+        Quitline numbers route to United States services and connect callers to
+        their state's quitline. Services and hours may vary.
+      </p>
+    </div>
+  </Section>
+
+  <!-- Contact -->
+  <Section id="contact" width="wide">
+    <div class="mb-12 max-w-2xl">
+      <p class="eyebrow mb-5">Contact</p>
+      <h2 class="text-3xl sm:text-4xl">One inbox, read by the team.</h2>
+      <p class="mt-5 text-lg leading-relaxed">
+        We are small enough that everything goes to one address, and it is read
+        by the people building the product.
+      </p>
+    </div>
+
+    <a
+      href={`mailto:${contact.support}`}
+      class="flex flex-col items-start gap-5 rounded-3xl border-2 border-teal-deep bg-paper p-8 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-raised)] sm:flex-row sm:items-center"
+    >
+      <span
+        class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-teal-deep text-lime"
+      >
+        <Icon name="support" size={26} />
+      </span>
+      <span>
+        <span class="eyebrow block">Email us</span>
+        <span
+          class="mt-1.5 block text-2xl font-extrabold tracking-[-0.035em] text-teal-deep sm:text-3xl"
+          >{contact.support}</span
+        >
+      </span>
+    </a>
+
+    <div class="mt-8 grid gap-6 md:grid-cols-3">
+      <Card icon="stethoscope" title="Clinical and research">
+        Content review, evidence questions, and shaping which health area we
+        build next.
+      </Card>
+      <Card icon="lock" title="Privacy and security">
+        Data questions, privacy requests, and responsible disclosure of a
+        security issue.
+      </Card>
+      <Card icon="accessibility" title="Accessibility">
+        Barriers you hit on this site or in our products, and what would fix
+        them.
+      </Card>
+    </div>
+
+    <p
+      class="mt-8 flex items-start gap-3 rounded-3xl border border-hairline-soft bg-paper p-6 text-[0.95rem] leading-relaxed text-teal-mid"
+    >
+      <Icon name="info" size={20} class="mt-0.5 shrink-0 text-teal-muted" />
+      <span>
+        Please do not send medical details or personal health information by
+        email. Email is not a secure channel, and we are not able to give
+        medical advice.
+      </span>
+    </p>
+  </Section>
+
+  <!-- Waitlist -->
+  <Section tone="mint" width="default">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="eyebrow mb-5">Early access</p>
+      <h2 id="waitlist-heading" class="text-3xl sm:text-4xl">
+        Want to know when BreatheFree opens?
+      </h2>
+      <p class="mt-5 text-lg leading-relaxed">
+        We will write to you once, when there is something to use.
+      </p>
+    </div>
+
+    <div
+      class="mx-auto mt-10 max-w-3xl rounded-3xl border border-hairline-soft bg-paper p-7 shadow-[var(--shadow-card)] sm:p-10"
+    >
+      <WaitlistForm />
+    </div>
+  </Section>
+</Base>

@@ -1,0 +1,114 @@
+---
+/**
+ * Line-icon set drawn to match the approved artwork: 24-unit box, 2px stroke,
+ * round caps and joins, no fills. Every icon here corresponds to something the
+ * app actually shows — the five tab-bar icons, the coping tools, the privacy
+ * controls — rather than a generic icon library.
+ *
+ * Icons are decorative by default (aria-hidden). Pass a `title` only when the
+ * icon carries meaning no adjacent text repeats.
+ */
+
+export type IconName =
+  | "home"
+  | "plan"
+  | "progress"
+  | "learn"
+  | "support"
+  | "check"
+  | "plus"
+  | "leaf"
+  | "shield"
+  | "lock"
+  | "clock"
+  | "coins"
+  | "wave"
+  | "phone"
+  | "bell"
+  | "download"
+  | "eye-off"
+  | "accessibility"
+  | "offline"
+  | "users"
+  | "stethoscope"
+  | "calendar"
+  | "spark"
+  | "info"
+  | "alert"
+  | "arrow-right"
+  | "trash"
+  | "globe";
+
+interface Props {
+  name: IconName;
+  size?: number;
+  /** Accessible name. Omit for decorative icons. */
+  title?: string;
+  class?: string;
+}
+
+const { name, size = 24, title, class: className = "" } = Astro.props;
+
+const paths: Record<IconName, string> = {
+  home: "M4 10.4 12 4l8 6.4V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z",
+  plan: "M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM9 8h6M9 12h6M9 16h3",
+  progress: "M5 20V12M12 20V5M19 20v-6M3 20h18",
+  learn:
+    "M12 6.5C10.5 5 8.4 4.4 5 4.6V18c3.4-.2 5.5.4 7 1.9 1.5-1.5 3.6-2.1 7-1.9V4.6c-3.4-.2-5.5.4-7 1.9zM12 6.5v13.4",
+  support:
+    "M9 11a3.2 3.2 0 1 0 0-6.4A3.2 3.2 0 0 0 9 11zM3.5 20a5.5 5.5 0 0 1 11 0M15 6h5a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-1.5L16 14.5V12h-1",
+  check: "M4.5 12.5 9.5 17.5 19.5 6.5",
+  plus: "M12 5v14M5 12h14",
+  leaf: "M20 4C10.5 5 5 9 5 15c0 2 .8 3.6 2 4.7C8.6 20.9 11 21 13 20c4.4-2.2 7-8 7-16zM7.5 19c2-4.6 5.2-8.3 9.5-11",
+  shield: "M12 3l7.5 3v5.6c0 4.4-3 8.2-7.5 9.4-4.5-1.2-7.5-5-7.5-9.4V6z",
+  lock: "M6 10.5h12a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8.5a1 1 0 0 1 1-1zM8.2 10.5V7.4a3.8 3.8 0 0 1 7.6 0v3.1M12 14.6v2.6",
+  clock: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.2V12l3.4 2",
+  coins:
+    "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM14.6 9.1a3 3 0 0 0-2.6-1.3c-1.5 0-2.6.8-2.6 2s1 1.7 2.6 2 2.7.8 2.7 2-1.2 2-2.7 2a3 3 0 0 1-2.7-1.4M12 6.3v11.4",
+  wave: "M3 14c2.5 0 2.5-4 5-4s2.5 4 5 4 2.5-4 5-4 2.2 2.6 3 3.6",
+  phone:
+    "M8.4 3.6 10.6 8l-2 2a12.4 12.4 0 0 0 5.4 5.4l2-2 4.4 2.2v3.2a1.6 1.6 0 0 1-1.8 1.6C10.9 19.7 4.3 13.1 3.4 5.4A1.6 1.6 0 0 1 5 3.6z",
+  bell: "M6 17V11a6 6 0 0 1 12 0v6l1.6 2.4H4.4zM10 20.5a2.2 2.2 0 0 0 4 0",
+  download: "M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4.5 19.5h15",
+  "eye-off":
+    "M4 4l16 16M9.9 5.2A9 9 0 0 1 12 5c5 0 9 4.4 9 7 0 1-.7 2.3-1.8 3.5M6.6 7.1C4.4 8.5 3 10.6 3 12c0 2.6 4 7 9 7 1.5 0 2.9-.4 4.1-1M10.2 10.2a2.6 2.6 0 0 0 3.6 3.6",
+  accessibility:
+    "M12 6.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6zM4.5 8.6c2.4.9 4.9 1.4 7.5 1.4s5.1-.5 7.5-1.4M12 10v4.2M12 14.2 9 21M12 14.2 15 21",
+  offline:
+    "M5.5 12.6A5 5 0 0 1 9 8.2M3 9.4a9 9 0 0 1 4.4-3M12 18.4h.01M12 12.6c1 0 1.9.4 2.6 1M16.8 9.4c.8.4 1.5 1 2.1 1.7M21 9.4a9 9 0 0 0-3.4-2.6M4 4l16 16",
+  users:
+    "M9 11.4a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8zM2.8 20.4a6.2 6.2 0 0 1 12.4 0M16.2 5.2a3.4 3.4 0 0 1 0 6.4M17.6 14.6a6.2 6.2 0 0 1 3.6 5.8",
+  stethoscope:
+    "M6 3v5.4a4.2 4.2 0 0 0 8.4 0V3M4.2 3h2.4M13.2 3h2.4M10.2 12.6v2.6a4.6 4.6 0 0 0 9.2 0v-1.4M19.4 9.4a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4z",
+  calendar:
+    "M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM8 3.5V7M16 3.5V7M4 10.6h16M9 14.5h2M9 17.6h6",
+  spark:
+    "M12 3.5l2.1 5.4 5.4 2.1-5.4 2.1-2.1 5.4-2.1-5.4L4.5 11l5.4-2.1zM18.5 17l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z",
+  info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5.4M12 7.8h.01",
+  alert: "M12 3.6 21.4 20H2.6zM12 10v4.2M12 17.2h.01",
+  "arrow-right": "M4 12h15m0 0-5.5-5.5M19 12l-5.5 5.5",
+  trash:
+    "M4.5 7h15M9.5 7V4.8a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V7M6.5 7l.8 12.3a1 1 0 0 0 1 .9h7.4a1 1 0 0 0 1-.9L17.5 7M10 11v6M14 11v6",
+  globe:
+    "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.4 9.5h17.2M3.4 14.5h17.2M12 3a13.5 13.5 0 0 1 0 18A13.5 13.5 0 0 1 12 3z",
+};
+
+const decorative = !title;
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={`shrink-0 ${className}`}
+  aria-hidden={decorative ? "true" : undefined}
+  role={decorative ? undefined : "img"}
+  aria-label={title}
+>
+  <path d={paths[name]}></path>
+</svg>

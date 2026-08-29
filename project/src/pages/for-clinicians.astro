@@ -1,0 +1,219 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Button from "../components/Button.astro";
+import Card from "../components/Card.astro";
+import Icon from "../components/Icon.astro";
+import PhoneFrame from "../components/PhoneFrame.astro";
+import { contact } from "../data/site";
+
+const boundaries = [
+  {
+    claim: "Educates on quit-smoking medicines",
+    counterClaim: "Never selects a medicine or changes a dose",
+    icon: "stethoscope" as const,
+  },
+  {
+    claim: "Records what the patient reports",
+    counterClaim: "Does not confirm how a medicine was actually used",
+    icon: "plan" as const,
+  },
+  {
+    claim: "Tracks self-rated craving intensity",
+    counterClaim: "Does not present ratings as clinical measurements",
+    icon: "progress" as const,
+  },
+  {
+    claim: "Routes to quitlines, coaches and care teams",
+    counterClaim: "Sends nothing until the patient previews and confirms",
+    icon: "support" as const,
+  },
+];
+---
+
+<Base
+  title="For clinicians and care teams"
+  description="How BreatheFree fits alongside tobacco treatment: what it does between visits, the boundaries it will not cross, and how to help shape what we build."
+>
+  <PageHero
+    eyebrow="For clinicians and care teams"
+    title="Support between visits, inside clear boundaries."
+    intro="BreatheFree is designed to do the work that does not fit into an appointment — the craving at midnight, the check-in on day nine, the week after a slip — without ever stepping into your role."
+  >
+    <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+      <Button
+        href={`mailto:${contact.support}?subject=${encodeURIComponent("Clinical input on BreatheFree")}`}
+        arrow
+      >
+        Talk to us about clinical input
+      </Button>
+      <Button href="/breathefree/tour/" variant="secondary">
+        Review every screen
+      </Button>
+    </div>
+  </PageHero>
+
+  <!-- The boundary -->
+  <Section width="wide">
+    <div class="mb-14 max-w-3xl">
+      <p class="eyebrow mb-5">The boundary</p>
+      <h2 class="text-4xl sm:text-5xl">
+        What it does, and what it refuses to.
+      </h2>
+      <p class="mt-6 text-lg leading-relaxed">
+        The most important design decisions in BreatheFree are the things it
+        will not do. These are constraints in the product, not disclaimers in a
+        footer.
+      </p>
+    </div>
+
+    <ul class="grid gap-5">
+      {
+        boundaries.map((item) => (
+          <li class="grid items-center gap-5 rounded-3xl border border-hairline-soft bg-paper p-6 sm:grid-cols-[auto_1fr_auto_1fr]">
+            <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-mint text-teal-deep">
+              <Icon name={item.icon} size={22} />
+            </span>
+            <span class="flex items-start gap-2.5">
+              <Icon
+                name="check"
+                size={19}
+                class="mt-0.5 shrink-0 text-teal-deep"
+              />
+              <span class="font-bold text-teal-deep">{item.claim}</span>
+            </span>
+            <span
+              class="hidden text-center text-sm font-extrabold uppercase tracking-widest text-teal-muted sm:block"
+              aria-hidden="true"
+            >
+              but
+            </span>
+            <span class="flex items-start gap-2.5">
+              <Icon name="alert" size={19} class="mt-0.5 shrink-0 text-coral" />
+              <span class="text-teal-mid">{item.counterClaim}</span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <!-- Between visits -->
+  <Section tone="paper" width="wide">
+    <div class="grid items-center gap-16 lg:grid-cols-[1fr_auto]">
+      <div>
+        <p class="eyebrow mb-5">Between visits</p>
+        <h2 class="text-4xl">What your patient actually gets.</h2>
+
+        <ul class="mt-9 grid gap-6">
+          {
+            [
+              {
+                icon: "wave" as const,
+                title: "A tool for the craving itself",
+                body: "Rate intensity on a 1–10 scale, receive one recommended coping tool matched to the trigger and to what has worked before, run it, then recheck. Offline, one-handed, no typing.",
+              },
+              {
+                icon: "calendar" as const,
+                title: "A plan in the patient's own words",
+                body: "Their quit path, their date, their reasons, and one named supporter with an agreed phrase. Reviewed in full before it is activated.",
+              },
+              {
+                icon: "progress" as const,
+                title: "A history a slip does not erase",
+                body: "Slips are recorded as events within the history, with prior progress, lessons and coping practice explicitly retained. Missing check-ins are never counted as zero.",
+              },
+              {
+                icon: "learn" as const,
+                title: "Reviewed, plain-language education",
+                body: "Short lessons on cravings, withdrawal, sleep, medicines and support — in English and Spanish, with audio and transcripts.",
+              },
+            ].map((item) => (
+              <li class="flex items-start gap-4">
+                <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-mint text-teal-deep">
+                  <Icon name={item.icon} size={22} />
+                </span>
+                <span>
+                  <span class="block text-lg font-extrabold tracking-[-0.03em] text-teal-deep">
+                    {item.title}
+                  </span>
+                  <span class="mt-1.5 block leading-relaxed text-teal-mid">
+                    {item.body}
+                  </span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="mx-auto flex items-end gap-6">
+        <PhoneFrame screen={24} width={224} class="hidden xl:flex" />
+        <PhoneFrame screen={18} width={252} />
+      </div>
+    </div>
+  </Section>
+
+  <!-- Consent -->
+  <Section tone="deep" width="default">
+    <div class="max-w-3xl">
+      <p class="eyebrow eyebrow-on-dark mb-5">Consent and sharing</p>
+      <h2 class="text-4xl text-paper">Nothing reaches you by accident.</h2>
+      <p class="mt-6 text-lg leading-relaxed text-mint-strong">
+        Care-team sharing in BreatheFree is manual by default. The patient
+        previews exactly what would be sent and confirms it before anything
+        leaves the device. Consent is reviewable and revocable, and revocation
+        is enforced rather than merely recorded.
+      </p>
+      <p class="mt-5 text-lg leading-relaxed text-mint-strong">
+        That is deliberate. A tool that quietly forwards a patient's smoking
+        status to their chart is a tool patients learn to lie to.
+      </p>
+    </div>
+  </Section>
+
+  <!-- Get involved -->
+  <Section width="default">
+    <div class="mb-12 max-w-2xl">
+      <p class="eyebrow mb-5">Get involved</p>
+      <h2 class="text-3xl sm:text-4xl">
+        We would rather hear your objections now.
+      </h2>
+      <p class="mt-5 text-lg leading-relaxed">
+        BreatheFree is in development. Clinical review of medication,
+        withdrawal, pregnancy and urgent-symptom content is a release gate we
+        have not yet passed — which makes this the useful moment to tell us what
+        is wrong.
+      </p>
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-3">
+      <Card icon="learn" title="Review our content">
+        Look at how we explain medicines, withdrawal and slips, and tell us
+        where the language is unsafe, unclear or out of date.
+      </Card>
+      <Card icon="users" title="Shape the roadmap">
+        Tell us which of the health areas we have listed matters most in your
+        setting, and what would have to be true for you to recommend it.
+      </Card>
+      <Card icon="shield" title="Challenge the boundaries">
+        If you think any part of the product edges toward diagnosing, treating
+        or prescribing, we want to know before anyone uses it.
+      </Card>
+    </div>
+
+    <div
+      class="mt-10 flex flex-col items-start gap-6 rounded-3xl border border-hairline-soft bg-paper p-8 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="text-lg leading-relaxed">
+        Write to us at <a
+          href={`mailto:${contact.support}`}
+          class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+          >{contact.support}</a
+        >, or use the early-access form and tell us you are a clinician.
+      </p>
+      <Button href="/#waitlist" arrow>Get in touch</Button>
+    </div>
+  </Section>
+</Base>

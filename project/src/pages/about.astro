@@ -1,0 +1,183 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Button from "../components/Button.astro";
+import Card from "../components/Card.astro";
+import Icon from "../components/Icon.astro";
+import { site } from "../data/site";
+import { programCount } from "../data/programs";
+
+const beliefs = [
+  {
+    icon: "users" as const,
+    title: "Shame is not a clinical intervention",
+    body: "Broken streaks, red warnings and progress that resets to zero are design choices, and they are the wrong ones. People who are already struggling do not need an app that agrees with their worst opinion of themselves.",
+  },
+  {
+    icon: "lock" as const,
+    title: "Health data is not inventory",
+    body: "We do not run ads, we do not sell health data, and we do not build a business that would one day need us to. The privacy posture is not a policy bolted on afterwards — it decides what we are allowed to build.",
+  },
+  {
+    icon: "learn" as const,
+    title: "Plain language is a safety feature",
+    body: "If someone cannot understand what they are consenting to, they have not consented. Every screen is written to be read by a person having a difficult day, not by a lawyer.",
+  },
+  {
+    icon: "stethoscope" as const,
+    title: "Software is not a clinician",
+    body: "Our tools educate and support self-management. They do not diagnose, treat or prescribe, and when someone needs a person, the right answer is to route them to one — quickly and without friction.",
+  },
+];
+---
+
+<Base
+  title="About"
+  description={`${site.legalName} builds calm, private, evidence-informed digital health tools. Why we exist, what we believe, and how we work.`}
+>
+  <PageHero
+    eyebrow="About us"
+    title="We are building the health tools we wish existed."
+    intro={`${site.name} is a small team building digital health tools that treat people as adults: private by default, plain-spoken, and honest about what software can and cannot do.`}
+  />
+
+  <!-- Why -->
+  <Section width="default">
+    <div class="grid gap-14 lg:grid-cols-[0.85fr_1.15fr]">
+      <div>
+        <p class="eyebrow mb-5">Why we exist</p>
+        <h2 class="text-3xl sm:text-4xl">The gap is not information.</h2>
+      </div>
+      <div class="prose-tether text-lg">
+        <p>
+          Almost everyone who smokes knows it is harmful. Almost everyone living
+          with prediabetes has been told to change their diet. Information is
+          not what is missing.
+        </p>
+        <p>
+          What is missing is support at the moment it matters — the ninety
+          seconds when a craving peaks, the evening a plan falls apart, the week
+          after a setback when the easiest thing is to stop trying. Most health
+          software is built for the calm moments and abandons people in the hard
+          ones.
+        </p>
+        <p>
+          We build for the hard ones. That means tools that work offline and
+          one-handed, records that survive a bad week, and a route to a real
+          person when software is not enough.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Beliefs -->
+  <Section tone="paper" width="wide">
+    <div class="mb-14 max-w-3xl">
+      <p class="eyebrow mb-5">What we believe</p>
+      <h2 class="text-4xl sm:text-5xl">Four positions, held firmly.</h2>
+    </div>
+    <ul class="grid gap-6 md:grid-cols-2">
+      {
+        beliefs.map((belief) => (
+          <li>
+            <Card icon={belief.icon} title={belief.title}>
+              {belief.body}
+            </Card>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <!-- Quote -->
+  <Section tone="deep" width="narrow">
+    <blockquote class="text-center">
+      <p
+        class="font-[family-name:var(--font-quote)] text-3xl italic leading-snug text-paper sm:text-4xl"
+      >
+        “Small steps, practical support, and no judgment — whenever you are
+        ready.”
+      </p>
+      <footer class="mt-7 text-[0.95rem] text-mint-strong/80">
+        The promise on the first screen of BreatheFree, and the standard every
+        product we build has to meet.
+      </footer>
+    </blockquote>
+  </Section>
+
+  <!-- How we work -->
+  <Section width="default">
+    <div class="mb-12 max-w-2xl">
+      <p class="eyebrow mb-5">How we work</p>
+      <h2 class="text-3xl sm:text-4xl">Slowly, and in the open.</h2>
+    </div>
+
+    <ol class="grid gap-5">
+      {
+        [
+          {
+            step: "01",
+            title: "Design the whole experience first",
+            body: `BreatheFree was designed and approved as a complete ${28}-screen journey before implementation began. Designing the hard screens last is how the hard screens end up bad.`,
+          },
+          {
+            step: "02",
+            title: "Build the safeguards before the features",
+            body: "Consent, notification privacy, export and deletion are not a compliance phase at the end. They constrain what gets built in the first place.",
+          },
+          {
+            step: "03",
+            title: "Say what is true about our own status",
+            body: `We describe ${programCount} health areas on this site, and exactly one of them is in development. We would rather be unimpressive than misleading.`,
+          },
+          {
+            step: "04",
+            title: "Review before release, not after",
+            body: "Clinical, privacy, security and accessibility review are release gates. No product ships to people because a deadline arrived.",
+          },
+        ].map((item) => (
+          <li class="flex flex-col gap-5 rounded-3xl border border-hairline-soft bg-paper p-7 sm:flex-row sm:items-start">
+            <span class="font-[family-name:var(--font-quote)] text-3xl font-bold text-mint-strong">
+              {item.step}
+            </span>
+            <span>
+              <span class="block text-xl font-extrabold tracking-[-0.03em] text-teal-deep">
+                {item.title}
+              </span>
+              <span class="mt-2 block leading-relaxed text-teal-mid">
+                {item.body}
+              </span>
+            </span>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <!-- Company facts -->
+  <Section tone="mint" width="default">
+    <div class="grid items-center gap-10 md:grid-cols-[1fr_auto]">
+      <div>
+        <p class="eyebrow mb-4">The company</p>
+        <h2 class="text-3xl sm:text-4xl">{site.legalName}</h2>
+        <p class="mt-5 text-lg leading-relaxed">
+          {site.name} trades as {site.legalName}. We are early, we are building
+          our first product, and the fastest way to influence what we make is to
+          tell us what you need from it.
+        </p>
+        <p
+          class="mt-6 flex items-start gap-3 text-[0.95rem] leading-relaxed text-teal-muted"
+        >
+          <Icon name="info" size={19} class="mt-0.5 shrink-0" />
+          <span>
+            We are not currently making claims about clinical outcomes,
+            certifications or partnerships. When there is something evidenced to
+            report, it will appear here.
+          </span>
+        </p>
+      </div>
+      <Button href="/#waitlist" arrow>Get in touch</Button>
+    </div>
+  </Section>
+</Base>

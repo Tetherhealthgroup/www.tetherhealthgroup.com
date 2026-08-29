@@ -1,0 +1,121 @@
+---
+import Legal from "../layouts/Legal.astro";
+import { contact, site } from "../data/site";
+---
+
+<Legal
+  title="Privacy notice"
+  description="What www.tetherhealthgroup.com collects, what it does not, and what happens to an email address sent through the early-access form."
+  eyebrow="Trust"
+  intro="This notice covers this website. It is short because the site does very little: it has no analytics, no advertising, no cookies and no third-party trackers."
+  updated="2026-08-29"
+  scopeNote="This notice covers www.tetherhealthgroup.com only. BreatheFree is still in development and is not available to use; when it is released it will have its own in-product privacy notice and consent flow covering health information, which this notice does not address."
+>
+  <h2>The short version</h2>
+  <p>
+    We do not set cookies, we do not run analytics, and this site loads no
+    third-party scripts, fonts or images. If you never use the early-access
+    form, we do not learn who you are.
+  </p>
+  <p>
+    If you do use the form, we receive the email address you give us and use it
+    to reply about early access. We do not sell it, rent it, or add it to a
+    marketing list.
+  </p>
+
+  <h2>Who we are</h2>
+  <p>
+    {site.name}, trading as {site.legalName}, is the controller of the personal
+    data described here. You can reach us at <a
+      href={`mailto:${contact.support}`}>{contact.support}</a
+    >.
+  </p>
+
+  <h2>What this site collects automatically</h2>
+  <p>
+    Nothing that we control. There is no analytics package, no tag manager, no
+    advertising pixel, no embedded video, no web font served from a third party,
+    and no cookie set by this site.
+  </p>
+  <p>
+    Our hosting provider may keep standard server access logs — typically IP
+    address, timestamp, requested URL and user agent — for security and
+    operational purposes. Those logs are created by the host's infrastructure,
+    not by code on this site, and we do not use them to build a profile of you.
+  </p>
+
+  <h2>What the early-access form collects</h2>
+  <p>When you submit the early-access form, you choose to send us:</p>
+  <ul>
+    <li>Your email address — required, so we can reply.</li>
+    <li>Your name — optional.</li>
+    <li>
+      Which description fits you (for example "clinician or care-team member")
+      and which health area interests you — both chosen from a list.
+    </li>
+    <li>Anything you write in the free-text message box — optional.</li>
+  </ul>
+  <p>
+    <strong>How it reaches us.</strong> The site is static and has no server of its
+    own. The form composes a message in your own email application, addressed to {
+      contact.support
+    }, and you send it. That means you can see exactly what is being sent before
+    it leaves, and it travels as ordinary email.
+  </p>
+  <p>
+    <strong>Please do not send us health information.</strong> The form asks which
+    health area interests you, not whether you have a condition. Ordinary email is
+    not a secure channel and we do not want your medical details.
+  </p>
+
+  <h2>Why we use it, and on what basis</h2>
+  <p>
+    We use your email address for one purpose: to reply to you about early
+    access to our products, and to answer whatever you asked. This is done on
+    the basis of your consent, given by choosing to write to us. Withdrawing it
+    is as simple as asking us to delete your message.
+  </p>
+
+  <h2>Who else sees it</h2>
+  <p>
+    Our email provider processes the message in order to deliver and store it,
+    as any email provider does. Beyond that, we do not share, sell or transfer
+    your information to anyone. We do not use it to train machine-learning
+    models.
+  </p>
+
+  <h2>How long we keep it</h2>
+  <p>
+    We keep early-access enquiries until the relevant product has launched and
+    we have contacted you, or for two years, whichever comes first — and sooner
+    if you ask us to delete it.
+  </p>
+
+  <h2>Your rights</h2>
+  <p>
+    Depending on where you live, you may have the right to access a copy of the
+    personal data we hold about you, to have it corrected or deleted, to object
+    to or restrict how we use it, and to complain to your data protection
+    authority. Because we hold very little — usually one email — we can normally
+    act on these requests quickly.
+  </p>
+  <p>
+    To exercise any of them, write to <a href={`mailto:${contact.support}`}
+      >{contact.support}</a
+    >.
+  </p>
+
+  <h2>Children</h2>
+  <p>
+    This site is not directed at children, and we do not knowingly collect
+    personal data from anyone under 16. If you believe a child has sent us their
+    details, tell us and we will delete them.
+  </p>
+
+  <h2>Changes to this notice</h2>
+  <p>
+    When this notice changes we will update the date at the top of the page. If
+    a change materially affects people who have already written to us, we will
+    say so in a reply rather than relying on you to re-read this page.
+  </p>
+</Legal>

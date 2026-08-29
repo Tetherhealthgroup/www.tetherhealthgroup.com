@@ -1,0 +1,35 @@
+---
+/**
+ * The header block every interior page opens with, so page titles, intros and
+ * spacing stay identical across the site.
+ */
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  /** Lead paragraph. Keep to two sentences. */
+  intro?: string;
+  width?: "narrow" | "default" | "wide";
+}
+
+const { eyebrow, title, intro, width = "default" } = Astro.props;
+
+const widths = {
+  narrow: "max-w-3xl",
+  default: "max-w-6xl",
+  wide: "max-w-7xl",
+} as const;
+---
+
+<section class="border-b border-hairline-soft/70">
+  <div
+    class={`mx-auto ${widths[width]} px-5 pb-16 pt-16 sm:px-8 sm:pb-20 sm:pt-24`}
+  >
+    <div class="max-w-3xl animate-rise">
+      <p class="eyebrow mb-5">{eyebrow}</p>
+      <h1 class="text-[2.5rem] sm:text-[3.5rem]">{title}</h1>
+      {intro && <p class="mt-7 text-xl leading-relaxed">{intro}</p>}
+      <slot />
+    </div>
+  </div>
+</section>

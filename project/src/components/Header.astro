@@ -1,0 +1,145 @@
+---
+/**
+ * Sticky site header.
+ *
+ * The mobile menu is a <details> element: it opens and closes without
+ * JavaScript, is keyboard-operable by default, and announces its own state to
+ * screen readers. A small inline script only adds behaviours <details> cannot
+ * provide on its own — closing on Escape and on outside click.
+ */
+
+import TetherLogo from "./TetherLogo.astro";
+import Button from "./Button.astro";
+import { primaryNav } from "../data/site";
+
+const path = Astro.url.pathname;
+
+/** A link is current when the path matches it or sits beneath it. */
+function isCurrent(href: string): boolean {
+  if (href === "/") return path === "/";
+  return path === href || path.startsWith(href);
+}
+---
+
+<header
+  class="sticky top-0 z-50 border-b border-hairline-soft/70 bg-cream/85 backdrop-blur-md"
+>
+  <div class="mx-auto flex max-w-7xl items-center gap-6 px-5 py-3.5 sm:px-8">
+    <a
+      href="/"
+      class="rounded-xl transition-opacity hover:opacity-80"
+      aria-label={`Tether Health Group — home`}
+    >
+      <TetherLogo size={34} />
+    </a>
+
+    <nav aria-label="Primary" class="ml-auto hidden lg:block">
+      <ul class="flex items-center gap-1">
+        {
+          primaryNav.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                aria-current={isCurrent(link.href) ? "page" : undefined}
+                class:list={[
+                  "block rounded-xl px-3.5 py-2 text-[0.95rem] font-bold transition-colors",
+                  isCurrent(link.href)
+                    ? "bg-mint text-teal-deep"
+                    : "text-teal-mid hover:bg-mint-pale hover:text-teal-deep",
+                ]}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="ml-auto hidden lg:ml-0 lg:block">
+      <Button href="/#waitlist" class="!px-5 !py-2.5 !text-[0.95rem]" arrow>
+        Request early access
+      </Button>
+    </div>
+
+    <details class="group relative ml-auto lg:hidden" id="mobile-menu">
+      <summary
+        class="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-xl border-2 border-hairline bg-paper text-teal-deep [&::-webkit-details-marker]:hidden"
+        aria-label="Open main menu"
+      >
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M4 7h16M4 12h16M4 17h16" class="group-open:hidden"></path>
+          <path d="M6 6l12 12M18 6 6 18" class="hidden group-open:block"></path>
+        </svg>
+      </summary>
+
+      <nav
+        aria-label="Primary"
+        class="absolute right-0 top-[calc(100%+0.75rem)] w-[min(20rem,calc(100vw-2.5rem))] rounded-3xl border border-hairline-soft bg-paper p-3 shadow-[var(--shadow-raised)]"
+      >
+        <ul class="flex flex-col gap-0.5">
+          {
+            primaryNav.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  aria-current={isCurrent(link.href) ? "page" : undefined}
+                  class:list={[
+                    "block rounded-2xl px-4 py-3 font-bold transition-colors",
+                    isCurrent(link.href)
+                      ? "bg-mint text-teal-deep"
+                      : "text-teal-mid hover:bg-mint-pale hover:text-teal-deep",
+                  ]}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="mt-3 border-t border-hairline-soft pt-3">
+          <Button href="/#waitlist" full arrow>Request early access</Button>
+        </div>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<script>
+  /* <details> handles open/close and keyboard access on its own. These two
+     behaviours are the ones it does not provide: dismiss on Escape, and
+     dismiss when the pointer goes elsewhere. */
+  const menu = document.getElementById("mobile-menu");
+
+  if (menu instanceof HTMLDetailsElement) {
+    const close = () => {
+      menu.open = false;
+    };
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && menu.open) {
+        close();
+        menu.querySelector("summary")?.focus();
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (menu.open && !menu.contains(event.target as Node)) close();
+    });
+
+    /* Following an in-page link (e.g. /#waitlist) does not reload the page, so
+       the panel would otherwise stay open over the destination. */
+    menu.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).closest("a")) close();
+    });
+  }
+</script>

@@ -1,0 +1,87 @@
+---
+/**
+ * Site button, in the three treatments the approved artwork uses.
+ *
+ * "primary" is the dark teal pill with a lime arrow, exactly as the app's
+ * "Get started" and "Start 2-minute breathing" controls. "secondary" is the
+ * paper-filled outlined control ("Continuar en español"). "quiet" is the
+ * underlined text control ("I already have an account").
+ *
+ * Renders <a> when href is given and <button> otherwise, so a link is never
+ * faked with a button or the reverse.
+ */
+
+interface Props {
+  href?: string;
+  variant?: "primary" | "secondary" | "quiet";
+  /** Show the trailing arrow the app uses on forward actions. */
+  arrow?: boolean;
+  /** Stretch to the container width, as the app's stacked controls do. */
+  full?: boolean;
+  type?: "button" | "submit";
+  onDark?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  href,
+  variant = "primary",
+  arrow = false,
+  full = false,
+  type = "button",
+  onDark = false,
+  class: className = "",
+  ...rest
+} = Astro.props;
+
+const base =
+  "group inline-flex items-center justify-center gap-2.5 rounded-[14px] px-7 py-4 " +
+  "text-base font-bold tracking-[-0.01em] transition-all duration-200 " +
+  "ease-[var(--ease-calm)] active:translate-y-px";
+
+const variants = {
+  primary: onDark
+    ? "bg-lime text-teal-deep shadow-[var(--shadow-card)] hover:bg-lime/90 hover:shadow-[var(--shadow-raised)]"
+    : "bg-teal-deep text-paper shadow-[var(--shadow-card)] hover:bg-teal-raised hover:shadow-[var(--shadow-raised)]",
+  secondary: onDark
+    ? "border-2 border-mint-strong/40 text-mint hover:border-mint-strong hover:bg-white/5"
+    : "border-2 border-hairline bg-paper text-teal-deep hover:border-teal-deep hover:bg-white",
+  quiet: onDark
+    ? "text-mint underline decoration-2 underline-offset-4 decoration-mint-strong/50 hover:decoration-lime px-2 py-2"
+    : "text-teal-deep underline decoration-2 underline-offset-4 decoration-mint-strong hover:decoration-coral px-2 py-2",
+} as const;
+
+const arrowColor =
+  variant === "primary" && !onDark ? "text-lime" : "text-current";
+
+const classes = [base, variants[variant], full ? "w-full" : "", className].join(
+  " ",
+);
+
+const Tag = href ? "a" : "button";
+---
+
+<Tag class={classes} href={href} type={href ? undefined : type} {...rest}>
+  <slot />
+  {
+    arrow && (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        aria-hidden="true"
+        class={`${arrowColor} transition-transform duration-200 ease-[var(--ease-calm)] group-hover:translate-x-1`}
+      >
+        <path
+          d="M4 10h11m0 0-4.5-4.5M15 10l-4.5 4.5"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    )
+  }
+</Tag>

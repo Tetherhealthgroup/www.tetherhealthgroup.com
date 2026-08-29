@@ -1,0 +1,125 @@
+---
+import Legal from "../layouts/Legal.astro";
+import { contact, site } from "../data/site";
+---
+
+<Legal
+  title="Terms of use"
+  description="The terms that apply to using www.tetherhealthgroup.com, including the important limits on what this site is and is not."
+  eyebrow="Trust"
+  intro="These terms cover this website. They exist mainly to be clear about one thing: nothing here is medical advice."
+  updated="2026-08-29"
+  scopeNote="These terms cover this website only. BreatheFree is not yet available; when it is released it will have its own terms covering use of the application, which these do not address."
+>
+  <h2>Not medical advice</h2>
+  <p>
+    <strong>
+      This website provides general information about products we are building.
+      It does not provide medical advice, diagnosis or treatment.
+    </strong>
+  </p>
+  <p>
+    Nothing on this site should be used as a substitute for advice from a
+    qualified health professional who knows your circumstances. Never disregard
+    professional medical advice, or delay seeking it, because of something you
+    read here.
+  </p>
+  <p>
+    <strong>
+      If you think you may have a medical emergency, call 911 or your local
+      emergency number immediately.
+    </strong>
+  </p>
+
+  <h2>Products described here are in development</h2>
+  <p>
+    This site describes products we intend to build, and the stage each one has
+    reached. Descriptions of planned functionality are statements of intent, not
+    promises. Features, timing and availability may change, and a product
+    described here may never be released.
+  </p>
+  <p>
+    Nothing described on this site is currently available for clinical use, and
+    no statement here should be read as a claim that a product has been reviewed
+    or cleared by any regulator.
+  </p>
+
+  <h2>Third-party services we mention</h2>
+  <p>
+    We list quitline telephone numbers and other external services as a
+    convenience. Those services are run by other organisations. We do not
+    control them, we are not responsible for them, and listing them is not an
+    endorsement or a guarantee of availability, hours or suitability.
+  </p>
+
+  <h2>Using this site</h2>
+  <p>You agree not to:</p>
+  <ul>
+    <li>
+      Use the site in any way that breaks the law or infringes anyone else's
+      rights.
+    </li>
+    <li>
+      Attempt to gain unauthorised access to the site, its hosting, or any
+      connected system.
+    </li>
+    <li>
+      Interfere with the site's operation, including by automated scraping that
+      degrades service for others.
+    </li>
+    <li>
+      Use the early-access form to send unsolicited commercial messages, or to
+      send anyone else's personal information without their agreement.
+    </li>
+  </ul>
+
+  <h2>Content and intellectual property</h2>
+  <p>
+    The content of this site — including text, design, the BreatheFree
+    application artwork and the {site.name} and BreatheFree names and marks — is owned
+    by {site.legalName} or used with permission. You may read, link to and quote this
+    site with attribution. You may not reproduce it wholesale or present it as your
+    own.
+  </p>
+
+  <h2>What you send us</h2>
+  <p>
+    If you send us feedback or suggestions, you agree we may use them to improve
+    our products without obligation to you, and without owing you compensation
+    or confidentiality. Do not send us anything you consider confidential. How
+    we handle contact details is described in our <a href="/privacy/"
+      >privacy notice</a
+    >.
+  </p>
+
+  <h2>Availability and accuracy</h2>
+  <p>
+    We try to keep this site accurate and available, but we do not guarantee
+    either. Content may be out of date, and the site may be unavailable for
+    maintenance or reasons outside our control. To the fullest extent permitted
+    by law, the site is provided "as is" and without warranties of any kind.
+  </p>
+
+  <h2>Limitation of liability</h2>
+  <p>
+    To the fullest extent permitted by law, {site.legalName} is not liable for any
+    indirect, incidental, special or consequential loss arising from your use of this
+    site. Nothing in these terms excludes or limits liability that cannot lawfully
+    be excluded or limited, including liability for death or personal injury caused
+    by negligence, or for fraud.
+  </p>
+
+  <h2>Changes</h2>
+  <p>
+    We may update these terms. The date at the top of this page shows when they
+    last changed, and continuing to use the site after a change means you accept
+    the updated terms.
+  </p>
+
+  <h2>Contact</h2>
+  <p>
+    Questions about these terms can go to <a href={`mailto:${contact.support}`}
+      >{contact.support}</a
+    >.
+  </p>
+</Legal>

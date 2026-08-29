@@ -1,0 +1,104 @@
+---
+import Base from "../../layouts/Base.astro";
+import PageHero from "../../components/PageHero.astro";
+import Section from "../../components/Section.astro";
+import Button from "../../components/Button.astro";
+import PhoneFrame from "../../components/PhoneFrame.astro";
+import { phases, screensInPhase, screens } from "../../data/screens";
+---
+
+<Base
+  title="BreatheFree screen tour"
+  description={`All ${screens.length} approved BreatheFree screens, grouped by journey phase — the complete designed experience, from welcome through settings and privacy.`}
+>
+  <PageHero
+    eyebrow="Screen tour"
+    title={`All ${screens.length} screens, in order.`}
+    intro="This is the complete approved BreatheFree experience. Every screen here is the same artwork the application itself renders, grouped into the eight phases of the journey."
+  >
+    <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+      <Button href="/#waitlist" arrow>Request early access</Button>
+      <Button href="/breathefree/how-it-works/" variant="secondary">
+        Read how it works
+      </Button>
+    </div>
+  </PageHero>
+
+  <!-- Phase jump list -->
+  <Section space="tight" width="wide">
+    <nav aria-label="Jump to phase">
+      <ul class="flex flex-wrap gap-2.5">
+        {
+          phases.map((phase) => (
+            <li>
+              <a
+                href={`#tour-${phase.id}`}
+                class="inline-block rounded-full border border-hairline-soft bg-paper px-4 py-2 text-[0.9rem] font-bold text-teal-mid transition-colors hover:border-mint-strong hover:bg-mint hover:text-teal-deep"
+              >
+                {phase.label}
+                <span class="ml-1.5 text-teal-muted">
+                  {screensInPhase(phase.id).length}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </Section>
+
+  <!-- The screens -->
+  {
+    phases.map((phase, phaseIndex) => {
+      const phaseScreens = screensInPhase(phase.id);
+      return (
+        <Section
+          id={`tour-${phase.id}`}
+          tone={phaseIndex % 2 === 1 ? "paper" : "canvas"}
+          width="wide"
+          space="tight"
+        >
+          <div class="mb-12 max-w-2xl">
+            <p class="eyebrow mb-4">
+              Phase {phaseIndex + 1} of {phases.length}
+            </p>
+            <h2 class="text-3xl sm:text-4xl">{phase.label}</h2>
+            <p class="mt-5 text-lg leading-relaxed">{phase.summary}</p>
+          </div>
+
+          <ul class="grid justify-items-center gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {phaseScreens.map((screen, index) => (
+              <li class="flex flex-col items-center">
+                <PhoneFrame
+                  screen={screen.number}
+                  width={232}
+                  priority={phaseIndex === 0 && index === 0}
+                />
+                <div class="mt-6 max-w-[15rem] text-center">
+                  <p class="eyebrow mb-1.5">Screen {screen.number}</p>
+                  <h3 class="text-lg">{screen.title}</h3>
+                  <p class="mt-2 text-[0.9rem] leading-relaxed text-teal-muted">
+                    {screen.description}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      );
+    })
+  }
+
+  <Section tone="mint" width="default">
+    <div class="grid items-center gap-10 md:grid-cols-[1fr_auto]">
+      <div>
+        <h2 class="text-3xl sm:text-4xl">That is the whole product.</h2>
+        <p class="mt-5 text-lg leading-relaxed">
+          No hidden upsell screens, no advertising slots, no data-broker
+          handoff. What you have just walked through is what BreatheFree is.
+        </p>
+      </div>
+      <Button href="/#waitlist" arrow>Request early access</Button>
+    </div>
+  </Section>
+</Base>

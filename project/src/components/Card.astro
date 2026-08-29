@@ -1,0 +1,91 @@
+---
+/**
+ * The paper card the app uses for every stat, tool and list row.
+ *
+ * Radius, shadow and hairline are matched to the approved artwork: generously
+ * rounded, a soft #123C37 shadow at low opacity, and a mint hairline rather
+ * than a grey one.
+ */
+
+import Icon from "./Icon.astro";
+import type { IconName } from "./Icon.astro";
+
+interface Props {
+  /** Small uppercase label above the title, as in "ESTIMATED SAVED". */
+  eyebrow?: string;
+  title?: string;
+  /** Icon rendered in a mint chip, matching the app's card headers. */
+  icon?: IconName;
+  /** Tint the icon chip coral instead of mint, for cautionary content. */
+  accent?: "mint" | "coral" | "lime";
+  /** Turn the whole card into a link. */
+  href?: string;
+  tone?: "paper" | "mint" | "deep";
+  class?: string;
+}
+
+const {
+  eyebrow,
+  title,
+  icon,
+  accent = "mint",
+  href,
+  tone = "paper",
+  class: className = "",
+} = Astro.props;
+
+const tones = {
+  paper: "bg-paper border-hairline-soft",
+  mint: "bg-mint border-mint-strong",
+  deep: "bg-teal-deep border-teal-raised",
+} as const;
+
+const chips = {
+  mint: "bg-mint text-teal-deep",
+  coral: "bg-coral-light text-coral",
+  lime: "bg-lime text-teal-deep",
+} as const;
+
+const isDeep = tone === "deep";
+
+const interactive = href
+  ? "hover:-translate-y-0.5 hover:shadow-[var(--shadow-raised)] hover:border-mint-strong"
+  : "";
+
+const classes = [
+  "block rounded-3xl border p-6 sm:p-7 shadow-[var(--shadow-card)]",
+  "transition-all duration-200 ease-[var(--ease-calm)]",
+  tones[tone],
+  interactive,
+  className,
+].join(" ");
+
+const Tag = href ? "a" : "div";
+---
+
+<Tag class={classes} href={href}>
+  {
+    icon && (
+      <span
+        class={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl ${isDeep ? "bg-teal-raised text-lime" : chips[accent]}`}
+      >
+        <Icon name={icon} size={22} />
+      </span>
+    )
+  }
+  {
+    eyebrow && (
+      <p class={`eyebrow mb-2 ${isDeep ? "eyebrow-on-dark" : ""}`}>{eyebrow}</p>
+    )
+  }
+  {
+    title && (
+      <h3 class={`text-xl mb-2.5 ${isDeep ? "text-paper" : ""}`}>{title}</h3>
+    )
+  }
+  <div
+    class={`text-[1.0625rem] leading-relaxed ${isDeep ? "text-mint-strong" : "text-teal-mid"}`}
+  >
+    <slot />
+  </div>
+</Tag>

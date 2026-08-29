@@ -1,0 +1,243 @@
+---
+import Base from "../../layouts/Base.astro";
+import Section from "../../components/Section.astro";
+import Button from "../../components/Button.astro";
+import Card from "../../components/Card.astro";
+import Icon from "../../components/Icon.astro";
+import Logo from "../../components/Logo.astro";
+import PhoneFrame from "../../components/PhoneFrame.astro";
+import { screens } from "../../data/screens";
+
+const features = [
+  {
+    icon: "wave" as const,
+    title: "Craving rescue",
+    body: "One tap opens immediate, one-handed help. Rate the craving, get one recommended tool, run it, then recheck. It works offline, because the hardest moments do not wait for a signal.",
+    screen: 19,
+  },
+  {
+    icon: "calendar" as const,
+    title: "A plan you build",
+    body: "Choose a quit-date or gradual-reduction path, pick a realistic date, write down your own reasons, and name one supporter with a phrase they will actually understand.",
+    screen: 11,
+  },
+  {
+    icon: "progress" as const,
+    title: "Progress without punishment",
+    body: "Smoke-free time, cigarettes avoided, money saved, and which coping tool has helped most. A slip is recorded as an event in the history, never as a reset to zero.",
+    screen: 26,
+  },
+  {
+    icon: "support" as const,
+    title: "A route to a person",
+    body: "Quitlines in English and Spanish, your named supporter, a quit coach, and your care team. Nothing is sent anywhere until you preview it and confirm.",
+    screen: 27,
+  },
+];
+
+const safeguards = [
+  {
+    icon: "eye-off" as const,
+    title: "Sensitive notifications off by default",
+    body: 'A lock screen shows "You have a BreatheFree reminder" — not your quit status or your medication.',
+  },
+  {
+    icon: "stethoscope" as const,
+    title: "Education, never prescribing",
+    body: "The medication centre explains options and lets you record your own plan. It never selects a medicine or changes a dose.",
+  },
+  {
+    icon: "info" as const,
+    title: "Reports, not measurements",
+    body: "Craving ratings describe how someone felt. The app is explicit that these are self-reports, not clinical measurements.",
+  },
+  {
+    icon: "trash" as const,
+    title: "Export and deletion",
+    body: "Your data can be exported and deleted, with the deletion actually completed rather than merely hidden.",
+  },
+];
+---
+
+<Base
+  title="BreatheFree"
+  description="BreatheFree is Tether Health Group's first program: calm, private, judgment-free support for quitting smoking. Craving rescue that works offline, a plan you build yourself, and progress a slip never erases."
+>
+  <!-- Hero -->
+  <Section width="wide" space="loose">
+    <div class="grid items-center gap-16 lg:grid-cols-[1.05fr_0.95fr]">
+      <div class="animate-rise">
+        {
+          /* The badge is inline-flex, so it needs a block wrapper of its own —
+            otherwise the logo that follows flows onto the same line. */
+        }
+        <div class="mb-7">
+          <p
+            class="inline-flex items-center gap-2.5 rounded-full border border-mint-strong bg-mint px-4 py-2 text-[0.78rem] font-extrabold uppercase tracking-[0.16em] text-teal-deep"
+          >
+            <span class="relative flex h-2 w-2" aria-hidden="true">
+              <span
+                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-coral opacity-70"
+              ></span>
+              <span class="relative inline-flex h-2 w-2 rounded-full bg-coral"
+              ></span>
+            </span>
+            In development
+          </p>
+        </div>
+
+        <Logo size={56} withWordmark class="mb-7" />
+
+        <h1 class="text-[2.75rem] sm:text-[3.75rem]">
+          Your next breath can be different.
+        </h1>
+
+        <p class="mt-7 max-w-xl text-xl leading-relaxed">
+          Small steps, practical support, and no judgment — whenever you are
+          ready. BreatheFree supports people through quitting smoking, from the
+          first honest look at a habit to the craving that arrives at 11pm on a
+          Tuesday.
+        </p>
+
+        <ul class="mt-9 grid gap-4 sm:grid-cols-2">
+          {
+            [
+              {
+                icon: "plus" as const,
+                label: "Help when cravings hit",
+                sub: "Quick tools that work anywhere",
+              },
+              {
+                icon: "check" as const,
+                label: "Progress that stays",
+                sub: "A slip never erases your wins",
+              },
+            ].map((item) => (
+              <li class="flex items-start gap-3">
+                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-mint text-teal-deep">
+                  <Icon name={item.icon} size={20} />
+                </span>
+                <span>
+                  <span class="block font-bold text-teal-deep">
+                    {item.label}
+                  </span>
+                  <span class="block text-[0.9rem] text-teal-muted">
+                    {item.sub}
+                  </span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="mt-10 flex flex-col gap-3 sm:flex-row">
+          <Button href="/#waitlist" arrow>Request early access</Button>
+          <Button href="/breathefree/how-it-works/" variant="secondary">
+            How it works
+          </Button>
+        </div>
+      </div>
+
+      <div class="flex justify-center lg:justify-end">
+        <PhoneFrame screen={1} width={300} priority />
+      </div>
+    </div>
+  </Section>
+
+  <!-- Feature deep-dives -->
+  <Section tone="paper" width="wide">
+    <div class="mb-16 max-w-3xl">
+      <p class="eyebrow mb-5">What it does</p>
+      <h2 class="text-4xl sm:text-5xl">
+        Four things, each built for the moment it is needed.
+      </h2>
+    </div>
+
+    <div class="grid gap-20">
+      {
+        features.map((feature, index) => (
+          <div
+            class:list={[
+              "grid items-center gap-12 lg:gap-20",
+              "lg:grid-cols-[1fr_auto]",
+            ]}
+          >
+            <div class:list={[index % 2 === 1 ? "lg:order-2" : ""]}>
+              <span class="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-mint text-teal-deep">
+                <Icon name={feature.icon} size={26} />
+              </span>
+              <h3 class="text-3xl">{feature.title}</h3>
+              <p class="mt-5 max-w-xl text-lg leading-relaxed">
+                {feature.body}
+              </p>
+            </div>
+            <div class:list={[index % 2 === 1 ? "lg:order-1" : ""]}>
+              <PhoneFrame screen={feature.screen} width={264} />
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </Section>
+
+  <!-- Safeguards -->
+  <Section tone="deep" width="wide">
+    <div class="mb-14 max-w-3xl">
+      <p class="eyebrow eyebrow-on-dark mb-5">Safeguards</p>
+      <h2 class="text-4xl text-paper sm:text-5xl">
+        The boundaries we designed in first.
+      </h2>
+      <p class="mt-6 text-lg leading-relaxed text-mint-strong">
+        A tool that touches someone's health has to be careful about what it
+        claims and what it exposes. These constraints came before the features.
+      </p>
+    </div>
+
+    <ul class="grid gap-6 md:grid-cols-2">
+      {
+        safeguards.map((item) => (
+          <li class="rounded-3xl bg-white/5 p-7 ring-1 ring-white/10">
+            <span class="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-raised text-lime">
+              <Icon name={item.icon} size={22} />
+            </span>
+            <h3 class="text-xl text-paper">{item.title}</h3>
+            <p class="mt-2.5 leading-relaxed text-mint-strong/85">
+              {item.body}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <!-- Tour CTA -->
+  <Section tone="mint" width="default">
+    <div class="grid items-center gap-10 md:grid-cols-[1fr_auto]">
+      <div>
+        <p class="eyebrow mb-4">The whole experience</p>
+        <h2 class="text-3xl sm:text-4xl">
+          All {screens.length} screens, in order.
+        </h2>
+        <p class="mt-5 text-lg leading-relaxed">
+          Every screen in BreatheFree has been designed and approved. Walk
+          through the full journey — welcome, onboarding, quit plan, daily
+          support, craving rescue, quit day, resources and account.
+        </p>
+      </div>
+      <Button href="/breathefree/tour/" arrow>Take the screen tour</Button>
+    </div>
+  </Section>
+
+  <Section width="default">
+    <Card icon="info" accent="coral" title="Where BreatheFree stands today">
+      BreatheFree is in active development. All {screens.length} screens are designed
+      and approved, and we are building them into a working application. It is not
+      yet available to download, and it has not been through the clinical, privacy
+      and security review that a release requires. <a
+        href="/#waitlist"
+        class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+        >Ask for early access</a
+      > and we will tell you when that changes.
+    </Card>
+  </Section>
+</Base>

@@ -1,0 +1,70 @@
+---
+/**
+ * The Tether Health Group company mark.
+ *
+ * Two interlocking rings: one person, one source of support, connected. Drawn
+ * on the same geometry as the BreatheFree leaf mark — a 76-unit box, 36-unit
+ * radius, 4-unit stroke — so the parent mark and the product mark sit together
+ * without either being rescaled.
+ *
+ * Unlike the leaf, this mark is site-original: the repository contains no
+ * approved corporate identity, only the product identity. Replace it if and
+ * when a corporate mark is approved.
+ */
+
+interface Props {
+  size?: number;
+  withWordmark?: boolean;
+  onDark?: boolean;
+  class?: string;
+}
+
+const {
+  size = 36,
+  withWordmark = true,
+  onDark = false,
+  class: className = "",
+} = Astro.props;
+
+const primary = onDark ? "#DFF2E7" : "#123C37";
+const accent = "#FF7D61";
+---
+
+<span class={`inline-flex items-center gap-2.5 ${className}`}>
+  <svg
+    width={(size * 116) / 76}
+    height={size}
+    viewBox="0 0 116 76"
+    fill="none"
+    aria-hidden="true"
+    class="shrink-0"
+  >
+    <circle cx="38" cy="38" r="30" stroke={primary} stroke-width="5"></circle>
+    <circle cx="78" cy="38" r="30" stroke={accent} stroke-width="5"></circle>
+    {
+      /* Redraw the left ring's overlapping arc on top so the rings read as
+        genuinely interlocked rather than merely crossing. */
+    }
+    <path
+      d="M58 12.8A29.9 29.9 0 0 1 68 38a29.9 29.9 0 0 1-10 25.2"
+      stroke={primary}
+      stroke-width="5"
+      stroke-linecap="round"></path>
+  </svg>
+  {
+    withWordmark && (
+      <span class="leading-none">
+        <span
+          class={`block text-[1.15rem] font-extrabold tracking-[-0.035em] ${onDark ? "text-paper" : "text-teal-deep"}`}
+        >
+          Tether Health
+        </span>
+        <span
+          class={`block text-[0.62rem] font-bold uppercase tracking-[0.22em] ${onDark ? "text-mint-strong" : "text-teal-muted"}`}
+        >
+          Group
+        </span>
+      </span>
+    )
+  }
+</span>

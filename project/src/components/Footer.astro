@@ -1,0 +1,118 @@
+---
+/**
+ * Site footer.
+ *
+ * Carries the safety routing the app also carries: an emergency line and the
+ * quitline numbers reproduced from the approved Support hub artwork. On a
+ * health site that is not decoration — it is the one thing a visitor in
+ * difficulty needs to find without reading anything else.
+ */
+
+import TetherLogo from "./TetherLogo.astro";
+import Icon from "./Icon.astro";
+import { site, contact, footerNav, quitlines } from "../data/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-hairline-soft bg-teal-deep text-mint-strong">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <!-- Safety routing, first and unmissable. -->
+    <section
+      aria-labelledby="footer-help"
+      class="border-b border-white/10 py-10"
+    >
+      <h2 id="footer-help" class="eyebrow eyebrow-on-dark mb-4">
+        If you need help now
+      </h2>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <p
+          class="flex items-start gap-3 rounded-3xl bg-coral/15 p-4 text-[0.95rem] leading-relaxed text-mint"
+        >
+          <Icon name="alert" size={20} class="mt-0.5 shrink-0 text-coral" />
+          <span>
+            In a medical emergency, call <a
+              href="tel:911"
+              class="font-bold text-paper underline decoration-coral decoration-2 underline-offset-4"
+              >911</a
+            > or your local emergency number.
+          </span>
+        </p>
+        {
+          quitlines.map((line) => (
+            <p class="flex items-start gap-3 rounded-3xl bg-white/5 p-4 text-[0.95rem] leading-relaxed">
+              <Icon name="phone" size={20} class="mt-0.5 shrink-0 text-lime" />
+              <span>
+                <span class="block text-xs font-bold uppercase tracking-widest text-mint-strong/70">
+                  {line.language}
+                </span>
+                <a
+                  href={`tel:${line.tel}`}
+                  class="font-bold text-paper underline decoration-lime decoration-2 underline-offset-4"
+                >
+                  {line.name}
+                </a>
+                <span class="block text-mint-strong/80">{line.number}</span>
+              </span>
+            </p>
+          ))
+        }
+      </div>
+      <p class="mt-4 text-sm leading-relaxed text-mint-strong/70">
+        Quitline numbers route to United States services. Services and hours may
+        vary by state.
+      </p>
+    </section>
+
+    <!-- Navigation -->
+    <div class="grid gap-10 py-14 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+      <div>
+        <TetherLogo size={34} onDark />
+        <p
+          class="mt-5 max-w-xs text-[0.95rem] leading-relaxed text-mint-strong/80"
+        >
+          {site.description}
+        </p>
+        <a
+          href={`mailto:${contact.support}`}
+          class="mt-5 inline-flex items-center gap-2 rounded-xl text-[0.95rem] font-bold text-paper underline decoration-mint-strong/50 decoration-2 underline-offset-4 transition-colors hover:decoration-lime"
+        >
+          <Icon name="support" size={18} />
+          {contact.support}
+        </a>
+      </div>
+
+      {
+        footerNav.map((group) => (
+          <nav aria-label={group.title}>
+            <h2 class="eyebrow eyebrow-on-dark mb-4">{group.title}</h2>
+            <ul class="flex flex-col gap-2.5">
+              {group.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class="rounded text-[0.95rem] text-mint-strong/85 transition-colors hover:text-paper"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+
+    <!-- Legal -->
+    <div
+      class="flex flex-col gap-4 border-t border-white/10 py-8 text-sm text-mint-strong/70 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>&copy; {year} {site.legalName}. All rights reserved.</p>
+      <p class="max-w-xl sm:text-right">
+        Tether Health Group products provide education and self-management
+        support. They do not diagnose, treat or prescribe, and they are not a
+        substitute for advice from a qualified health professional.
+      </p>
+    </div>
+  </div>
+</footer>

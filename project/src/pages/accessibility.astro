@@ -1,0 +1,98 @@
+---
+import Legal from "../layouts/Legal.astro";
+import { contact } from "../data/site";
+---
+
+<Legal
+  title="Accessibility"
+  description="Our accessibility commitment for www.tetherhealthgroup.com and for the products we build, what we have done, what we have not yet verified, and how to tell us about a barrier."
+  eyebrow="Trust"
+  intro="People who are unwell, tired, distracted or in distress are exactly who our products are for. An interface they cannot use is not a minor defect."
+  updated="2026-08-29"
+  scopeNote="We aim to meet WCAG 2.2 Level AA. We have not yet commissioned an independent accessibility audit of this site, so this page states what we have built and tested ourselves — not a certified conformance claim."
+>
+  <h2>What we have built into this site</h2>
+  <ul>
+    <li>
+      <strong>Keyboard access throughout.</strong> Every interactive element can be
+      reached and operated with a keyboard, in a logical order, with a visible focus
+      indicator that meets contrast requirements. A "skip to main content" link is
+      the first thing a keyboard user reaches.
+    </li>
+    <li>
+      <strong>Semantic structure.</strong> Pages use real headings in order, real
+      lists, real landmarks and real buttons and links — a link navigates, a button
+      acts, and neither is faked with a styled div.
+    </li>
+    <li>
+      <strong>Text alternatives.</strong> Every application screenshot carries a description
+      naming the screen and what it does. Decorative graphics are hidden from assistive
+      technology rather than announced as noise.
+    </li>
+    <li>
+      <strong>Reduced motion.</strong> The site has a small amount of ambient animation.
+      If your system asks for reduced motion, all of it stops.
+    </li>
+    <li>
+      <strong>Text scaling and reflow.</strong> Type is set in relative units and
+      layouts reflow, so enlarging text does not clip content or force horizontal
+      scrolling.
+    </li>
+    <li>
+      <strong>No motion or colour as the only signal.</strong> Status is carried by
+      text as well as colour, so "in development" and "planned" are distinguishable
+      without seeing the difference between mint and lime.
+    </li>
+  </ul>
+
+  <h2>What we have not verified</h2>
+  <p>
+    We want to be straightforward about the limits of the above. We have not
+    yet:
+  </p>
+  <ul>
+    <li>Commissioned an independent accessibility audit of this site.</li>
+    <li>
+      Completed testing with screen-reader users, rather than testing with a
+      screen reader ourselves.
+    </li>
+    <li>
+      Tested against the full range of assistive technologies, including switch
+      control and voice control.
+    </li>
+  </ul>
+  <p>
+    Until those are done, treat this page as a statement of intent and effort,
+    not as a conformance claim.
+  </p>
+
+  <h2>Accessibility in BreatheFree</h2>
+  <p>
+    The application is held to a higher bar than the website, because it is used
+    in harder circumstances. Before release it must support VoiceOver, TalkBack,
+    keyboard-only navigation and switch control; 200% text scaling; a 4.5:1
+    contrast minimum; reduced motion; and meaning that never depends on colour
+    alone. Audio and video education must carry captions and transcripts.
+  </p>
+  <p>
+    One constraint we have to name: where a screen is currently rendered from
+    approved bitmap artwork, the text inside that image cannot reflow when
+    someone enlarges type. That is why those screens are being rebuilt as
+    native, responsive components — it is an accessibility requirement, not a
+    modernisation exercise.
+  </p>
+
+  <h2>Tell us about a barrier</h2>
+  <p>
+    If any part of this site or our products is difficult or impossible for you
+    to use, please tell us at <a href={`mailto:${contact.support}`}
+      >{contact.support}</a
+    >. It helps if you can say what you were trying to do, what happened, and
+    what you were using — but please write to us even if you would rather not go
+    into detail.
+  </p>
+  <p>
+    We treat accessibility reports as defects, not as feature requests, and we
+    will tell you what we are doing about yours.
+  </p>
+</Legal>
