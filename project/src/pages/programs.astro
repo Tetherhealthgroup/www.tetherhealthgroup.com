@@ -68,6 +68,16 @@ import {
 
   <!-- The areas -->
   <Section space="tight" width="wide">
+    {
+      /*
+      The card headings are h3, matching the h2-section / h3-card pattern used
+      everywhere else. On the home page an h2 introduces this same grid; here
+      that sentence is the page h1, which left the outline jumping h1 -> h3.
+      The heading is screen-reader-only because the hero already says this in
+      view — the outline needs the level, the page does not need the words.
+    */
+    }
+    <h2 class="sr-only">All {programCount} areas</h2>
     <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {
         programs.map((program) => (
