@@ -69,10 +69,37 @@ who sees it.
 
 ### Open — needs a decision or an owner
 
-- [ ] Provision the `support@tetherhealthgroup.com` mailbox.
+- [ ] **Mail cannot be received at all.** `tetherhealthgroup.com` publishes no
+      MX record (confirmed against Cloudflare and Google DNS on 2026-08-29) and
+      `mail.tetherhealthgroup.com` does not resolve. Provision MX and the
+      `support@` mailbox before the address is promoted anywhere.
+- [ ] **The waitlist form sends nothing by itself.** With no
+      `PUBLIC_WAITLIST_ENDPOINT` set it opens the visitor's mail client and
+      relies on them pressing Send. The POST path is implemented and verified
+      against a local handler; point `PUBLIC_WAITLIST_ENDPOINT` at a real form
+      handler to stop depending on the visitor's mail app.
 - [ ] Legal review of `/privacy/`, `/terms/`, `/security/`.
 - [ ] Choose hosting; add CSP/HSTS/Referrer-Policy at the edge.
 - [ ] Independent accessibility audit (the site says one has not happened).
-- [ ] Approve or replace the corporate mark in `TetherLogo.astro`.
+- [ ] Approve or replace the corporate mark in `TetherLogo.astro` — the share
+      card at `project/public/og-image.png` is generated from it and must be
+      regenerated if the mark changes.
 - [ ] Confirm the ordering of the nine planned health areas.
-- [ ] App: commit the `develop` changes and open a PR.
+- [ ] Own the content of `updates.ts` and the per-area `services` / `upcoming`
+      copy. It elaborates the supplied programme plan and has had no clinical
+      review.
+- [ ] Push the website commits to `origin/master` (not pushed).
+
+### Session: 2026-08-29 (later) — production pass
+
+- **Mobile WebKit and laptop testing.** WebKit 26.5 driven over 24 routes at
+  four mobile sizes, five laptop sizes, iPhone landscape and the 320px WCAG
+  reflow width, in WebKit and Chromium.
+- **Defects found and fixed:** `/support/` and `/for-clinicians/` horizontal
+  overflow; a skipped heading level on `/programs/`; three undersized touch
+  targets; caption/eyebrow contrast below AA site-wide; and a focus indicator
+  that was invisible in Safari on the early-access form.
+- **Added:** a page per health area with its services and upcoming projects, an
+  `/updates/` feed, `robots.txt`, and an Open Graph share card.
+- **Not done:** no independent audit, no real-device Safari pass, no
+  screen-reader pass, and no email has been sent or received end to end.

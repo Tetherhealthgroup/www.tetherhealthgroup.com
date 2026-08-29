@@ -10,14 +10,14 @@ available.
 
 ## Stack
 
-| | |
-|---|---|
-| Framework | Astro 7 (static output) |
-| Styling | Tailwind CSS 4, via `@tailwindcss/vite` |
-| Images | `astro:assets` + sharp (AVIF/WebP, responsive `densities`) |
-| Sitemap | `@astrojs/sitemap` |
-| Fonts | System stacks only — no webfont is downloaded |
-| JavaScript shipped | Two small inline scripts (mobile menu, waitlist form) |
+|                    |                                                            |
+| ------------------ | ---------------------------------------------------------- |
+| Framework          | Astro 7 (static output)                                    |
+| Styling            | Tailwind CSS 4, via `@tailwindcss/vite`                    |
+| Images             | `astro:assets` + sharp (AVIF/WebP, responsive `densities`) |
+| Sitemap            | `@astrojs/sitemap`                                         |
+| Fonts              | System stacks only — no webfont is downloaded              |
+| JavaScript shipped | Two small inline scripts (mobile menu, waitlist form)      |
 
 The site is fully static. There is no server, no database, no analytics, no
 cookies and no third-party request of any kind.
@@ -44,8 +44,9 @@ npm run preview    # serve the built output
 ```
 
 `test:smoke` runs against `dist/`, so run `npm run build` first. It asserts the
-13 routes are emitted, the sitemap exists, every page has a title, description
-and canonical URL, the safety routing appears on every page, and — the one that
+24 routes are emitted, the sitemap exists, every page has a title, description
+and canonical URL, no page skips a heading level, every health area states its
+own status, the safety routing appears on every page, and — the one that
 matters most — that **no page loads a third-party resource** and no page links
 to an app store while the product is pre-launch. Those two guard promises the
 site makes in prose, which a later edit could otherwise break silently.
@@ -68,21 +69,37 @@ project/
       programs.ts       The 10 health areas and each one's honest status
       screens.ts        The 28-screen BreatheFree catalog + artwork resolver
     components/         Logo, TetherLogo, Button, Card, Icon, Section,
-                        PageHero, PhoneFrame, ProgramCard, WaitlistForm,
-                        Header, Footer
+                        PageHero, PhoneFrame, ProgramCard, SupportEmail,
+                        WaitlistForm, Header, Footer
     layouts/
       Base.astro        Document shell, SEO, structured data, landmarks
       Legal.astro       Shell for the policy pages
-    pages/              13 routes (see below)
+    pages/              24 routes (see below)
     styles/global.css   Design tokens, base styles, motion
     assets/screens/     The 28 approved 1290x2796 PNGs
 ```
 
 ### Routes
 
-`/` · `/programs/` · `/breathefree/` · `/breathefree/how-it-works/` ·
-`/breathefree/tour/` · `/for-clinicians/` · `/about/` · `/support/` ·
-`/privacy/` · `/terms/` · `/security/` · `/accessibility/` · `404`
+`/` · `/programs/` · `/programs/<area>/` (ten, generated) · `/updates/` ·
+`/breathefree/` · `/breathefree/how-it-works/` · `/breathefree/tour/` ·
+`/for-clinicians/` · `/about/` · `/support/` · `/privacy/` · `/terms/` ·
+`/security/` · `/accessibility/` · `404`
+
+### Scope versus record
+
+Two kinds of statement live on this site and they must never blur:
+
+|                             | Where it lives                          | What it means                                      |
+| --------------------------- | --------------------------------------- | -------------------------------------------------- |
+| Services, upcoming projects | `/programs/<area>/`, from `programs.ts` | Intent. Nine of the ten areas have no code at all. |
+| Updates                     | `/updates/`, from `updates.ts`          | Things that have actually happened.                |
+
+`programs.ts` carries `services` and `upcoming` per area; project horizons are
+`In development`, `Next` and `Later` — **no dates are published for work that
+has not started**. `updates.ts` is append-only in spirit: add entries as work
+lands, and do not backfill a history that was never published. A smoke case
+fails the build if the updates page starts carrying "coming soon" language.
 
 ## Design system
 
@@ -124,7 +141,7 @@ To switch to mode 1, set the variable at build time:
 PUBLIC_WAITLIST_ENDPOINT="https://forms.example.com/waitlist" npm run build
 ```
 
-The form asks which health *area* interests someone — never whether they have a
+The form asks which health _area_ interests someone — never whether they have a
 condition — because the message travels as ordinary email.
 
 ## Content accuracy rules
