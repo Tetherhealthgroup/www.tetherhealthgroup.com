@@ -42,7 +42,7 @@ const isBuilding = program.status === "building";
         "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em]",
         isBuilding
           ? "bg-lime text-teal-deep"
-          : "bg-mint-pale text-teal-muted ring-1 ring-hairline-soft",
+          : "bg-mint-pale text-teal-mid ring-1 ring-hairline-soft",
       ]}
     >
       {
@@ -60,7 +60,7 @@ const isBuilding = program.status === "building";
   <h3 class:list={["text-xl", isBuilding ? "" : "text-teal-deep/80"]}>
     {program.area}
   </h3>
-  <p class="mt-2 text-[0.95rem] leading-relaxed text-teal-muted">
+  <p class="mt-2 text-[0.95rem] leading-relaxed text-teal-mid">
     {program.examples}
   </p>
 

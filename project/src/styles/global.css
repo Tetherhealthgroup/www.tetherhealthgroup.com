@@ -137,7 +137,11 @@
     letter-spacing: 0.183em; /* 2.2 / 12 */
     line-height: 1.2;
     text-transform: uppercase;
-    color: var(--color-teal-muted);
+    /* teal-muted is 3.2:1 against mint-pale and 3.7:1 against white — below the
+       4.5:1 an eyebrow needs at 12px. teal-secondary is the app's own body-copy
+       tone and clears it at 4.7:1 on the darkest surface an eyebrow sits on.
+       The brand values themselves are unchanged; only which one is used here. */
+    color: var(--color-teal-mid);
   }
 
   .eyebrow-on-dark {
