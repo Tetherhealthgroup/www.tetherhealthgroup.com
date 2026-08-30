@@ -170,15 +170,56 @@ It sets the canonical host and scheme (`http` and the bare domain both 301 to
 `https://www.tetherhealthgroup.com`), a Content-Security-Policy, HSTS,
 `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`,
 `X-Frame-Options`, the two cross-origin isolation headers, cache lifetimes per
-file type, compression, and the AVIF/WebP MIME types. Every block is wrapped in
-`<IfModule>`, because on shared hosting a directive from an absent module is a
-500 for the whole site.
+file type, compression, and the AVIF/WebP MIME types. It also exempts the ACME
+HTTP-01 challenge path from both redirects — see below, because that exemption
+is what lets the certificate be issued at all.
+
+Every block is wrapped in `<IfModule>`, because on shared hosting a directive
+from an absent module is a 500 for the whole site — and the module named has to
+be the one that actually provides the directive. `AddOutputFilterByType` is
+mod_filter's, not mod_deflate's; guarded on mod_deflate alone it took the whole
+site down on a server that had mod_deflate without mod_filter, which was
+reproduced locally before it was fixed.
 
 Verified against Apache 2.4.66 locally, serving `dist/` with `AllowOverride
 All`: the redirects fire and preserve path and query, `/about/` resolves,
 a missing page returns the site's own 404, `.htaccess` itself is 403, there is
 no directory listing, `/_astro/` assets are `immutable` for a year while HTML
-must revalidate, and HTML compresses 68,639 → 11,976 bytes.
+must revalidate, and HTML compresses 68,639 → 11,976 bytes. The ACME challenge
+path is served 200 over plain HTTP rather than redirected.
+
+### Two branches: `master` is source, `deploy` is the site
+
+`master` holds the Astro source, and `dist/` is gitignored there — so checking
+`master` out into `public_html` would deploy nothing a browser can render. That
+is what the host's 404 was.
+
+`deploy` is the compiled site. It is an **orphan** branch — no shared history
+with `master`, because its contents are build output rather than source — and
+it carries the contents of `dist/` at the branch root rather than under a
+`dist/` folder. That is what makes it directly servable: the checkout root *is*
+the document root.
+
+    git checkout deploy      ->      index.html, _astro/, .htaccess, 404.html, ...
+
+To publish, in cPanel → Git Version Control, clone this repository with
+`deploy` as the checked-out branch and `public_html` as the path. To refresh it
+after a source change:
+
+```bash
+npm run build          # from the repository root
+npm run deploy         # commits dist/ to the deploy branch and pushes it
+```
+
+`npm run deploy` builds the branch in a throwaway git worktree, so it never
+disturbs your working tree or your current branch. Every deploy commit names
+the `master` commit it was built from, so a deployed page can always be traced
+back to the source that produced it.
+
+Nothing about this deploys automatically. Adding a `.cpanel.yml` would let
+cPanel do that on push; it is deliberately not here yet, because the
+certificate below is a more urgent blocker and an automatic deploy to a site
+nobody can load in a browser has no one to serve.
 
 ### The certificate is the open blocker
 
@@ -189,6 +230,16 @@ port 80 already 301s into it. Fix it in cPanel: **SSL/TLS Status → select
 `tetherhealthgroup.com` and `www.` → Run AutoSSL**. There is no CAA record to
 block issuance and DNS already points at the account, so AutoSSL has what it
 needs.
+
+`.htaccess` has to stay out of AutoSSL's way, and now does. The certificate
+authority validates the domain over **plain HTTP**, fetching
+`http://<domain>/.well-known/acme-challenge/<token>`. The force-HTTPS rule used
+to apply to that fetch like any other and 301'd it to
+`https://www.tetherhealthgroup.com`, which is exactly the host whose
+certificate is wrong — so the check was sent into the error it was being run to
+clear. A rule exempting that path now sits first in the rewrite block, ahead of
+both redirects, because mod_rewrite runs rules in order. A smoke test fails if
+the exemption is removed or reordered behind a redirect.
 
 `Strict-Transport-Security` is deliberately `max-age=300` until then. HSTS
 turns a certificate error into an interstitial the visitor cannot click
