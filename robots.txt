@@ -1,0 +1,9 @@
+# www.tetherhealthgroup.com
+#
+# The whole site is public and intended to be indexed. There is no
+# authenticated area, no user content and no paywall, so nothing is disallowed.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://www.tetherhealthgroup.com/sitemap-index.xml

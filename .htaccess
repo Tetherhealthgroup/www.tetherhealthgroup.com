@@ -1,0 +1,199 @@
+# =============================================================================
+# www.tetherhealthgroup.com — Apache configuration for the built site
+# =============================================================================
+#
+# The site is hosted on HostGator (Apache), so the edge configuration the
+# project has been missing belongs here, in the document root, rather than in a
+# host-specific dashboard nobody can review.
+#
+# Every block is wrapped in <IfModule>. On shared hosting a directive from an
+# absent module is a 500 for the whole site, and a site that returns 500 is
+# worse than one without a Referrer-Policy.
+#
+# WHAT THIS FILE CANNOT DO: it cannot issue a TLS certificate. As of
+# 2026-08-30 the server answers :443 with HostGator's shared *.hostgator.com
+# certificate, which does not cover this domain, so every browser refuses the
+# connection. Fix that in cPanel (SSL/TLS Status -> Run AutoSSL) before
+# lengthening max-age in the HSTS block below.
+# =============================================================================
+
+# --- Canonical host and scheme ----------------------------------------------
+# One address for one page: https://www.tetherhealthgroup.com/... . The www
+# host is canonical because astro.config.mjs sets `site` to it, so it is what
+# every <link rel="canonical"> and every sitemap URL already claims.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # The ACME HTTP-01 challenge is exempt from both redirects below, and must
+  # stay that way.
+  #
+  # A certificate authority validates this domain by fetching
+  # http://<domain>/.well-known/acme-challenge/<token> over PLAIN HTTP. Without
+  # this rule the next line 301s that fetch to https://www.tetherhealthgroup.com,
+  # where the server currently answers with a certificate for a different name
+  # — so the validator is sent into the very TLS error the validation exists to
+  # clear, and AutoSSL cannot issue the certificate that would fix it.
+  #
+  # The token is a base64url string, so it never begins with a dot and is not
+  # caught by the deny-list at the foot of this file.
+  RewriteRule ^\.well-known/acme-challenge/ - [L]
+
+  # Force HTTPS. Both conditions are needed: %{HTTPS} is what a server that
+  # terminates TLS itself sets, X-Forwarded-Proto is what one behind a proxy
+  # sets, and a redirect that reads only the first loops forever behind the
+  # second.
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteRule ^ https://www.tetherhealthgroup.com%{REQUEST_URI} [R=301,L,QSA]
+
+  # Send the bare domain to www, preserving the path.
+  RewriteCond %{HTTP_HOST} !^www\. [NC]
+  RewriteCond %{HTTP_HOST} !^$
+  RewriteRule ^ https://www.tetherhealthgroup.com%{REQUEST_URI} [R=301,L,QSA]
+</IfModule>
+
+# --- Directory behaviour -----------------------------------------------------
+# Astro emits /about/index.html for /about/, so DirectoryIndex is what makes
+# directory-style URLs resolve. Indexes is off: a missing index file should be
+# a 404, not a file listing.
+DirectoryIndex index.html
+Options -Indexes
+
+ErrorDocument 404 /404.html
+
+# --- Security headers --------------------------------------------------------
+<IfModule mod_headers.c>
+
+  # Content-Security-Policy.
+  #
+  # `default-src 'none'` and then an allowance per resource type actually used.
+  # The site loads no third-party resource of any kind, so every source is
+  # 'self' — which is also what makes this policy worth having: any injected
+  # script, pixel or font is a policy violation rather than a silent success.
+  #
+  # The three hashes are the site's own inline scripts: the JSON-LD block in
+  # Base.astro, the mobile-menu script in Header.astro, and the waitlist form's
+  # script. THEY CHANGE WHENEVER THOSE SCRIPTS CHANGE. `npm run test:smoke`
+  # recomputes them from the build and fails if this list has drifted, so a
+  # stale hash is caught before it silently breaks the menu or the form.
+  #
+  # style-src needs 'unsafe-inline' for the style attributes Astro emits on
+  # five pages; a hash cannot cover an attribute. Script injection is the risk
+  # this policy exists to stop, and script-src does not have that hole.
+  #
+  # connect-src is 'self' because the form has no endpoint by default. Setting
+  # PUBLIC_WAITLIST_ENDPOINT means adding that origin here, or the browser
+  # blocks the POST — see README.
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-ZvHI7dAQf+RvTh3JR4SKvDIB2OD5V8b4f3ytqXhQVZQ=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-4daKGa3Y2Vbk8v2Ug+z6rdJ/5ObNaArcWP53uY/D+zk='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
+
+  # HSTS — deliberately short until the certificate is fixed.
+  #
+  # HSTS is the one header that can take a site off the air: once a browser has
+  # seen it, a certificate error becomes an interstitial the visitor CANNOT
+  # click through. This domain currently serves a certificate for a different
+  # name, so a year-long max-age here would strand every visitor who arrived
+  # during the window.
+  #
+  # After AutoSSL has issued a certificate and https://www.tetherhealthgroup.com
+  # loads clean in a browser, raise this to:
+  #     max-age=31536000
+  # then, only once every subdomain (mail., webmail., cpanel.) is confirmed to
+  # serve valid HTTPS, add `; includeSubDomains`. Add `; preload` only if the
+  # domain is being submitted to hstspreload.org — removal from that list takes
+  # months and cannot be rushed.
+  Header always set Strict-Transport-Security "max-age=300"
+
+  # A declared Content-Type is the only one that should be honoured; sniffing
+  # is how a user-uploaded .txt becomes executable script. Nothing is uploaded
+  # here, but the header costs nothing and outlives that assumption.
+  Header always set X-Content-Type-Options "nosniff"
+
+  # Send the full URL only to ourselves; send the origin alone off-site, and
+  # nothing at all when downgrading to http.
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # The site asks for no device permission. Say so, so an injected script
+  # cannot ask either.
+  Header always set Permissions-Policy "accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=(), xr-spatial-tracking=()"
+
+  # frame-ancestors above is the modern control; this is for browsers that
+  # predate it. Both say the same thing, which is what matters.
+  Header always set X-Frame-Options "DENY"
+
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Cross-Origin-Resource-Policy "same-origin"
+
+  # --- Caching ---------------------------------------------------------------
+  # Astro fingerprints everything under /_astro/, so those files can be cached
+  # for a year: a change produces a new name, never a new body at the same URL.
+  <FilesMatch "\.(js|css|woff2|avif|webp|png|jpg|jpeg|svg)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # HTML is the opposite case: the same URL must be able to change. Revalidate
+  # every time so a deploy is visible immediately rather than after a cache
+  # expires.
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+
+  # robots.txt and the sitemap change with the site; a day is long enough to
+  # spare the server and short enough to stay honest.
+  <FilesMatch "^(robots\.txt|sitemap.*\.xml)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+</IfModule>
+
+# --- The fingerprinted-asset exception --------------------------------------
+# og-image.png and favicon.svg live at fixed URLs, so they must not inherit the
+# immutable year above — a new share card would otherwise never reach anyone
+# who had seen the old one.
+<IfModule mod_headers.c>
+  <FilesMatch "^(og-image\.png|favicon\.svg)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+</IfModule>
+
+# --- Compression -------------------------------------------------------------
+# Images are already compressed; compressing them again wastes CPU and gains
+# nothing, so only text types are listed.
+#
+# Both modules are named, and both are needed. The DEFLATE filter belongs to
+# mod_deflate; AddOutputFilterByType, the directive that applies it, belongs to
+# mod_filter. Guarding on mod_deflate alone left the directive unguarded on any
+# server that has mod_deflate without mod_filter, where Apache answers
+# "Invalid command 'AddOutputFilterByType'" — and an unknown directive in
+# .htaccess is a 500 for every page of the site, which is precisely the failure
+# the <IfModule> wrappers in this file exist to prevent.
+<IfModule mod_deflate.c>
+  <IfModule mod_filter.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE application/xml application/rss+xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+  </IfModule>
+</IfModule>
+
+# --- MIME types --------------------------------------------------------------
+# Astro emits AVIF and WebP. An Apache that does not know AVIF sends it as
+# application/octet-stream and the browser downloads the image instead of
+# showing it.
+<IfModule mod_mime.c>
+  AddType image/avif .avif
+  AddType image/webp .webp
+  AddType image/svg+xml .svg
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+# --- Do not serve what is not the site --------------------------------------
+# Nothing below should ever be in the document root, but a mistaken upload
+# should not become a public download.
+<FilesMatch "(^\.|~$|\.(bak|config|dist|env|fla|inc|ini|log|psd|sh|sql|swp|ts)$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>

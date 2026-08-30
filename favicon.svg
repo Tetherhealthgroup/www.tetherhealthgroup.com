@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76 76" width="76" height="76">
+  <!-- Tether Health Group / BreatheFree leaf mark. Geometry and the leaf
+       gradient are taken from the approved application artwork at
+       design/approved/screen-01-welcome-iphone.svg. -->
+  <defs>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF947D"/>
+      <stop offset="1" stop-color="#FF6F54"/>
+    </linearGradient>
+  </defs>
+  <rect width="76" height="76" rx="17" fill="#123C37"/>
+  <circle cx="38" cy="38" r="27" fill="none" stroke="#DFF2E7" stroke-width="4"/>
+  <path d="M45 23c-17 5.4-22.4 19.3-11.6 31.6 15.4-1.5 23.9-13.9 18.5-29.3-1.5-3.9-3.9-4.6-6.9-2.3z" fill="url(#leaf)"/>
+  <path d="M33.5 49c4.6-10.8 10.8-18.5 19.3-25.4" fill="none" stroke="#FFFDF7" stroke-width="2.6" stroke-linecap="round"/>
+</svg>
