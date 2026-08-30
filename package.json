@@ -14,7 +14,8 @@
     "test:unit": "npm run test:unit --workspace project",
     "lint": "npm run lint --workspace project",
     "format": "npm run format --workspace project",
-    "test:smoke": "npm run test:smoke --workspace project"
+    "test:smoke": "npm run test:smoke --workspace project",
+    "deploy": "bash scripts/deploy.sh"
   },
   "engines": {
     "node": ">=22.12.0"
