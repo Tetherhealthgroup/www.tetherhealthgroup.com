@@ -11,6 +11,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
+    "test:unit": "node --experimental-strip-types --test test/unit/*.test.js",
     "lint": "prettier --check .",
     "format": "prettier --write .",
     "test:smoke": "node --test test/*.test.js"

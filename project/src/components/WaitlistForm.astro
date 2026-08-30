@@ -97,7 +97,7 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
         role="alert"
       >
         <Icon name="alert" size={16} />
-        <span>Please enter an email address so we can reply.</span>
+        <span>Please enter an email address we can reply to.</span>
       </p>
     </div>
 
@@ -198,6 +198,12 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
 </div>
 
 <script>
+  import {
+    isReplyableEmail,
+    normalizeWaitlistPayload,
+    waitlistMailtoUrl,
+  } from "../lib/waitlist";
+
   const form = document.getElementById("waitlist-form");
   const success = document.getElementById("waitlist-success");
   const successBody = document.getElementById("waitlist-success-body");
@@ -246,21 +252,20 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
         return;
       }
 
-      const email = ((data.get("email") as string) ?? "").trim();
-      if (!email || !email.includes("@") || email.startsWith("@")) {
+      const payload = normalizeWaitlistPayload({
+        name: data.get("name") as string,
+        email: data.get("email") as string,
+        role: data.get("role") as string,
+        interest: data.get("interest") as string,
+        message: data.get("message") as string,
+      });
+
+      if (!isReplyableEmail(payload.email)) {
         showError(true);
         if (emailField instanceof HTMLInputElement) emailField.focus();
         return;
       }
       showError(false);
-
-      const payload = {
-        name: ((data.get("name") as string) ?? "").trim(),
-        email,
-        role: (data.get("role") as string) ?? "",
-        interest: (data.get("interest") as string) ?? "",
-        message: ((data.get("message") as string) ?? "").trim(),
-      };
 
       if (endpoint) {
         try {
@@ -286,19 +291,7 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
         }
       }
 
-      const lines = [
-        `Name: ${payload.name || "(not given)"}`,
-        `Email: ${payload.email}`,
-        `I am: ${payload.role}`,
-        `Health area of interest: ${payload.interest}`,
-        "",
-        payload.message || "(no message)",
-      ];
-
-      window.location.href =
-        `mailto:${address}` +
-        `?subject=${encodeURIComponent(subject)}` +
-        `&body=${encodeURIComponent(lines.join("\n"))}`;
+      window.location.href = waitlistMailtoUrl(address, subject, payload);
 
       finish(
         `Your email app should now be open with a message to ${address}. ` +

@@ -39,9 +39,16 @@ npm run build      # static build into project/dist
 npm run check      # astro check — type-checks .astro and .ts
 npm run lint       # prettier --check
 npm run format     # prettier --write
+npm run test:unit  # pure units, no DOM and no build needed
 npm run test:smoke # asserts the built output in project/dist
 npm run preview    # serve the built output
 ```
+
+`test:unit` covers `src/lib/waitlist.ts` — which addresses the form accepts,
+and the exact `mailto:` URL it composes. That URL earns a test of its own:
+once the page assigns it to `window.location.href` the browser hands it to an
+external mail handler and reports nothing back, so what the company actually
+receives cannot be observed from a browser test.
 
 `test:smoke` runs against `dist/`, so run `npm run build` first. It asserts the
 24 routes are emitted, the sitemap exists, every page has a title, description
@@ -64,6 +71,8 @@ configured".
 ```
 project/
   src/
+    lib/
+      waitlist.ts      Address checking and mailto composition (pure, tested)
     data/
       site.ts          Identity, navigation, contact, quitline numbers
       programs.ts       The 10 health areas and each one's honest status
@@ -143,6 +152,12 @@ PUBLIC_WAITLIST_ENDPOINT="https://forms.example.com/waitlist" npm run build
 
 The form asks which health _area_ interests someone — never whether they have a
 condition — because the message travels as ordinary email.
+
+The address is checked against the syntax `<input type="email">` itself
+enforces — the HTML standard's own expression, in `src/lib/waitlist.ts` — so
+the field's declared type and the form's check agree. The form promises a
+reply, so an address that cannot receive one is refused rather than waved
+through.
 
 ## Content accuracy rules
 

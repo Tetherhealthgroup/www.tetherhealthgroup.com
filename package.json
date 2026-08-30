@@ -11,6 +11,7 @@
     "build": "npm run build --workspace project",
     "preview": "npm run preview --workspace project",
     "check": "npm run check --workspace project",
+    "test:unit": "npm run test:unit --workspace project",
     "lint": "npm run lint --workspace project",
     "format": "npm run format --workspace project",
     "test:smoke": "npm run test:smoke --workspace project"

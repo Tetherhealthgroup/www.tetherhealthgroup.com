@@ -75,9 +75,12 @@ who sees it.
       `support@` mailbox before the address is promoted anywhere.
 - [ ] **The waitlist form sends nothing by itself.** With no
       `PUBLIC_WAITLIST_ENDPOINT` set it opens the visitor's mail client and
-      relies on them pressing Send. The POST path is implemented and verified
-      against a local handler; point `PUBLIC_WAITLIST_ENDPOINT` at a real form
-      handler to stop depending on the visitor's mail app.
+      relies on them pressing Send. The POST path is implemented and was
+      re-verified against a local handler on 2026-08-30; point
+      `PUBLIC_WAITLIST_ENDPOINT` at a real form handler to stop depending on
+      the visitor's mail app. Note that this is downstream of the MX blocker
+      above: in the default mode the message is addressed to a mailbox that
+      cannot currently receive it.
 - [ ] Legal review of `/privacy/`, `/terms/`, `/security/`.
 - [ ] Choose hosting; add CSP/HSTS/Referrer-Policy at the edge.
 - [ ] Independent accessibility audit (the site says one has not happened).
@@ -89,6 +92,38 @@ who sees it.
       copy. It elaborates the supplied programme plan and has had no clinical
       review.
 - [ ] Push the website commits to `origin/master` (not pushed).
+
+### Session: 2026-08-30 — the waitlist form, driven rather than assumed
+
+Both delivery modes were exercised in a browser against the built site, not
+read in the source.
+
+- **Mailto mode (the default).** Chromium reports the URL it hands to the
+  external handler, so the composed message is on the record: the address,
+  subject, labelled body lines, and `&` and `+` inside the message surviving
+  percent-encoding.
+- **POST mode.** Built with `PUBLIC_WAITLIST_ENDPOINT` pointed at a local
+  handler; the handler received exactly
+  `{name, email, role, interest, message}` as `application/json`.
+- **Endpoint failure.** With the endpoint returning HTTP 500 the form falls
+  back to the mail client rather than dropping the submission, as documented.
+- **Honeypot.** A filled `company` field produces the ordinary confirmation and
+  sends nothing — verified by the handler receiving no request.
+- **Validation.** Empty and malformed addresses are refused, the error is
+  announced, focus moves to the field, and it clears on the next keystroke.
+
+**Defect found and fixed.** `a@` — and `a b@c.com`, `a@b.`, `a@-b.com`,
+`a@@b.com` — passed the old check (`includes("@")`), and the form then composed
+a message to an address no reply could reach. The check is now the syntax
+`<input type="email">` itself enforces.
+
+`src/lib/waitlist.ts` was extracted so the `mailto:` composition became
+testable at all: a browser reports nothing back once the URL goes to an
+external handler. `test:unit` (8 tests) now covers it, and the rejection table
+fails against the old check on six of its ten cases.
+
+Gate after the change: build PASS (25 pages) · `astro check` 0/0/0 ·
+prettier PASS · unit 8/8 PASS · smoke 17/17 PASS.
 
 ### Session: 2026-08-29 (later) — production pass
 
