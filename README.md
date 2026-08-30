@@ -159,6 +159,55 @@ the field's declared type and the form's check agree. The form promises a
 reply, so an address that cannot receive one is refused rather than waved
 through.
 
+## Hosting and deployment
+
+The domain resolves to HostGator shared hosting (`NS hgns1/hgns2.hostgator.com`,
+`A 192.185.39.65`, checked 2026-08-30), which is Apache. The edge configuration
+the project used to be missing therefore lives in `project/public/.htaccess`
+and ships into `dist/` with the rest of the site.
+
+It sets the canonical host and scheme (`http` and the bare domain both 301 to
+`https://www.tetherhealthgroup.com`), a Content-Security-Policy, HSTS,
+`X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`,
+`X-Frame-Options`, the two cross-origin isolation headers, cache lifetimes per
+file type, compression, and the AVIF/WebP MIME types. Every block is wrapped in
+`<IfModule>`, because on shared hosting a directive from an absent module is a
+500 for the whole site.
+
+Verified against Apache 2.4.66 locally, serving `dist/` with `AllowOverride
+All`: the redirects fire and preserve path and query, `/about/` resolves,
+a missing page returns the site's own 404, `.htaccess` itself is 403, there is
+no directory listing, `/_astro/` assets are `immutable` for a year while HTML
+must revalidate, and HTML compresses 68,639 → 11,976 bytes.
+
+### The certificate is the open blocker
+
+As of 2026-08-30 the server answers `:443` with HostGator's shared
+certificate — `CN=*.hostgator.com`, SANs `*.hostgator.com` and `hostgator.com`
+— which does not cover this domain. Every browser refuses the connection, and
+port 80 already 301s into it. Fix it in cPanel: **SSL/TLS Status → select
+`tetherhealthgroup.com` and `www.` → Run AutoSSL**. There is no CAA record to
+block issuance and DNS already points at the account, so AutoSSL has what it
+needs.
+
+`Strict-Transport-Security` is deliberately `max-age=300` until then. HSTS
+turns a certificate error into an interstitial the visitor cannot click
+through, so a year-long max-age shipped before the certificate is valid would
+strand everyone who visited in the meantime. A smoke test fails if it is
+raised, so the ramp is a deliberate commit rather than a silent one.
+
+### The CSP pins hashes, and they move
+
+`script-src` allows exactly three `sha256-` hashes: the JSON-LD block, the
+mobile-menu script, and the waitlist form's script. Edit any of those and the
+browser silently refuses to run it — the menu stops opening, the form starts
+reloading the page. `npm run test:smoke` recomputes the hashes from the build
+and fails in both directions: a script the policy does not allow, and a hash
+the policy allows that nothing matches.
+
+Setting `PUBLIC_WAITLIST_ENDPOINT` also needs that origin added to
+`connect-src`, or the browser blocks the POST.
+
 ## Content accuracy rules
 
 This is a health company's website, so the following are enforced by
@@ -184,10 +233,12 @@ These are outstanding and are **not** handled by this repository:
 - [ ] Have `privacy.astro`, `terms.astro` and `security.astro` reviewed by a
       lawyer. They are written to be accurate about what the site does, but they
       have not had legal review.
-- [ ] Decide hosting, then confirm the privacy notice's statement about
-      server access logs matches what the host actually keeps.
-- [ ] Add security headers at the edge (CSP, HSTS, `X-Content-Type-Options`,
-      `Referrer-Policy`). A static host serves these; Astro does not.
+- [ ] Get a certificate issued for the domain (cPanel → SSL/TLS Status → Run
+      AutoSSL). Until then `https://` fails in every browser — see above.
+- [ ] Confirm the privacy notice's statement about server access logs matches
+      what HostGator actually keeps.
+- [x] Security headers at the edge — `project/public/.htaccess`, verified
+      against Apache 2.4.
 - [ ] Commission an independent accessibility audit, as `/accessibility/`
       states has not yet happened.
 - [ ] Replace `TetherLogo.astro` if and when a corporate mark is approved — the
