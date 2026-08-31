@@ -264,6 +264,38 @@ So `d180a1b` is pushed but **not deployed**, and two things follow:
 - [ ] Then raise HSTS `max-age` and update the tripwire test in the same
       commit.
 
+### Session: 2026-08-30 (later still) — the updates page removed
+
+Requested by the owner: the site does not need a dedicated updates page.
+
+**Removed:** `project/src/pages/updates.astro`, the `Updates` entry in
+`primaryNav` and in the footer's Product column, and the "All updates" link at
+the foot of the per-area "Already done" section. The build goes from 25 pages
+to 24, and `/updates/` no longer appears in the sitemap or in any nav.
+
+**Kept:** `project/src/data/updates.ts` and the per-area "Already done"
+section on `/programs/<area>/`, which renders those entries. The request named
+the page, and deleting the data would have removed real content from ten health
+area pages that nobody asked to change. Reversible either way — say so and the
+section goes too.
+
+**Tests changed rather than dropped.** The case that guarded the updates
+content read `dist/updates/index.html`, which no longer exists. It now reads
+the "Already done" section of `/programs/tobacco/` and checks the same
+invariant — entries describe work that has landed, never intent. The check is
+scoped to a slice of that page because the same page legitimately describes
+future work further down, under "Coming up"; scanning the whole document would
+have meant either a false failure or no check at all.
+
+Added a case asserting that no built page links to `/updates/`. Deleting a
+page is only half the job — a link left behind is a 404 for a real visitor and
+the build does not complain. Both were confirmed to fail before being accepted:
+a `/updates/` link injected into `dist/about/index.html` fails the second, and
+"coming soon" injected into the "Already done" section fails the first.
+
+Gate: build PASS (24 pages) · `astro check` 0/0/0 · prettier PASS ·
+unit 8/8 PASS · smoke+headers 30/30 PASS.
+
 ### Session: 2026-08-30 — the waitlist form, driven rather than assumed
 
 Both delivery modes were exercised in a browser against the built site, not

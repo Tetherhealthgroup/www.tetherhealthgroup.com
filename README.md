@@ -90,7 +90,7 @@ project/
 
 ### Routes
 
-`/` · `/programs/` · `/programs/<area>/` (ten, generated) · `/updates/` ·
+`/` · `/programs/` · `/programs/<area>/` (ten, generated) · `/services/` ·
 `/breathefree/` · `/breathefree/how-it-works/` · `/breathefree/tour/` ·
 `/for-clinicians/` · `/about/` · `/support/` · `/privacy/` · `/terms/` ·
 `/security/` · `/accessibility/` · `404`
@@ -102,13 +102,17 @@ Two kinds of statement live on this site and they must never blur:
 |                             | Where it lives                          | What it means                                      |
 | --------------------------- | --------------------------------------- | -------------------------------------------------- |
 | Services, upcoming projects | `/programs/<area>/`, from `programs.ts` | Intent. Nine of the ten areas have no code at all. |
-| Updates                     | `/updates/`, from `updates.ts`          | Things that have actually happened.                |
+| Updates                     | the "Already done" section of `/programs/<area>/`, from `updates.ts` | Things that have actually happened. |
 
 `programs.ts` carries `services` and `upcoming` per area; project horizons are
 `In development`, `Next` and `Later` — **no dates are published for work that
 has not started**. `updates.ts` is append-only in spirit: add entries as work
-lands, and do not backfill a history that was never published. A smoke case
-fails the build if the updates page starts carrying "coming soon" language.
+lands, and do not backfill a history that was never published.
+
+There is no longer a dedicated `/updates/` feed — the entries render only in
+the "Already done" section of the health area they belong to. A smoke case
+fails the build if that section starts carrying "coming soon" language, and a
+second one fails if any page links to the removed `/updates/` route.
 
 ## Design system
 

@@ -36,7 +36,6 @@ const REQUIRED_PAGES = [
   "security/index.html",
   "support/index.html",
   "terms/index.html",
-  "updates/index.html",
   "services/index.html",
   // one page per health area, generated from programs.ts
   "programs/tobacco/index.html",
@@ -258,17 +257,45 @@ test("every health area has a page, and it is honest about status", async () => 
   }
 });
 
-test("updates describe work that has happened, not work that is planned", () => {
-  // The updates page is the checkable one. If it ever starts carrying intent,
-  // the distinction the site rests on has collapsed.
-  const html = readFileSync(join(dist, "updates/index.html"), "utf8");
-  assert.match(html, /What has actually changed/);
+test("area updates describe work that has happened, not work that is planned", () => {
+  /* The dedicated /updates/ page has been removed. The same entries now render
+     only in the "Already done" section of a health-area page, so that section
+     is what has to stay checkable: if it ever starts carrying intent, the
+     distinction the site rests on has collapsed.
+
+     The slice is the point. The same page legitimately describes future work
+     further down, under "Coming up", so scanning the whole document would
+     either fail on correct content or have to drop the check entirely. */
+  const html = readFileSync(join(dist, "programs/tobacco/index.html"), "utf8");
+
+  const start = html.indexOf("Already done");
+  assert.notEqual(start, -1, "the 'Already done' section is missing");
+  const end = html.indexOf("</section>", start);
+  assert.notEqual(end, -1, "the 'Already done' section is never closed");
+  const landed = html.slice(start, end);
+
+  assert.match(landed, /What has landed here/);
   for (const banned of [/coming soon/i, /will launch/i, /launching soon/i]) {
     assert.ok(
-      !banned.test(html),
-      `the updates page promises future work: ${banned}`,
+      !banned.test(landed),
+      `the 'Already done' section promises future work: ${banned}`,
     );
   }
+});
+
+test("nothing links to the removed updates page", async () => {
+  /* Deleting a page is only half the job — a link left pointing at it is a
+     404 for a real visitor, and the build will not complain. */
+  const offenders = [];
+  for (const page of await htmlFiles()) {
+    const html = readFileSync(join(dist, page), "utf8");
+    if (/href="\/updates\/?"/.test(html)) offenders.push(page);
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    `these pages still link to the removed /updates/ page: ${offenders.join(", ")}`,
+  );
 });
 
 test("the share card and robots.txt ship, and the card is not just promised", () => {
@@ -287,7 +314,7 @@ test("the share card and robots.txt ship, and the card is not just promised", ()
   for (const page of [
     "index.html",
     "programs/index.html",
-    "updates/index.html",
+    "services/index.html",
   ]) {
     const html = readFileSync(join(dist, page), "utf8");
     assert.match(

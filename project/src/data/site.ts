@@ -56,7 +56,6 @@ export const primaryNav: NavLink[] = [
   { label: "BreatheFree", href: "/breathefree/" },
   { label: "How it works", href: "/breathefree/how-it-works/" },
   { label: "For clinicians", href: "/for-clinicians/" },
-  { label: "Updates", href: "/updates/" },
   { label: "About", href: "/about/" },
 ];
 
@@ -70,7 +69,6 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
       { label: "How it works", href: "/breathefree/how-it-works/" },
       { label: "Screen tour", href: "/breathefree/tour/" },
       { label: "For clinicians and care teams", href: "/for-clinicians/" },
-      { label: "Updates", href: "/updates/" },
     ],
   },
   {
