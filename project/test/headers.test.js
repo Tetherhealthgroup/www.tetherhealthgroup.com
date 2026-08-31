@@ -11,7 +11,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -118,13 +118,22 @@ test("no source outside the site's own origin is allowed", () => {
   );
 });
 
-test("HSTS is not lengthened while the certificate is still wrong", () => {
-  /* This is a deliberate tripwire, not a preference. The live host answers
-     :443 with a *.hostgator.com certificate that does not cover this domain
-     (checked 2026-08-30). HSTS makes a certificate error impossible to click
-     through, so a long max-age shipped before the certificate is fixed takes
-     the site off the air for anyone who visits in between.
-     When AutoSSL has issued a real certificate and https://www.tetherhealthgroup.com
+test("HSTS is not lengthened before the site has ever served a page", () => {
+  /* This is a deliberate tripwire, not a preference.
+
+     The certificate is no longer the reason. AutoSSL issued a Let's Encrypt
+     certificate covering www.tetherhealthgroup.com and tetherhealthgroup.com
+     on 2026-08-30, and the chain verifies ("Verify return code: 0 (ok)").
+
+     The reason now is that this header has never actually reached a browser.
+     The document root answers 403 on every path, so nothing in .htaccess is
+     in effect and the value below is untested against a real page load. HSTS
+     is the one header that cannot be walked back: once a browser has seen it,
+     any TLS failure becomes an interstitial the visitor cannot click through.
+     Committing a year to it before a single page has loaded is a bet with no
+     upside.
+
+     When the document root serves the site and https://www.tetherhealthgroup.com
      loads clean, raise max-age here and in public/.htaccess together. */
   const hsts = htaccess.match(
     /Header always set Strict-Transport-Security "([^"]+)"/,
@@ -133,8 +142,8 @@ test("HSTS is not lengthened while the certificate is still wrong", () => {
   const maxAge = Number(hsts.match(/max-age=(\d+)/)?.[1] ?? 0);
   assert.ok(
     maxAge <= 300,
-    `max-age is ${maxAge}. Raise it only once the certificate is valid — and ` +
-      `update this test in the same commit, so the reason is recorded.`,
+    `max-age is ${maxAge}. Raise it only once the site actually loads over ` +
+      `HTTPS — and update this test in the same commit, so the reason is recorded.`,
   );
   assert.doesNotMatch(
     hsts,
@@ -143,14 +152,18 @@ test("HSTS is not lengthened while the certificate is still wrong", () => {
   );
 });
 
-test("the ACME challenge is not redirected into the broken certificate", () => {
+test("the ACME challenge is not redirected into https://", () => {
   /* A certificate authority validates the domain over PLAIN HTTP, fetching
      /.well-known/acme-challenge/<token>. The redirect below it sends everything
-     to https://www.tetherhealthgroup.com, where the server currently answers
-     with a certificate for a different name — so without an exemption the
-     validator is sent into the very TLS error it is being run to clear, and
-     AutoSSL cannot issue the certificate. Verified against Apache 2.4.66: with
-     the exemption removed the token 301s; with it, the token is served 200.
+     to https://www.tetherhealthgroup.com, and that is survivable only while the
+     certificate there is valid.
+
+     It was not, for the first issuance. It may not be again: AutoSSL renews on
+     a cycle, and the renewal that matters most is the one attempted when the
+     current certificate has already failed — exactly when redirecting the
+     validator into https:// sends it into the error it was run to clear.
+     Verified against Apache 2.4.66: with the exemption removed the token 301s;
+     with it, the token is served 200.
 
      The exemption must come FIRST. mod_rewrite applies rules in order, and a
      [L] on the redirect above it would end the round before this one is
@@ -161,7 +174,8 @@ test("the ACME challenge is not redirected into the broken certificate", () => {
     acme,
     -1,
     "no RewriteRule exempts /.well-known/acme-challenge/. AutoSSL's HTTP-01 " +
-      "check will be 301'd to a host whose certificate does not cover it.",
+      "check will be 301'd into https://, which fails whenever the certificate " +
+      "it is being run to renew or replace is not currently valid.",
   );
   assert.equal(
     rules[acme][2],
@@ -215,4 +229,84 @@ test("no directive is guarded by a module that does not define it", () => {
         `500 for the entire site.`,
     );
   }
+});
+
+/* --- The deployment configuration -------------------------------------------
+ *
+ * dist/.cpanel.yml is what makes cPanel's "Deploy HEAD Commit" copy the
+ * checkout into the document root. It exists because the two were not the same
+ * directory: the repository was cloned to /home2/safecode/tetherhealthgroup.com
+ * (cPanel's default is the HOME directory) while Apache serves this domain from
+ * /home2/safecode/public_html/tetherhealthgroup.com. A correct build sat on
+ * disk and every request answered 403.
+ *
+ * These tests guard the two ways that file can be wrong while still looking
+ * right: copying without dotfiles, which drops .htaccess and ships the site
+ * with no CSP and no redirects; and deleting paths that must survive a deploy.
+ */
+
+test("the deployment configuration ships with the site", () => {
+  assert.ok(
+    existsSync(join(dist, ".cpanel.yml")),
+    ".cpanel.yml is missing from dist/. cPanel reads it from the checked-out " +
+      "branch, so without it 'Deploy HEAD Commit' cannot copy anything and the " +
+      "live site stays on whatever is already in the document root.",
+  );
+});
+
+test("the deploy copies dotfiles, or it ships a site with no .htaccess", () => {
+  /* `cp -R * $DOCROOT` is the idiom in most .cpanel.yml examples and it is
+     wrong here: the glob does not match .htaccess, which on this site is the
+     canonical-host redirects, the CSP, HSTS and the ACME exemption. The deploy
+     reports success and the site loses all of it. */
+  const yml = readFileSync(join(dist, ".cpanel.yml"), "utf8");
+  const copy = yml
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("#"))
+    .join("\n");
+
+  assert.doesNotMatch(
+    copy,
+    /cp\s+-[a-zA-Z]*R[a-zA-Z]*\s+\*/,
+    "the copy uses a bare '*' glob, which skips .htaccess and every other " +
+      "dotfile. Use rsync or tar.",
+  );
+  assert.match(
+    copy,
+    /rsync|tar/,
+    "no dotfile-safe copy command (rsync or tar) appears in the deploy tasks",
+  );
+});
+
+test("the deploy does not delete what it must not delete", () => {
+  /* --delete keeps the document root equal to the build instead of hoarding
+     every fingerprinted asset ever shipped. That is correct, and it is also
+     the one thing here that can destroy something: .well-known/ holds AutoSSL's
+     HTTP-01 challenge tokens, and a deploy that runs mid-validation would fail
+     a certificate renewal it has nothing to do with. .git/ must never reach the
+     document root at all. */
+  const yml = readFileSync(join(dist, ".cpanel.yml"), "utf8");
+  if (!/--delete/.test(yml)) return; // nothing is removed; nothing to protect
+
+  for (const path of [".git", ".well-known", ".cpanel.yml"]) {
+    assert.match(
+      yml,
+      new RegExp(`--exclude=\\.?/?${path.replace(".", "\\.")}`),
+      `${path} is not excluded from a --delete copy into the document root`,
+    );
+  }
+});
+
+test("the deploy target is a document root, not the repository checkout", () => {
+  /* The whole defect this file fixes was a copy that never left the home
+     directory. A DOCROOT pointing back at the checkout would restore it. */
+  const yml = readFileSync(join(dist, ".cpanel.yml"), "utf8");
+  const docroot = yml.match(/DOCROOT=(\S+)/)?.[1];
+  assert.ok(docroot, "no DOCROOT is exported by the deploy tasks");
+  assert.match(
+    docroot,
+    /public_html/,
+    `DOCROOT is ${docroot}, which is not under public_html. cPanel's default ` +
+      `clone path is the home directory, and copying there changes nothing.`,
+  );
 });

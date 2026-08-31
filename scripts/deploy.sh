@@ -48,6 +48,17 @@ if [ ! -f "$DIST/.htaccess" ]; then
   exit 1
 fi
 
+# .cpanel.yml is what lets cPanel's "Deploy HEAD Commit" copy the checkout into
+# the document root. Without it the branch still pushes and cPanel still shows
+# the new commit, but the served site never changes — which is exactly the
+# failure this project already spent a session diagnosing. Fail loudly instead.
+if [ ! -f "$DIST/.cpanel.yml" ]; then
+  echo "deploy: $DIST/.cpanel.yml is missing — cPanel would accept the branch" >&2
+  echo "        but never copy it into the document root, and the live site" >&2
+  echo "        would silently stay on the previous build. Check project/public/." >&2
+  exit 1
+fi
+
 # A deploy commit claims which source commit it was built from. That claim is
 # only true if there is nothing uncommitted, so this refuses a dirty tree
 # rather than recording something it cannot stand behind.

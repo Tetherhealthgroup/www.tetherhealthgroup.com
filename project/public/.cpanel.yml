@@ -1,0 +1,66 @@
+---
+# =============================================================================
+# cPanel deployment for www.tetherhealthgroup.com
+# =============================================================================
+#
+# WHY THIS FILE EXISTS
+#
+# cPanel's Git Version Control clones a repository to a path you choose, and
+# its default is /home2/<user>/<repo-name> — the HOME DIRECTORY, not a document
+# root. That is what happened here: the `deploy` branch is checked out at
+#
+#     /home2/safecode/tetherhealthgroup.com
+#
+# while Apache serves this domain from
+#
+#     /home2/safecode/public_html/tetherhealthgroup.com
+#
+# So a correct, directly-servable build sat on disk and no request ever reached
+# it. Every path answered 403 from HostGator's canned error page — no redirect,
+# no CSP, no HSTS — because the .htaccess carrying all of that was in a
+# directory Apache does not serve. This file closes that gap: it is what the
+# "The system cannot deploy" notice on the Pull or Deploy tab is asking for,
+# and it turns "Deploy HEAD Commit" into the step that publishes the site.
+#
+# This file lives in project/public/, so Astro copies it into dist/ and
+# scripts/deploy.sh carries it to the `deploy` branch root — the same route
+# .htaccess takes. cPanel only reads it from the CHECKED-OUT branch, which is
+# `deploy`, so putting it anywhere else would have no effect.
+#
+# It is not web-readable: the deny-list at the foot of .htaccess refuses any
+# filename beginning with a dot, and it is excluded from the copy below anyway.
+# =============================================================================
+
+deployment:
+  tasks:
+    - export DOCROOT=/home2/safecode/public_html/tetherhealthgroup.com
+
+    # The doc root should already exist; -p makes the deploy work on a fresh
+    # account rather than failing on a missing directory.
+    - /bin/mkdir -p $DOCROOT
+
+    # Copy the checkout into the document root.
+    #
+    # `test -d` first: --delete against an unset or missing DOCROOT is the one
+    # way this file could destroy something, so the copy does not run unless
+    # the target is a directory that exists.
+    #
+    # rsync when it is available, tar otherwise. Both were chosen for one
+    # reason: THEY COPY DOTFILES. `cp -R * $DOCROOT`, the idiom in most
+    # .cpanel.yml examples, silently skips .htaccess — which on this site is
+    # the canonical-host redirects, the CSP, HSTS, and the ACME exemption. A
+    # deploy that drops it looks like it worked and ships an unprotected site.
+    #
+    # --delete keeps the doc root equal to the build rather than accumulating
+    # every fingerprinted asset ever shipped. The exclusions are the paths that
+    # must survive it:
+    #   .git/        never publish the repository. Apache's dotfile deny-list
+    #                covers /.git itself but NOT /.git/config, whose filename
+    #                has no leading dot — so exposure here is real, not
+    #                theoretical.
+    #   .cpanel.yml  deployment config is not site content.
+    #   .well-known/ AutoSSL writes HTTP-01 challenge tokens here. A deploy
+    #                running mid-validation must not delete them, or it fails
+    #                the renewal it is unrelated to.
+    #   cgi-bin/     cPanel's, not ours.
+    - test -d $DOCROOT && if command -v rsync >/dev/null 2>&1; then rsync -a --delete --exclude=.git/ --exclude=.cpanel.yml --exclude=.well-known/ --exclude=cgi-bin/ ./ $DOCROOT/; else tar --exclude=./.git --exclude=./.cpanel.yml --exclude=./.well-known --exclude=./cgi-bin -cf - . | tar -xf - -C $DOCROOT; fi
