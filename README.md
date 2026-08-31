@@ -216,36 +216,99 @@ disturbs your working tree or your current branch. Every deploy commit names
 the `master` commit it was built from, so a deployed page can always be traced
 back to the source that produced it.
 
-Nothing about this deploys automatically. Adding a `.cpanel.yml` would let
-cPanel do that on push; it is deliberately not here yet, because the
-certificate below is a more urgent blocker and an automatic deploy to a site
-nobody can load in a browser has no one to serve.
+Publishing is a two-step: `npm run deploy` pushes the `deploy` branch, then
+cPanel copies it into the document root. The second step is what
+`project/public/.cpanel.yml` provides — see "The document root was the
+blocker" below for why a copy step is needed at all.
 
-### The certificate is the open blocker
+### The certificate is done
 
-As of 2026-08-30 the server answers `:443` with HostGator's shared
-certificate — `CN=*.hostgator.com`, SANs `*.hostgator.com` and `hostgator.com`
-— which does not cover this domain. Every browser refuses the connection, and
-port 80 already 301s into it. Fix it in cPanel: **SSL/TLS Status → select
-`tetherhealthgroup.com` and `www.` → Run AutoSSL**. There is no CAA record to
-block issuance and DNS already points at the account, so AutoSSL has what it
-needs.
+AutoSSL has issued it. Measured on 2026-08-30 against `:443`:
 
-`.htaccess` has to stay out of AutoSSL's way, and now does. The certificate
-authority validates the domain over **plain HTTP**, fetching
-`http://<domain>/.well-known/acme-challenge/<token>`. The force-HTTPS rule used
-to apply to that fetch like any other and 301'd it to
-`https://www.tetherhealthgroup.com`, which is exactly the host whose
-certificate is wrong — so the check was sent into the error it was being run to
-clear. A rule exempting that path now sits first in the rewrite block, ahead of
-both redirects, because mod_rewrite runs rules in order. A smoke test fails if
-the exemption is removed or reordered behind a redirect.
+    subject=CN=cpcontacts.tetherhealthgroup.com
+    issuer=C=US, O=Let's Encrypt, CN=YR2
+    notBefore=Aug 30 15:27:15 2026 GMT
+    notAfter=Nov 28 15:27:14 2026 GMT
+    SANs: ... tetherhealthgroup.com, www.tetherhealthgroup.com ...
+    Verification: OK / Verify return code: 0 (ok)
 
-`Strict-Transport-Security` is deliberately `max-age=300` until then. HSTS
-turns a certificate error into an interstitial the visitor cannot click
-through, so a year-long max-age shipped before the certificate is valid would
-strand everyone who visited in the meantime. A smoke test fails if it is
-raised, so the ramp is a deliberate commit rather than a silent one.
+Both names this site uses are covered and the chain validates to ISRG Root X1.
+The earlier `*.hostgator.com` shared certificate is gone. TLS is no longer a
+blocker, and the previous version of this section — which said every browser
+refuses the connection — is no longer true.
+
+The ACME exemption in `.htaccess` stays. The certificate authority validates
+over **plain HTTP**, fetching
+`http://<domain>/.well-known/acme-challenge/<token>`, and the force-HTTPS rule
+would 301 that fetch into `https://`. That is survivable only while the
+certificate on the other side is valid — which is exactly what a renewal
+attempted after something has gone wrong cannot assume. The exemption sits
+first in the rewrite block, ahead of both redirects, because mod_rewrite runs
+rules in order; a smoke test fails if it is removed or reordered.
+
+`Strict-Transport-Security` is still `max-age=300`, and the tripwire test still
+holds it there. The certificate half of the risk is retired, but this header
+has never been served to anyone — see below — so the ramp has never been
+exercised against a real page load. Raise it once the site actually loads.
+
+### The document root was the blocker
+
+The site is not being served. Measured on 2026-08-30, every path answers `403`
+on **both** schemes:
+
+    GET https://www.tetherhealthgroup.com/            -> 403
+    GET https://www.tetherhealthgroup.com/about/      -> 403
+    GET https://www.tetherhealthgroup.com/robots.txt  -> 403
+    GET http://www.tetherhealthgroup.com/             -> 403, no redirect
+
+The body is HostGator's canned "403 Error. Forbidden." page — 732 bytes,
+`Last-Modified: Wed, 25 Mar 2026`, predating this project. Three things follow
+from that response, and together they identify the fault:
+
+- **No redirect.** Port 80 does not 301 to `https://`, so the rewrite block is
+  not running.
+- **No headers.** No CSP, no HSTS, no `X-Content-Type-Options`.
+- **`/.well-known/acme-challenge/` is 403 too**, and that path is exempt from
+  every rule in this file.
+
+A directive cannot fail to apply and also fail to be overridden. The only
+reading consistent with all three is that Apache is not reading our
+`.htaccess` at all: the document root it serves for this domain is not where
+the built site is.
+
+The cPanel Git Version Control checkout is at
+`/home2/safecode/tetherhealthgroup.com` — cPanel's default is
+`/home2/<user>/<repo-name>`, the **home directory**, not a document root. The
+`deploy` branch content is correct and directly servable; it is simply in the
+wrong place, or in a directory Apache cannot traverse.
+
+**The fix ships in `project/public/.cpanel.yml`**, which travels to the
+`deploy` branch root the same way `.htaccess` does. It exports the document
+root and copies the checkout into it, so cPanel's **Deploy HEAD Commit** button
+— previously refused with "The system cannot deploy" — becomes the step that
+publishes the site.
+
+Two details in it are load-bearing, and both are guarded by tests:
+
+- **The copy must include dotfiles.** `cp -R * $DOCROOT`, the idiom in most
+  `.cpanel.yml` examples, does not match `.htaccess` — so the deploy reports
+  success and ships the site with no CSP, no HSTS and no redirects. It uses
+  `rsync` (falling back to `tar`) instead.
+- **`--delete` must spare `.well-known/`.** AutoSSL writes HTTP-01 challenge
+  tokens into the document root; a deploy running during validation would
+  otherwise fail a renewal it has nothing to do with. `.git/` and `cgi-bin/`
+  are excluded too.
+
+`.git/` matters twice. The deny-list at the foot of `.htaccess` matches
+filenames, so it stops `/.git` but not `/.git/config` — `config` has no leading
+dot. Verified against Apache 2.4.66: with a `.git/` in the document root and no
+path rule, `GET /.git/config` returned **200 and the file's contents**. A
+`RewriteRule (^|/)\.git(/|$) - [F,L]` now sits in the rewrite block and the
+same request returns 403.
+
+**Still an owner action.** The repository already has the config; someone with
+cPanel access has to click **Git Version Control → Pull or Deploy → Update from
+Remote**, then **Deploy HEAD Commit**.
 
 ### The CSP pins hashes, and they move
 

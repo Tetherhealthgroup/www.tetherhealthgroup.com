@@ -127,15 +127,16 @@ Checked over DNS-over-HTTPS and against the live host, not recalled:
 MIME types. Verified against Apache 2.4.66 serving `dist/`, and the CSP
 verified in Chromium: both inline scripts still execute, styles and images
 load, zero console violations. Six smoke tests now guard it, including a
-tripwire that fails if HSTS is lengthened while the certificate is still wrong.
+tripwire that fails if HSTS is lengthened before the site has served a page.
 
 Gate: build PASS (25 pages) · `astro check` 0/0/0 · prettier PASS ·
 unit 8/8 PASS · smoke 23/23 PASS.
 
 **Open, and needs the account owner:**
 
-- [ ] Run AutoSSL in cPanel for `tetherhealthgroup.com` and `www.`. No CAA
-      record blocks issuance and DNS already points at the account.
+- [x] ~~Run AutoSSL in cPanel for `tetherhealthgroup.com` and `www.`.~~ Done —
+      see the 2026-08-30 (later still) entry below. A Let's Encrypt certificate
+      covering both names is live and the chain verifies.
 - [x] ~~Decide how the built site reaches `public_html`.~~ Decided: a second
       branch, `deploy`, carries the **compiled** site with `dist/`'s contents at
       the branch root, so a checkout of `deploy` into `public_html` is directly
@@ -143,6 +144,90 @@ unit 8/8 PASS · smoke 23/23 PASS.
       holding source only, and `dist/` stays gitignored there. See "Hosting and
       deployment" in `README.md`. Publishing it is still an owner action; see
       below.
+
+### Session: 2026-08-30 (later still) — the certificate cleared, a 403 behind it
+
+Measured against the live host, not recalled.
+
+**The certificate is issued and valid.** `openssl s_client` against
+`www.tetherhealthgroup.com:443`:
+
+    subject=CN=cpcontacts.tetherhealthgroup.com
+    issuer=C=US, O=Let's Encrypt, CN=YR2
+    notBefore=Aug 30 15:27:15 2026 GMT   notAfter=Nov 28 15:27:14 2026 GMT
+    SANs include: tetherhealthgroup.com, www.tetherhealthgroup.com
+    Verification: OK        Verify return code: 0 (ok)
+
+The `*.hostgator.com` certificate recorded earlier this day is gone. The top
+open task on this board is closed, and the "HTTPS is broken" bullet above is
+superseded — kept, not deleted, because it was true when written.
+
+**A different fault was behind it: the site returns 403 on every path.**
+
+    GET https://www.tetherhealthgroup.com/            -> 403
+    GET https://www.tetherhealthgroup.com/about/      -> 403
+    GET https://www.tetherhealthgroup.com/robots.txt  -> 403
+    GET http://www.tetherhealthgroup.com/             -> 403, and no redirect
+
+The body is HostGator's canned 403 page: 732 bytes,
+`Last-Modified: Wed, 25 Mar 2026 21:45:30 GMT`, predating this project. No
+redirect, no CSP, no HSTS — and `/.well-known/acme-challenge/` is 403 as well,
+though that path is exempt from every rule in our `.htaccess`. A directive
+cannot both fail to apply and fail to be overridden, so Apache is not reading
+our `.htaccess`: the document root it serves is not where the built site is.
+
+This also corrects the earlier bullet "Nothing is deployed... `/` answers
+`302 -> /404.html`". That was a different response from a different
+configuration; the host answers 403 now.
+
+Ruled out: `safecodeg.com` (the account's primary domain) serves 200 on
+**any** path including `zzz-does-not-exist-9f8a`, so it is a catch-all SPA and
+the 200s under it are not this site's content.
+
+The cPanel checkout is at `/home2/safecode/tetherhealthgroup.com` — cPanel's
+default clone target is `/home2/<user>/<repo-name>`, the home directory, not a
+document root. The `deploy` branch content is correct and directly servable.
+
+**Shipped in response:** `project/public/.cpanel.yml`. The owner confirmed the
+document root is `/home2/safecode/public_html/tetherhealthgroup.com`, which is
+not the checkout path — so the copy step was the missing piece. The file
+exports that path and rsyncs the checkout into it, which is what the "The
+system cannot deploy" notice was asking for.
+
+Two failure modes it is written against, both guarded by new tests:
+
+- `cp -R * $DOCROOT` does not match `.htaccess`. A deploy using it succeeds and
+  silently ships the site with no CSP, no HSTS and no redirects.
+- `--delete` would remove `.well-known/`, where AutoSSL writes HTTP-01
+  challenge tokens. A deploy during validation would fail an unrelated renewal.
+
+**Also fixed — `.git` was publicly readable if a checkout ever reached the
+document root.** The deny-list at the foot of `.htaccess` matches filenames, so
+`/.git` was blocked but `/.git/config` was not: `config` has no leading dot and
+does not end in `.config`. Measured against Apache 2.4.66 with a `.git/` in the
+document root:
+
+    GET /.git/config   (no path rule)  -> 200, body "[core] secret=yes"
+    GET /.git/config   (with the rule) -> 403
+
+`RewriteRule (^|/)\.git(/|$) - [F,L]` now sits in the rewrite block, after the
+ACME exemption and ahead of both redirects.
+
+Gate: build PASS (25 pages) · `astro check` 0/0/0 · prettier PASS ·
+unit 8/8 PASS · smoke+headers 29/29 PASS. The four new deploy tests were each
+confirmed to fail against a deliberately broken `.cpanel.yml` (bare `cp *`
+glob, DOCROOT pointing back at the checkout, and `--delete` without the
+`.well-known` exclusion) before being accepted.
+
+**Open, and needs the account owner:**
+
+- [ ] cPanel → Git Version Control → Pull or Deploy → **Update from Remote**,
+      then **Deploy HEAD Commit**. Nothing in this repository can perform this
+      step; until it runs the site keeps answering 403.
+- [ ] Confirm `https://www.tetherhealthgroup.com/` returns 200 afterwards, and
+      that `http://` 301s to it.
+- [ ] Then raise HSTS `max-age` and update the tripwire test in the same
+      commit.
 
 ### Session: 2026-08-30 — the waitlist form, driven rather than assumed
 
