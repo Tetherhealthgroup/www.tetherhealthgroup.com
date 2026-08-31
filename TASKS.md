@@ -93,9 +93,9 @@ who sees it.
       card at `project/public/og-image.png` is generated from it and must be
       regenerated if the mark changes.
 - [ ] Confirm the ordering of the nine planned health areas.
-- [ ] Own the content of `updates.ts` and the per-area `services` / `upcoming`
-      copy. It elaborates the supplied programme plan and has had no clinical
-      review.
+- [ ] Own the per-area `services` / `upcoming` copy in `programs.ts`. It
+      elaborates the supplied programme plan and has had no clinical review.
+      (`updates.ts` is gone — see the updates-removal entry below.)
 - [x] ~~Push the website commits to `origin/master`.~~ Done. This entry was
       stale when it was read on 2026-08-30: `git ls-remote --heads origin`
       already showed `refs/heads/master` at the same commit as the local
@@ -268,6 +268,44 @@ So `d180a1b` is pushed but **not deployed**, and two things follow:
       and the tripwire now fails if either appears; `mail.`, `webmail.` and
       `cpanel.` are covered by the certificate but were never confirmed to
       serve valid HTTPS.
+
+### Session: 2026-08-30 (later still) — HSTS to a year, and updates removed entirely
+
+Two owner decisions, taken after the questions below were put and answered.
+
+**HSTS raised to `max-age=31536000`.** The ramp waited on two measurements, not
+one, because HSTS cannot be walked back: the certificate verifies
+("Verify return code: 0 (ok)"), and the site demonstrably serves — 24/24 routes
+200 over HTTPS, a clean Chromium render, and the header read off a live
+response. `includeSubDomains` and `preload` stay off; the tripwire test changed
+shape rather than being deleted, pinning max-age exactly and refusing both
+modifiers by name. Confirmed against three mutations: `includeSubDomains`
+added, `preload` added, max-age dropped to 300 — each fails.
+
+`mail.`, `webmail.` and `cpanel.` are covered by the certificate but were never
+confirmed to *serve* valid HTTPS, which is why `includeSubDomains` is refused:
+asserting it for a subdomain that then fails removes it for a full year, and
+webmail is what someone reaches for when the main site is broken.
+
+**The updates feature removed completely.** The previous entry removed the page
+and kept the data and the per-area section; the owner then asked for both. Now
+deleted: `project/src/data/updates.ts`, the "Already done / What has landed
+here" section on `/programs/<area>/`, its imports, and the smoke case that
+guarded it — that case's subject no longer exists, so it was removed rather
+than weakened. The link guard stays: no page may link to `/updates/`.
+
+**Consequence worth recording rather than discovering later:** the site now has
+**no record of shipped work at all**. Every remaining claim is forward-looking,
+and the scope-versus-record distinction the content rules were built around has
+only one side left. `README.md` states this in the "Scope versus record"
+section. Restoring a record is a content decision, not a revert.
+
+Verified in Chromium at 1440 and 390: heading order stays sequential
+(h1 -> h2, no skips), the page flows "What happens next here." -> BreatheFree
+with no gap where the section was, 0 links to `/updates/`, 0 console messages.
+
+Gate: build PASS (24 pages) · `astro check` 0/0/0 · prettier PASS ·
+unit 8/8 PASS · smoke+headers 29/29 PASS (one case fewer, deliberately).
 
 ### Session: 2026-08-30 (later still) — the updates page removed
 

@@ -16,7 +16,6 @@ import Icon from "../../components/Icon.astro";
 import WaitlistForm from "../../components/WaitlistForm.astro";
 import { programs, statusLabels } from "../../data/programs";
 import type { Program } from "../../data/programs";
-import { updatesForArea, formatUpdateDate } from "../../data/updates";
 
 export function getStaticPaths() {
   return programs.map((program) => ({
@@ -31,7 +30,6 @@ interface Props {
 
 const { program } = Astro.props;
 const building = program.status === "building";
-const areaUpdates = updatesForArea(program.id);
 
 const horizonTone: Record<string, string> = {
   "In development": "bg-lime text-teal-deep",
@@ -172,36 +170,6 @@ const horizonTone: Record<string, string> = {
             </Button>
           </div>
         </div>
-      </Section>
-    )
-  }
-
-  <!-- What has actually landed in this area -->
-  {
-    areaUpdates.length > 0 && (
-      <Section space="tight" width="default">
-        <div class="mb-8 max-w-3xl">
-          <p class="eyebrow mb-5">Already done</p>
-          <h2 class="text-3xl sm:text-4xl">What has landed here.</h2>
-          <p class="mt-5 leading-relaxed text-teal-mid">
-            Work that has actually happened in this area, as distinct from the
-            intent above.
-          </p>
-        </div>
-        <ol class="grid gap-5">
-          {areaUpdates.map((update) => (
-            <li class="rounded-3xl border border-hairline-soft bg-paper p-6">
-              <time
-                datetime={update.date}
-                class="text-[0.8rem] font-extrabold uppercase tracking-[0.12em] text-teal-mid"
-              >
-                {formatUpdateDate(update.date)}
-              </time>
-              <h3 class="mt-2 text-lg">{update.title}</h3>
-              <p class="mt-2 leading-relaxed text-teal-mid">{update.body}</p>
-            </li>
-          ))}
-        </ol>
       </Section>
     )
   }
