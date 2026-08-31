@@ -10,11 +10,19 @@
 # absent module is a 500 for the whole site, and a site that returns 500 is
 # worse than one without a Referrer-Policy.
 #
-# WHAT THIS FILE CANNOT DO: it cannot issue a TLS certificate. As of
-# 2026-08-30 the server answers :443 with HostGator's shared *.hostgator.com
-# certificate, which does not cover this domain, so every browser refuses the
-# connection. Fix that in cPanel (SSL/TLS Status -> Run AutoSSL) before
-# lengthening max-age in the HSTS block below.
+# WHAT THIS FILE CANNOT DO: it cannot issue a TLS certificate, and it cannot
+# put itself into the document root.
+#
+# The certificate is no longer the blocker. As of 2026-08-30 AutoSSL has issued
+# a Let's Encrypt certificate whose SANs include both www.tetherhealthgroup.com
+# and tetherhealthgroup.com, and the chain verifies clean -- openssl reports
+# "Verify return code: 0 (ok)".
+#
+# What is still broken is that NONE OF THIS FILE IS BEING READ. The domain
+# answers 403 on every path, on both schemes, with HostGator's canned error
+# page: no redirect, none of the headers below. The built site has never
+# reached the document root Apache serves for this domain, so every directive
+# here is inert. See "The document root is the open blocker" in README.md.
 # =============================================================================
 
 # --- Canonical host and scheme ----------------------------------------------
@@ -29,14 +37,32 @@
   #
   # A certificate authority validates this domain by fetching
   # http://<domain>/.well-known/acme-challenge/<token> over PLAIN HTTP. Without
-  # this rule the next line 301s that fetch to https://www.tetherhealthgroup.com,
-  # where the server currently answers with a certificate for a different name
-  # — so the validator is sent into the very TLS error the validation exists to
-  # clear, and AutoSSL cannot issue the certificate that would fix it.
+  # this rule the next line 301s that fetch into https://, and a redirect is
+  # only survivable while the certificate on the other side is valid.
+  #
+  # This mattered for the first issuance, when it was not — and it keeps
+  # mattering. AutoSSL renews on a cycle, and the renewal that matters most is
+  # the one attempted when something has gone wrong with the current
+  # certificate: precisely when redirecting the validator into https:// sends
+  # it into the error it was run to clear. The exemption is cheap; needing it
+  # and not having it costs the certificate.
   #
   # The token is a base64url string, so it never begins with a dot and is not
   # caught by the deny-list at the foot of this file.
   RewriteRule ^\.well-known/acme-challenge/ - [L]
+
+  # Never serve the repository itself.
+  #
+  # The deny-list at the foot of this file matches FILENAMES, so it stops
+  # /.git but not /.git/config — "config" has no leading dot and does not end
+  # in ".config". Anything that puts a checkout in the document root therefore
+  # publishes HEAD, the index and every packed object. Matching the path
+  # SEGMENT is what actually closes that, and it costs one rule.
+  #
+  # .cpanel.yml is caught by the filename deny-list below; this is only for the
+  # directory case the deny-list structurally cannot reach. .well-known is
+  # exempted above and stays reachable.
+  RewriteRule (^|/)\.git(/|$) - [F,L]
 
   # Force HTTPS. Both conditions are needed: %{HTTPS} is what a server that
   # terminates TLS itself sets, X-Forwarded-Proto is what one behind a proxy
@@ -86,15 +112,20 @@ ErrorDocument 404 /404.html
   # blocks the POST — see README.
   Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-ZvHI7dAQf+RvTh3JR4SKvDIB2OD5V8b4f3ytqXhQVZQ=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-4daKGa3Y2Vbk8v2Ug+z6rdJ/5ObNaArcWP53uY/D+zk='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
 
-  # HSTS — deliberately short until the certificate is fixed.
+  # HSTS — still short, but now for a different reason.
   #
   # HSTS is the one header that can take a site off the air: once a browser has
   # seen it, a certificate error becomes an interstitial the visitor CANNOT
-  # click through. This domain currently serves a certificate for a different
-  # name, so a year-long max-age here would strand every visitor who arrived
-  # during the window.
+  # click through.
   #
-  # After AutoSSL has issued a certificate and https://www.tetherhealthgroup.com
+  # Half of that risk is now retired: the certificate covering this host is
+  # valid and verifies (2026-08-30). The other half is not. This header has
+  # never actually been served to anyone — the document root answers 403 — so
+  # the value below has never been exercised against a real page load, and a
+  # year-long max-age committed sight-unseen is exactly the bet this comment
+  # exists to refuse.
+  #
+  # Once the document root serves the site and https://www.tetherhealthgroup.com
   # loads clean in a browser, raise this to:
   #     max-age=31536000
   # then, only once every subdomain (mail., webmail., cpanel.) is confirmed to
