@@ -219,13 +219,48 @@ confirmed to fail against a deliberately broken `.cpanel.yml` (bare `cp *`
 glob, DOCROOT pointing back at the checkout, and `--delete` without the
 `.well-known` exclusion) before being accepted.
 
+**The site went live during this session, from the PREVIOUS build.**
+
+Between the 403 measurement above and the end of the session the document root
+was populated by someone with cPanel access. Measured afterwards:
+
+    24/24 sitemap routes            -> 200 over HTTPS
+    http://www  and  http://bare    -> 301 to https://www..., path+query kept
+    /nope-missing/                  -> 404, the site's own 404 page
+    CSP, HSTS, Referrer-Policy, Permissions-Policy, COOP/CORP  all present
+    _astro asset -> immutable 1y · HTML -> must-revalidate · robots -> 1d
+    HTML gzips 68,639 -> 25,716 bytes
+    Chromium: renders at 1440 and 390, mobile menu opens, 0 console messages
+
+The served content is **byte-identical to deploy commit `5502124`** — the build
+before this session's. Identified by the per-build random SVG gradient id:
+live and `5502124` both carry `leaf-29rxp7g`, while `d180a1b` carries
+`leaf-c2qhq38`.
+
+So `d180a1b` is pushed but **not deployed**, and two things follow:
+
+- The `.git` path rule is **not live yet**. `/.git/config` does answer 403, but
+  `5502124`'s `.htaccess` contains no such rule, so that 403 comes from
+  something else on this host — probably a server-level block. It is not
+  evidence of our rule, and a server-level rule is not ours to depend on.
+- `.cpanel.yml` is not in the checked-out branch yet, so the copy step it
+  provides has not run. Whatever populated the document root this time was not
+  it.
+
 **Open, and needs the account owner:**
 
 - [ ] cPanel → Git Version Control → Pull or Deploy → **Update from Remote**,
-      then **Deploy HEAD Commit**. Nothing in this repository can perform this
-      step; until it runs the site keeps answering 403.
-- [ ] Confirm `https://www.tetherhealthgroup.com/` returns 200 afterwards, and
-      that `http://` 301s to it.
+      then **Deploy HEAD Commit**. The first brings `d180a1b` — and with it
+      `.cpanel.yml` — into the checkout, which is what makes the second
+      possible.
+- [ ] Confirm the new build is actually serving, rather than assuming it:
+
+          curl -s https://www.tetherhealthgroup.com/ | grep -o 'leaf-[a-z0-9]*' | head -1
+
+      It should print `leaf-c2qhq38`. `leaf-29rxp7g` means the document root is
+      still on the old build and the deploy did not take effect — in which case
+      re-check that `DOCROOT` in `.cpanel.yml` matches the domain's real
+      document root.
 - [ ] Then raise HSTS `max-age` and update the tripwire test in the same
       commit.
 
