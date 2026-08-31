@@ -118,37 +118,49 @@ test("no source outside the site's own origin is allowed", () => {
   );
 });
 
-test("HSTS is not lengthened before the site has ever served a page", () => {
-  /* This is a deliberate tripwire, not a preference.
+test("HSTS is a year, with no includeSubDomains and no preload", () => {
+  /* This began as a tripwire against lengthening max-age before the site could
+     be shown to work. Both conditions it was waiting on have now been measured
+     and are recorded in public/.htaccess: the certificate verifies
+     ("Verify return code: 0 (ok)"), and all 24 routes serve 200 over HTTPS with
+     a clean Chromium render. So the ramp is finished at one year.
 
-     The certificate is no longer the reason. AutoSSL issued a Let's Encrypt
-     certificate covering www.tetherhealthgroup.com and tetherhealthgroup.com
-     on 2026-08-30, and the chain verifies ("Verify return code: 0 (ok)").
+     It stays a tripwire, now pointed at what is still unproven. The value is
+     pinned exactly, so changing it is a deliberate commit rather than a drift,
+     and the two modifiers that can take a host off the air for a full year are
+     refused:
 
-     The reason now is that this header has never actually reached a browser.
-     The document root answers 403 on every path, so nothing in .htaccess is
-     in effect and the value below is untested against a real page load. HSTS
-     is the one header that cannot be walked back: once a browser has seen it,
-     any TLS failure becomes an interstitial the visitor cannot click through.
-     Committing a year to it before a single page has loaded is a bet with no
-     upside.
+       includeSubDomains — the certificate covers mail., webmail. and cpanel.,
+       but not one of them has been confirmed to SERVE valid HTTPS. Asserting
+       it for a subdomain that then fails removes that subdomain for the whole
+       max-age, and webmail is exactly what someone reaches for when the main
+       site is broken.
 
-     When the document root serves the site and https://www.tetherhealthgroup.com
-     loads clean, raise max-age here and in public/.htaccess together. */
+       preload — leaving hstspreload.org takes months and cannot be rushed. */
   const hsts = htaccess.match(
     /Header always set Strict-Transport-Security "([^"]+)"/,
   )?.[1];
   assert.ok(hsts, "no Strict-Transport-Security header is set");
+
   const maxAge = Number(hsts.match(/max-age=(\d+)/)?.[1] ?? 0);
-  assert.ok(
-    maxAge <= 300,
-    `max-age is ${maxAge}. Raise it only once the site actually loads over ` +
-      `HTTPS — and update this test in the same commit, so the reason is recorded.`,
+  assert.equal(
+    maxAge,
+    31536000,
+    `max-age is ${maxAge}, not the pinned 31536000. Change it only ` +
+      `deliberately, and update this test in the same commit so the reason is ` +
+      `recorded.`,
   );
   assert.doesNotMatch(
     hsts,
     /preload/,
     "preload commits the domain to a list that takes months to leave",
+  );
+  assert.doesNotMatch(
+    hsts,
+    /includeSubDomains/i,
+    "includeSubDomains would assert HSTS for mail., webmail. and cpanel., " +
+      "none of which has been verified to serve valid HTTPS. Verify each " +
+      "first — a subdomain that then fails is unreachable for a year.",
   );
 });
 

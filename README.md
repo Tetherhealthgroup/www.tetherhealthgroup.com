@@ -250,10 +250,17 @@ attempted after something has gone wrong cannot assume. The exemption sits
 first in the rewrite block, ahead of both redirects, because mod_rewrite runs
 rules in order; a smoke test fails if it is removed or reordered.
 
-`Strict-Transport-Security` is still `max-age=300`, and the tripwire test still
-holds it there. The certificate half of the risk is retired, but this header
-has never been served to anyone — see below — so the ramp has never been
-exercised against a real page load. Raise it once the site actually loads.
+`Strict-Transport-Security` is now `max-age=31536000` — one year. The ramp is
+finished, and it waited on two measurements rather than one: the certificate
+verifies, and the site demonstrably serves (all 24 routes 200 over HTTPS, clean
+Chromium render). HSTS cannot be walked back, so neither half was assumed.
+
+`includeSubDomains` and `preload` are deliberately absent, and the tripwire
+test now fails if either appears. The certificate covers `mail.`, `webmail.`
+and `cpanel.`, but none has been confirmed to *serve* valid HTTPS — asserting
+HSTS for a subdomain that then fails removes it for the full year, and webmail
+is what someone reaches for when the main site is broken. `preload` is a
+months-long commitment to leave.
 
 ### The document root was the blocker
 

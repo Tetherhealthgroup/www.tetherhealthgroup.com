@@ -261,8 +261,13 @@ So `d180a1b` is pushed but **not deployed**, and two things follow:
       still on the old build and the deploy did not take effect — in which case
       re-check that `DOCROOT` in `.cpanel.yml` matches the domain's real
       document root.
-- [ ] Then raise HSTS `max-age` and update the tripwire test in the same
-      commit.
+- [x] ~~Then raise HSTS `max-age` and update the tripwire test in the same
+      commit.~~ Done — `max-age=31536000`. Both gating conditions were measured
+      first: the certificate verifies, and all 24 routes serve 200 over HTTPS
+      with a clean Chromium render. `includeSubDomains` and `preload` stay off
+      and the tripwire now fails if either appears; `mail.`, `webmail.` and
+      `cpanel.` are covered by the certificate but were never confirmed to
+      serve valid HTTPS.
 
 ### Session: 2026-08-30 (later still) — the updates page removed
 
