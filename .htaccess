@@ -112,27 +112,34 @@ ErrorDocument 404 /404.html
   # blocks the POST — see README.
   Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-ZvHI7dAQf+RvTh3JR4SKvDIB2OD5V8b4f3ytqXhQVZQ=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-4daKGa3Y2Vbk8v2Ug+z6rdJ/5ObNaArcWP53uY/D+zk='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
 
-  # HSTS — still short, but now for a different reason.
+  # HSTS — one year, and the ramp is finished.
   #
   # HSTS is the one header that can take a site off the air: once a browser has
   # seen it, a certificate error becomes an interstitial the visitor CANNOT
-  # click through.
+  # click through. It was therefore held at max-age=300 until both halves of
+  # that risk were measured rather than assumed. Both now are:
   #
-  # Half of that risk is now retired: the certificate covering this host is
-  # valid and verifies (2026-08-30). The other half is not. This header has
-  # never actually been served to anyone — the document root answers 403 — so
-  # the value below has never been exercised against a real page load, and a
-  # year-long max-age committed sight-unseen is exactly the bet this comment
-  # exists to refuse.
+  #   The certificate is valid. AutoSSL issued a Let's Encrypt certificate
+  #   covering www.tetherhealthgroup.com and tetherhealthgroup.com on
+  #   2026-08-30; openssl reports "Verify return code: 0 (ok)".
   #
-  # Once the document root serves the site and https://www.tetherhealthgroup.com
-  # loads clean in a browser, raise this to:
-  #     max-age=31536000
-  # then, only once every subdomain (mail., webmail., cpanel.) is confirmed to
-  # serve valid HTTPS, add `; includeSubDomains`. Add `; preload` only if the
-  # domain is being submitted to hstspreload.org — removal from that list takes
-  # months and cannot be rushed.
-  Header always set Strict-Transport-Security "max-age=300"
+  #   The site actually serves. All 24 routes answer 200 over HTTPS, http:// and
+  #   the bare domain 301 here preserving path and query, and the page renders
+  #   in Chromium with zero console messages. This header has been read off a
+  #   live response, not merely written into a file.
+  #
+  # Two modifiers are deliberately NOT set, each because it can take a host off
+  # the air for a year:
+  #
+  #   includeSubDomains — the certificate covers mail., webmail., cpanel. and
+  #   the rest, but not one of them has been confirmed to SERVE valid HTTPS.
+  #   Asserting it for a subdomain that then fails removes that subdomain for
+  #   the full max-age, and webmail is precisely what someone reaches for when
+  #   the main site is broken. Verify each one first.
+  #
+  #   preload — removal from hstspreload.org takes months and cannot be
+  #   rushed. It belongs to a deliberate submission, never to a default.
+  Header always set Strict-Transport-Security "max-age=31536000"
 
   # A declared Content-Type is the only one that should be honoured; sniffing
   # is how a user-uploaded .txt becomes executable script. Nothing is uploaded
