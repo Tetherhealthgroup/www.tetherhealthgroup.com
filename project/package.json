@@ -11,10 +11,19 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
-    "test:unit": "node --experimental-strip-types --test test/unit/*.test.js",
     "lint": "prettier --check .",
     "format": "prettier --write .",
-    "test:smoke": "node --test test/*.test.js"
+    "test": "node --experimental-strip-types --test \"test/**/*.test.js\"",
+    "test:unit": "node --experimental-strip-types --test test/unit/*.test.js",
+    "test:integration": "node --experimental-strip-types --test test/integration/*.test.js",
+    "test:functional": "node --experimental-strip-types --test test/functional/*.test.js",
+    "test:smoke": "node --experimental-strip-types --test test/smoke/*.test.js",
+    "test:regression": "node --experimental-strip-types --test test/regression/*.test.js",
+    "test:acceptance": "node --experimental-strip-types --test test/acceptance/*.test.js",
+    "test:security": "node --experimental-strip-types --test test/security/*.test.js",
+    "test:ui": "node --experimental-strip-types --test test/ui/*.test.js",
+    "test:e2e": "node --experimental-strip-types --test test/e2e/*.test.js",
+    "test:performance": "node --experimental-strip-types --test test/performance/*.test.js"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
