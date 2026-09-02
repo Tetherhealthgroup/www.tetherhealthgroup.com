@@ -18,9 +18,25 @@ interface Props {
   bareTitle?: boolean;
   /** Discourage indexing, e.g. for the 404 page. */
   noindex?: boolean;
+  /**
+   * Omit `<link rel="canonical">` and `og:url`.
+   *
+   * The 404 document is served by Apache's `ErrorDocument` at whatever path
+   * the visitor actually asked for, so it has no URL of its own. Deriving one
+   * from `Astro.url.pathname` there produced `/404/` — a path that itself
+   * returns 404 — so both tags pointed at a page that does not exist. A page
+   * with no canonical URL should assert none.
+   */
+  noCanonical?: boolean;
 }
 
-const { title, description, bareTitle = false, noindex = false } = Astro.props;
+const {
+  title,
+  description,
+  bareTitle = false,
+  noindex = false,
+  noCanonical = false,
+} = Astro.props;
 
 const pageTitle = bareTitle ? title : `${title} — ${site.name}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).href;
@@ -63,7 +79,7 @@ const structuredData = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {!noCanonical && <link rel="canonical" href={canonical} />}
     {noindex && <meta name="robots" content="noindex, follow" />}
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -74,7 +90,7 @@ const structuredData = {
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {!noCanonical && <meta property="og:url" content={canonical} />}
     <meta property="og:locale" content="en_US" />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
