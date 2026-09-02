@@ -66,6 +66,38 @@ who sees it.
   optional `PUBLIC_WAITLIST_ENDPOINT` POST mode.
 - **Mobile app (`develop` branch)** — three defects fixed, four unreachable
   controls reached, 11 tests added. See `DEVELOPMENT_NOTES.md` in the app repo.
+- **Dead-link and dead-control sweep (2026-09-01).** Every reference the build
+  emits was resolved against the emitted files, and every route was then
+  requested over HTTP from the preview server. 1038 references across 24
+  pages; 119 URLs requested, all 200. Interactive inventory: 920 anchors, 13
+  buttons, 78 form controls — no anchor with a missing, empty or `#` href, no
+  anchor without an accessible name, no button without a submit target.
+
+  Two real defects were found and fixed:
+
+  1. **The 404 page claimed a canonical URL that 404s.** `Astro.url.pathname`
+     made `<link rel="canonical">` and `og:url` point at
+     `https://www.tetherhealthgroup.com/404/`, which is not a route. Apache
+     serves that document via `ErrorDocument` at whatever path was requested,
+     so it has no URL of its own — `Base.astro` gained `noCanonical` and both
+     tags are now omitted there.
+  2. **The waitlist submit button did nothing without JavaScript.** Delivery
+     is entirely the form script's job; the form has no `action` and no
+     `method`, so submitting it unscripted GETs the current URL — the page
+     reloaded and everything typed was discarded, on all 13 pages carrying
+     the form. The `<noscript>` block now hides the form and prints the
+     support address instead, verified in a `sandbox="allow-same-origin"`
+     frame (scripting genuinely off): computed `display: none`, the submit
+     button unreachable, the `mailto:` fallback visible.
+
+  Both defects have a regression test that was confirmed to fail against the
+  defective output before it passed against the fix. Gate after: build PASS,
+  `astro check` 0/0/0, lint PASS, 8 unit PASS, 31 smoke PASS.
+
+  Not dead links, and deliberately unchanged: `/#waitlist` is absolute on
+  every page (it is the home page's section), and the site references zero
+  external URLs — the pre-launch posture means no app-store or social links
+  exist to rot.
 
 ### Open — needs a decision or an owner
 

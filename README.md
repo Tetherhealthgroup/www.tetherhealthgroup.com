@@ -58,6 +58,19 @@ matters most — that **no page loads a third-party resource** and no page links
 to an app store while the product is pre-launch. Those two guard promises the
 site makes in prose, which a later edit could otherwise break silently.
 
+Two of its assertions guard against a control or a tag that points nowhere:
+
+- **The 404 document must claim no canonical URL.** Apache serves it through
+  `ErrorDocument` at whatever path was requested, so it has none of its own.
+  Deriving one produced `https://www.tetherhealthgroup.com/404/` — itself a
+  404 — so `Base.astro` takes `noCanonical` and the test fails if either
+  `<link rel="canonical">`, `og:url`, or the string `/404/` comes back.
+- **The waitlist form must never be shown as a control that cannot submit.**
+  It has no `action` and no `method` because delivery is the script's job, so
+  unscripted submission would GET the current URL and silently discard the
+  input. Whenever the form carries no `action`, the page must also hide it and
+  offer the support address in `<noscript>`.
+
 ### Why the root package.json exists
 
 The scaffold puts source in `project/`, but the verification gate discovers

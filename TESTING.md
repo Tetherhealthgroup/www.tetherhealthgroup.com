@@ -33,6 +33,40 @@ trigger and why.
 
 ## Runner naming convention
 
+## Where this project's suites live
+
+One directory per category under `project/test/`, one `test:<category>` script
+per directory, delegated from the repository root so the gate finds them all.
+
+| # | Category | Path | What is asserted here |
+|---|---|---|---|
+| 1 | Unit | `test/unit/` | `src/lib/waitlist.ts` — which addresses are accepted, and the exact `mailto:` URL composed. No build needed. |
+| 2 | Integration | `test/integration/` | The build output against the edge configuration that ships with it: CSP hashes recomputed from the emitted scripts, in both directions, plus the deploy contract. |
+| 3 | Functional | `test/functional/` | Nav and footer rendered into every page, the waitlist field contract the composer reads, and a route onward from every health area. |
+| 4 | Smoke | `test/smoke/` | Routes emitted, sitemap generated, share card and `robots.txt` present. Runs first. |
+| 5 | Regression | `test/regression/` | One case per defect fixed: the 404 canonical that pointed at `/404/`, the waitlist form shown while unable to submit, and the removed updates page. |
+| 6 | Acceptance | `test/acceptance/` | Safety routing on every page, the pre-launch posture, and every health area honest about its own status. |
+| 7 | Security | `test/security/` | No third-party resource on any page, the CSP forbidding what it exists to forbid, HSTS, and the ACME challenge not redirected into https. |
+| 8 | UI | `test/ui/` | Document metadata, heading order, and text that must reflow rather than overflow a narrow viewport. |
+| 9 | E2E | `test/e2e/` | The built site served over real HTTP by `astro preview`: directory URLs resolving, an unknown path not answering 200, and every link followed rather than merely present. |
+| 10 | Performance | `test/performance/` | Budgets on what is downloaded — page weight, inline script, one render-blocking stylesheet, modern image formats, declared image sizes, total payload. Each budget records the measurement it was set from. |
+
+Shared fixtures — the dist path, the required-route list, the HTML walkers and
+the CSP hash computation — live in `project/test/helpers/dist.js` rather than
+being copied per category.
+
+Categories 2 and 4 through 10 assert against `dist/`, so run `npm run build`
+first. E2E additionally starts and stops a preview server on port 4331;
+`astro preview` daemonises, so it is stopped with `astro preview stop` and not
+by killing the spawned process.
+
+```bash
+npm test                  # every category
+npm run test:security     # one category
+```
+
+## Category names the gate discovers
+
 The Stop-hook verification gate discovers categories by name. Use these names
 and the gate runs the category automatically; use different ones and it
 reports NOT RUN because it could not find a runner.
