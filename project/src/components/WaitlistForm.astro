@@ -10,8 +10,12 @@
  *
  * Mode 2 is the default deliberately. The site is statically hosted with no
  * backend, and a form that silently drops submissions is worse than one that
- * hands the visitor a message they can see themselves send. The address is
- * also printed in plain text, so the form still works with JavaScript off.
+ * hands the visitor a message they can see themselves send.
+ *
+ * Both modes need the script: there is no server to POST to and no action to
+ * fall back on, so with scripting unavailable the <noscript> block below hides
+ * the form and prints the address instead. The footer also carries the address
+ * on every page, which is the route left if the script fails to run at all.
  *
  * No health information is requested. The prompt asks which area someone is
  * interested in, not whether they have a condition — an important distinction
@@ -183,16 +187,29 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
     <p id="waitlist-success-body" class="text-teal-mid"></p>
   </div>
 
-  <!-- The address in plain text: the form's fallback with JavaScript off. -->
+  <!--
+    The address in plain text: the form's fallback with JavaScript off.
+
+    The <style> removes the form itself. Delivery is entirely the script's
+    job — the site is static, so the form has no action to fall back to, and
+    submitting it without the script reloaded the page and discarded whatever
+    had been typed. A control that cannot do what it says is worse than no
+    control, so with scripting unavailable the address replaces it rather than
+    sitting underneath it. Inline style, not script, so it applies in exactly
+    the case it describes; style-src allows 'unsafe-inline'.
+  -->
   <noscript>
-    <p
-      class="mt-6 rounded-3xl border border-hairline bg-paper p-5 text-teal-mid"
-    >
-      This form needs JavaScript to open your mail client. You can email us
-      directly at <SupportEmail
+    <style>
+      #waitlist-form {
+        display: none;
+      }
+    </style>
+    <p class="rounded-3xl border border-hairline bg-paper p-5 text-teal-mid">
+      Requesting early access needs JavaScript, because this site is static and
+      has no server to receive the form. Email us directly at <SupportEmail
         subject={waitlist.subject}
         class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
-      />.
+      /> and it reaches the same inbox.
     </p>
   </noscript>
 </div>
