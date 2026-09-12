@@ -99,17 +99,17 @@ export const screens: Screen[] = [
     number: 1,
     title: "Welcome",
     description:
-      "Introduces BreatheFree, language choice and the private, judgment-free promise.",
+      "Introduces Tether Health, language choice and the private, judgment-free promise.",
     phase: "welcome",
     slug: "welcome",
   },
   {
     number: 2,
-    title: "Why BreatheFree",
+    title: "Why Tether Health",
     description:
       "Explains how the app supports cravings, planning and progress.",
     phase: "onboarding",
-    slug: "why-breathefree",
+    slug: "why-tether-health",
   },
   {
     number: 3,
