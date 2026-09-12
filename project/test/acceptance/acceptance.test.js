@@ -98,3 +98,59 @@ test("the services page lists every service and does not read as an offer", asyn
     "the services page does not say the services are unavailable",
   );
 });
+
+test("the Unplug section says what is not built, next to what is", async () => {
+  // Unplug's defining feature is the intercept, and the intercept does not
+  // exist yet. A section describing it without that caveat would be the
+  // overstatement src/data/programs.ts was written to prevent, so the caveat is
+  // asserted rather than trusted to survive the next copy edit.
+  const html = readFileSync(join(dist, "breathefree/index.html"), "utf8");
+  assert.match(html, /Unplug/, "the BreatheFree page does not mention Unplug");
+  assert.match(
+    html,
+    /What is not built/,
+    "the Unplug section does not name what is missing",
+  );
+  assert.match(
+    html,
+    /the parts that do the actual pausing are not/,
+    "the Unplug section does not say the blocking layer is unwritten",
+  );
+});
+
+test("Unplug is on a roadmap, and not sold as a health area of its own", async () => {
+  // The code lives inside the BreatheFree application, so the work belongs to
+  // tobacco. Mental & behavioural health carries the open question instead —
+  // whether screen time is an area at all — and stays "planned".
+  const { programs, statusLabels } = await import("../../src/data/programs.ts");
+  const tobacco = readFileSync(
+    join(dist, "programs/tobacco/index.html"),
+    "utf8",
+  );
+  assert.match(
+    tobacco,
+    /digital-wellbeing module/,
+    "the tobacco roadmap does not list the Unplug module",
+  );
+
+  const behavioral = programs.find((program) => program.id === "behavioral");
+  assert.equal(
+    behavioral.status,
+    "planned",
+    "mental & behavioural health has been promoted without code to point at",
+  );
+  const behavioralHtml = readFileSync(
+    join(dist, "programs/behavioral/index.html"),
+    "utf8",
+  );
+  assert.match(
+    behavioralHtml,
+    new RegExp(statusLabels.planned),
+    "the behavioural health page does not state its status",
+  );
+  assert.match(
+    behavioralHtml,
+    /Screen time as a health area/,
+    "the behavioural health roadmap does not carry the open question",
+  );
+});

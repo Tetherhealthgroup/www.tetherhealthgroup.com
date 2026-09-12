@@ -117,6 +117,12 @@ export const programs: Program[] = [
         horizon: "In development",
       },
       {
+        title: "Unplug — the digital-wellbeing module",
+        description:
+          "Screen-time support built alongside cessation: an intercept that asks rather than scolds, a tier ladder that is quick to tighten and slow to loosen, and a baseline report designed around what a phone will actually report rather than what we would like it to.",
+        horizon: "In development",
+      },
+      {
         title: "Clinical and privacy review",
         description:
           "The review gates that must pass before anything reaches a person: clinical content review, privacy assessment, security review and an accessibility audit.",
@@ -506,6 +512,18 @@ export const programs: Program[] = [
         description:
           "Writing down what this area will never attempt, so scope cannot drift towards therapy by accident.",
         horizon: "Next",
+      },
+      {
+        title: "Who may see what",
+        description:
+          "A written capability matrix for clinician-led, coach-led and self-guided delivery. The rule it exists to enforce: a sign of distress can never come to rest with someone who is not qualified to act on it.",
+        horizon: "Next",
+      },
+      {
+        title: "Screen time as a health area",
+        description:
+          "Deciding whether the Unplug module being built inside BreatheFree belongs to this area as well, and what would have to be true clinically before it is offered as behavioural-health support rather than a habit tool.",
+        horizon: "Later",
       },
       {
         title: "Instrument selection",
