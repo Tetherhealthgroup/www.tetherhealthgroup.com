@@ -100,21 +100,26 @@ test("the services page lists every service and does not read as an offer", asyn
 });
 
 test("the Unplug section says what is not built, next to what is", async () => {
-  // Unplug's defining feature is the intercept, and the intercept does not
-  // exist yet. A section describing it without that caveat would be the
-  // overstatement src/data/programs.ts was written to prevent, so the caveat is
-  // asserted rather than trusted to survive the next copy edit.
+  // The intercept now exists in code, which makes the section more tempting to
+  // overstate, not less: what is missing has moved from "unwritten" to "Apple
+  // has not granted the permission, and nobody has run it on a real phone".
+  // Both caveats are asserted rather than trusted to survive a copy edit.
   const html = readFileSync(join(dist, "breathefree/index.html"), "utf8");
   assert.match(html, /Unplug/, "the BreatheFree page does not mention Unplug");
   assert.match(
     html,
-    /What is not built/,
+    /What is still missing/,
     "the Unplug section does not name what is missing",
   );
   assert.match(
     html,
-    /the parts that do the actual pausing are not/,
-    "the Unplug section does not say the blocking layer is unwritten",
+    /has never run on anyone/,
+    "the Unplug section does not say it is untested on a real device",
+  );
+  assert.match(
+    html,
+    /Apple requires a specific permission/,
+    "the Unplug section does not say the iPhone permission is ungranted",
   );
 });
 

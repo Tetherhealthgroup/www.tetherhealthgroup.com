@@ -37,8 +37,13 @@ const features = [
 
 /**
  * Unplug is a second module inside the BreatheFree application, covering the
- * phone habits that sit next to a quit attempt. It is design and in-progress
- * code, not a feature anyone can use, and the copy below is written to say so.
+ * phone habits that sit next to a quit attempt.
+ *
+ * The screens and the platform layer beneath them are both built now. What is
+ * not done is the part nobody can write: Apple has to grant the permission that
+ * lets one app pause another, and the thing has to be used by a real person on a
+ * real phone. The card at the end of the section says both, and an acceptance
+ * test asserts it still does.
  *
  * Every claim here is a constraint we have accepted rather than a capability we
  * are advertising — which is the honest way to describe work at this stage, and
@@ -253,9 +258,10 @@ const safeguards = [
       <p class="mt-6 text-lg leading-relaxed">
         Unplug is a second module inside BreatheFree, for the screen habits that
         sit alongside a quit attempt — the scroll at 11pm, the app opened before
-        the thought finishes. Twelve screens are designed and being built. None
-        of it is available, and the parts that do the actual pausing are not
-        written yet.
+        the thought finishes. Twelve screens are built, and so is the layer
+        underneath them that does the pausing. It is not available: it has never
+        run on anyone's real phone, and on iPhone it cannot until Apple grants
+        us the permission that makes it possible.
       </p>
     </div>
 
@@ -272,12 +278,13 @@ const safeguards = [
     </ul>
 
     <div class="mt-10">
-      <Card icon="alert" accent="coral" title="What is not built">
-        The blocking itself. On iPhone that means Apple's Screen Time
-        extensions; on Android, a background service and the overlay that draws
-        the pause. Until those exist, Unplug is a set of designed screens and a
-        written specification, and we would rather say that plainly than let a
-        screenshot imply otherwise.
+      <Card icon="alert" accent="coral" title="What is still missing">
+        Two things, and neither is code. Apple requires a specific permission
+        before any app may pause another one, and we have not been granted it
+        yet — until we are, the iPhone version cannot do the thing it is for.
+        And nothing here has run on a real phone in anyone's hands. Both have to
+        be true before this is something we would offer to a person, and we
+        would rather say that plainly than let a screenshot imply otherwise.
       </Card>
     </div>
   </Section>
