@@ -2,7 +2,7 @@
  * The approved 28-screen BreatheFree catalog.
  *
  * Ported verbatim from the mobile application's canonical catalog at
- * Tether-Smoking-cessation-breath-free/lib/models/screen_spec.dart — same
+ * Tether-Health/lib/models/screen_spec.dart — same
  * numbers, same titles, same descriptions, same phase grouping. Keeping the
  * numbering identical means a screen can be discussed once and found in both
  * the app and the site.
