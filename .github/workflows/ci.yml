@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Build, type check and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          # package.json engines require >=22.12.0 (also required by astro 7).
+          node-version: "22"
+          cache: npm
+          # The lockfile lives at the repository root (npm workspace: project).
+          cache-dependency-path: package-lock.json
+
+      # Workspace install: must run at the repository root, where the lockfile is.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        working-directory: project
+        run: npm run build
+
+      - name: Type check (astro check)
+        working-directory: project
+        run: npm run check
+
+      - name: Test (unit)
+        working-directory: project
+        run: npm run test:unit
+
+      - name: Test (integration)
+        working-directory: project
+        run: npm run test:integration
+
+      - name: Test (functional)
+        working-directory: project
+        run: npm run test:functional
+
+      - name: Test (smoke)
+        working-directory: project
+        run: npm run test:smoke
+
+      - name: Test (regression)
+        working-directory: project
+        run: npm run test:regression
+
+      - name: Test (acceptance)
+        working-directory: project
+        run: npm run test:acceptance
+
+      - name: Test (security)
+        working-directory: project
+        run: npm run test:security
+
+      - name: Test (ui)
+        working-directory: project
+        run: npm run test:ui
+
+      - name: Test (e2e)
+        working-directory: project
+        run: npm run test:e2e
+
+      - name: Test (performance)
+        working-directory: project
+        run: npm run test:performance
