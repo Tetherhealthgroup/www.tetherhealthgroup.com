@@ -1,15 +1,21 @@
 name: CI
 
 on:
+  # Pushes only on master; every other branch is covered by its pull request,
+  # so a PR branch does not run CI twice.
   push:
+    branches: [master]
   pull_request:
 
 permissions:
   contents: read
 
+# Newer runs of the same pull request cancel older ones. Push-to-master runs
+# are never cancelled: cancel-in-progress is true only for pull_request events.
+# Master pushes group by ref, PRs by PR number, so the two never share a group.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verify:
@@ -34,6 +40,11 @@ jobs:
       # Workspace install: must run at the repository root, where the lockfile is.
       - name: Install dependencies
         run: npm ci
+
+      # Existing project script: `prettier --check .` (no eslint in the repo).
+      - name: Lint (prettier check)
+        working-directory: project
+        run: npm run lint
 
       - name: Build
         working-directory: project
