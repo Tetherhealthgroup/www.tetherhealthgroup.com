@@ -10,8 +10,9 @@ on:
 permissions:
   contents: read
 
-# Newer runs of the same pull request cancel older ones. Push-to-master runs
-# are never cancelled: cancel-in-progress is true only for pull_request events.
+# Newer runs of the same pull request cancel older ones. A master run that has
+# started is never cancelled (cancel-in-progress is true only for pull_request
+# events), but a newer master push still replaces one that is queued.
 # Master pushes group by ref, PRs by PR number, so the two never share a group.
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
