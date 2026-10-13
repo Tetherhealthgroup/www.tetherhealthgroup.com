@@ -61,7 +61,7 @@ export const phases: Phase[] = [
     id: "cravingRescue",
     label: "Craving rescue",
     summary:
-      "Immediate, one-handed help that works offline, followed by an honest recheck of how it went.",
+      "Immediate, one-handed help, followed by an honest recheck of how it went.",
   },
   {
     id: "quitDay",
@@ -217,7 +217,7 @@ export const screens: Screen[] = [
   {
     number: 17,
     title: "Craving rescue start",
-    description: "Starts immediate, one-handed help that also works offline.",
+    description: "Starts immediate, one-handed help.",
     phase: "cravingRescue",
     slug: "craving-rescue-start",
   },
@@ -278,7 +278,7 @@ export const screens: Screen[] = [
     number: 25,
     title: "Learn library",
     description:
-      "Offers clinically reviewed, plain-language learning resources.",
+      "Offers plain-language learning resources. Clinical review has not yet taken place.",
     phase: "resources",
     slug: "learn-library",
   },
