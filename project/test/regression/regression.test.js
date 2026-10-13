@@ -377,6 +377,85 @@ test("repeated links and controls are at least 44px tall", () => {
   );
 });
 
+test("every mailto link meets the 44px bar or sits inside a sentence", () => {
+  // WEB-007 coverage extension (no defect: all of these pass on the base).
+  // The /support/ mailbox links (support.astro) and every other mailto: link
+  // in the build. A link inside a paragraph of prose is an inline target,
+  // which WCAG 2.5.8 exempts (the same reasoning as the footer 911 link
+  // above); every other mailto link must carry min-h-11 or, for the support
+  // card, be padded by p-8 (2rem each side, well over 44px).
+  const hasMin = (tag) => /(?:^|\s)!?min-h-11(?=\s|$)/.test(classOf(tag));
+  const isPaddedCard = (tag) => /(?:^|\s)p-8(?=\s|$)/.test(classOf(tag));
+  const missing = [];
+  let seen = 0;
+
+  for (const page of htmlFiles()) {
+    const html = pageHtml(page);
+    for (const match of html.matchAll(/<a [^>]*href="mailto:[^"]*"[^>]*>/g)) {
+      seen += 1;
+      const before = html.slice(0, match.index);
+      const inProse = before.lastIndexOf("<p") > before.lastIndexOf("</p>");
+      const tag = match[0];
+      if (!inProse && !hasMin(tag) && !isPaddedCard(tag))
+        missing.push(`${page} ${tag.slice(0, 70)}`);
+    }
+  }
+  assert.ok(seen > 0, "no mailto links found in the build");
+  assert.deepEqual(
+    missing,
+    [],
+    `mailto links under the 44px bar:\n${missing.join("\n")}`,
+  );
+
+  // The /support/ mailbox list stands on its own lines, so it must be sized
+  // explicitly: privacy, security, partnerships and careers.
+  const support = pageHtml("support/index.html");
+  for (const box of ["privacy", "security", "partnerships", "careers"]) {
+    const tag = support.match(
+      new RegExp(`<a [^>]*href="mailto:${box}@[^"]*"[^>]*>`),
+    )?.[0];
+    assert.ok(tag, `/support/ has no ${box}@ mailto link`);
+    assert.ok(hasMin(tag), `/support/ ${box}@ link lacks min-h-11`);
+  }
+});
+
+test("leadership titles are announced in full, once, without relying on title=", () => {
+  // WEB-007. <abbr title> alone is not reliably exposed by screen readers
+  // and never on touch. Each leader's fullTitle must be real text in the
+  // list item (visually hidden), and the abbreviation must be aria-hidden
+  // so "CEO" and "Chief Executive Officer" are not both announced.
+  const src = readFileSync(join(projectRoot, "src/data/site.ts"), "utf8");
+  const titles = [...src.matchAll(/fullTitle:\s*"([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(titles.length >= 3, "expected the leadership fullTitle values");
+
+  const html = pageHtml("about/index.html");
+  const list = html.match(
+    /<ul aria-labelledby="leadership-heading"[\s\S]*?<\/ul>/,
+  )?.[0];
+  assert.ok(list, "no leadership list on /about/");
+  const items = list.match(/<li[\s\S]*?<\/li>/g) ?? [];
+  assert.equal(items.length, titles.length, "one list item per leader");
+
+  const escape = (t) => t.replace(/&/g, "&amp;");
+  titles.forEach((full, i) => {
+    const item = items[i];
+    const hidden = item.match(/<span class="sr-only">([^<]*)<\/span>/)?.[1];
+    assert.equal(hidden, escape(full), `leader ${i}: no sr-only full title`);
+    const abbr = item.match(/<abbr\b[^>]*>/)?.[0] ?? "";
+    assert.match(
+      abbr,
+      /\baria-hidden="true"/,
+      `leader ${i}: abbr is announced`,
+    );
+    // Accessible text (everything not aria-hidden) names the title once.
+    const accessible = item
+      .replace(/<abbr\b[\s\S]*?<\/abbr>/g, "")
+      .replace(/<[^>]+>/g, " ");
+    const count = accessible.split(escape(full)).length - 1;
+    assert.equal(count, 1, `leader ${i}: full title announced ${count} times`);
+  });
+});
+
 test("phone screenshots are encoded for the size they are displayed at", () => {
   // The device frame is `width` px wide with border-box padding, so the
   // screenshot is shown at width - 2*padding. It was encoded at 2*width, i.e.
