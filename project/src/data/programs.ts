@@ -90,7 +90,7 @@ export const programs: Program[] = [
       {
         name: "Cessation support",
         description:
-          "Day-to-day help through a quit attempt: a plan the person owns, craving tools that work offline, and check-ins that take under two minutes.",
+          "Day-to-day help through a quit attempt: a plan the person owns, craving tools designed to work offline, and check-ins that take under two minutes.",
       },
       {
         name: "Relapse prevention",
