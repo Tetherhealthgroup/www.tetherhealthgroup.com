@@ -10,6 +10,7 @@ import Section from "../components/Section.astro";
 import Icon from "../components/Icon.astro";
 import SupportEmail from "../components/SupportEmail.astro";
 import type { Mailbox } from "../data/site";
+import { formatLegalDate } from "../lib/legal-date";
 
 interface Props {
   title: string;
@@ -34,11 +35,7 @@ const {
   contactMailbox = "support",
 } = Astro.props;
 
-const updatedLabel = new Date(updated).toLocaleDateString("en-GB", {
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
+const updatedLabel = formatLegalDate(updated);
 ---
 
 <Base title={title} description={description}>
