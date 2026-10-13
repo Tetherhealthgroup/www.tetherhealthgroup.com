@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { dist, htmlFiles } from "../helpers/dist.js";
+import { builtCss, colorTokens, contrast, over } from "../helpers/contrast.js";
 
 test("the 404 document claims no canonical URL of its own", () => {
   // ErrorDocument serves this file for every missing path, so a canonical
@@ -76,4 +77,192 @@ test("nothing links to the removed updates page", async () => {
     [],
     `these pages still link to the removed /updates/ page: ${offenders.join(", ")}`,
   );
+});
+
+/* ---------------------------------------------------------------------------
+   WEB-004 — accessibility and performance pass. Each case below reproduces a
+   defect measured on the build before it was fixed.
+--------------------------------------------------------------------------- */
+
+const tokens = colorTokens();
+const token = (name) => {
+  const hex = tokens.get(name);
+  assert.ok(hex, `design token --color-${name} is not in the built CSS`);
+  return hex;
+};
+const classOf = (tag) => tag.match(/\sclass="([^"]*)"/)?.[1] ?? "";
+const pageHtml = (rel) => readFileSync(join(dist, rel), "utf8");
+
+// Surfaces the keyboard focus ring can land on, light and dark.
+const LIGHT_SURFACES = ["cream", "paper", "mint", "mint-pale", "white"];
+const DARK_SURFACES = ["teal-deep", "teal-raised"];
+
+test("the focus ring is at least 3:1 on every surface it lands on", () => {
+  // WCAG 1.4.11. The ring was --color-coral: 2.30:1 on cream, 2.47:1 on
+  // paper, 2.15:1 on mint — a focus indicator a low-vision keyboard user
+  // could not reliably see. The ring is now a dark teal on light surfaces and
+  // switches to lime inside the dark teal panels.
+  const css = builtCss();
+  const light = css.match(
+    /(?:^|\})\s*:focus-visible\s*\{[^}]*outline:\s*3px solid var\(--color-([a-z-]+)\)/,
+  );
+  assert.ok(light, "no global :focus-visible outline rule found");
+  for (const surface of LIGHT_SURFACES) {
+    const ratio = contrast(token(light[1]), token(surface));
+    assert.ok(
+      ratio >= 3,
+      `focus ring ${light[1]} is ${ratio.toFixed(2)}:1 on ${surface}`,
+    );
+  }
+
+  const dark = css.match(
+    /\.bg-teal-deep[^{]*:focus-visible[^{]*\{[^}]*outline-color:\s*var\(--color-([a-z-]+)\)/,
+  );
+  assert.ok(dark, "no focus-ring override for the dark teal panels");
+  for (const surface of DARK_SURFACES) {
+    const ratio = contrast(token(dark[1]), token(surface));
+    assert.ok(
+      ratio >= 3,
+      `focus ring ${dark[1]} is ${ratio.toFixed(2)}:1 on ${surface}`,
+    );
+  }
+});
+
+test("waitlist fields have a visible border, readable placeholder and readable error", () => {
+  // WCAG 1.4.11 / 1.4.3. The field border was --color-hairline (1.72:1 on
+  // paper), the placeholder was teal-mid at 70% opacity (2.93:1) and the
+  // validation message was coral text (2.47:1 on paper).
+  const html = pageHtml("index.html");
+  const paper = token("paper");
+
+  const input = html.match(/<input[^>]*id="wl-email"[^>]*>/)?.[0];
+  assert.ok(input, "the email field is missing from the home page");
+  const cls = classOf(input);
+
+  const border = cls.match(/(?:^|\s)border-(?!2\b)([a-z-]+)(?=\s|$)/)?.[1];
+  assert.ok(border, "the email field declares no border colour");
+  assert.ok(
+    contrast(token(border), paper) >= 3,
+    `field border ${border} is ${contrast(token(border), paper).toFixed(2)}:1 on paper`,
+  );
+
+  const ph = cls.match(/placeholder:text-([a-z-]+)(?:\/(\d+))?(?=\s|$)/);
+  assert.ok(ph, "the email field declares no placeholder colour");
+  const placeholder = ph[2]
+    ? over(token(ph[1]), paper, Number(ph[2]) / 100)
+    : token(ph[1]);
+  assert.ok(
+    contrast(placeholder, paper) >= 4.5,
+    `placeholder is ${contrast(placeholder, paper).toFixed(2)}:1 on paper`,
+  );
+
+  const error = html.match(/<p[^>]*id="wl-email-error"[^>]*>/)?.[0];
+  assert.ok(error, "the email error message is missing");
+  const text = classOf(error).match(
+    /(?:^|\s)text-(?!sm\b)([a-z-]+)(?=\s|$)/,
+  )?.[1];
+  assert.ok(text, "the email error declares no text colour");
+  assert.ok(
+    contrast(token(text), paper) >= 4.5,
+    `error text ${text} is ${contrast(token(text), paper).toFixed(2)}:1 on paper`,
+  );
+});
+
+test("the home link's accessible name comes from the logo text it shows", () => {
+  // WCAG 2.5.3. The link carried aria-label="Tether Health Group — home" while
+  // the logo renders "Tether Health" and "GROUP" as two blocks, so the
+  // visible text ("Tether Health\nGROUP") was not contained in the name;
+  // Lighthouse flagged label-content-name-mismatch on all 25 runs. With no
+  // aria-label the name is computed from the content, which includes a
+  // visually hidden "— home".
+  for (const page of htmlFiles()) {
+    const html = pageHtml(page);
+    const link = html.match(
+      /<header[\s\S]*?(<a href="\/"[^>]*>[\s\S]*?<\/a>)/,
+    )?.[1];
+    assert.ok(link, `${page} has no home link in the header`);
+    assert.doesNotMatch(
+      link,
+      /aria-label=/,
+      `${page}: home link overrides its name`,
+    );
+    const name = link
+      .replace(/<svg[\s\S]*?<\/svg>/g, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    assert.equal(name, "Tether Health Group — home", `${page}: ${name}`);
+  }
+});
+
+test("repeated links and controls are at least 44px tall", () => {
+  // Requested bar is 44px (WCAG 2.5.5 AAA; 2.5.8 AA only needs 24px).
+  // Measured before: header nav links 39px, header CTA 43px, tour jump chips
+  // 40px, emergency/quitline phone links 28-32px, footer links 17px.
+  // Rendered height cannot be read from static HTML, so this asserts the
+  // min-h-11 utility (2.75rem = 44px) is on each of them.
+  const hasMin = (tag) => /(?:^|\s)!?min-h-11(?=\s|$)/.test(classOf(tag));
+  const missing = [];
+
+  for (const page of htmlFiles()) {
+    const html = pageHtml(page);
+
+    const header = html.match(/<header[\s\S]*?<\/header>/)?.[0] ?? "";
+    for (const tag of header.match(/<a [^>]*>/g) ?? [])
+      if (!hasMin(tag)) missing.push(`${page} header ${tag.slice(0, 60)}`);
+
+    const footer =
+      html.match(/<footer class="[^"]*bg-teal-deep[\s\S]*?<\/footer>/)?.[0] ??
+      "";
+    for (const nav of footer.match(/<nav[\s\S]*?<\/nav>/g) ?? [])
+      for (const tag of nav.match(/<a [^>]*>/g) ?? [])
+        if (!hasMin(tag)) missing.push(`${page} footer ${tag.slice(0, 60)}`);
+
+    // The footer's 911 link sits inside a sentence, where WCAG 2.5.8 exempts
+    // inline targets; every other phone link stands on its own line.
+    const phoneLinks = html.match(/<a [^>]*href="tel:[^"]*"[^>]*>/g) ?? [];
+    for (const tag of phoneLinks) {
+      const inFooterSentence =
+        footer.includes(tag) && tag.includes('href="tel:911"');
+      if (!inFooterSentence && !hasMin(tag))
+        missing.push(`${page} ${tag.slice(0, 60)}`);
+    }
+  }
+
+  const tour = pageHtml("breathefree/tour/index.html");
+  for (const tag of tour.match(/<a [^>]*href="#tour-[^"]*"[^>]*>/g) ?? [])
+    if (!hasMin(tag)) missing.push(`tour ${tag.slice(0, 60)}`);
+
+  assert.deepEqual(
+    missing,
+    [],
+    `links under the 44px bar:\n${missing.join("\n")}`,
+  );
+});
+
+test("phone screenshots are encoded for the size they are displayed at", () => {
+  // The device frame is `width` px wide with border-box padding, so the
+  // screenshot is shown at width - 2*padding. It was encoded at 2*width, i.e.
+  // the 1x candidate was already ~2.1x the display size and the 2x candidate
+  // ~4.3x; Lighthouse image-delivery flagged ~60 KB wasted per image on six
+  // pages. The 1x width must equal the displayed width, with 2x and 3x
+  // candidates for high-density screens.
+  let frames = 0;
+  for (const page of htmlFiles()) {
+    const html = pageHtml(page);
+    for (const m of html.matchAll(
+      /<div class="relative bg-teal-deep[^"]*" style="width:(\d+)px;padding:(\d+)px;[^"]*">\s*(<img[^>]*>)/g,
+    )) {
+      frames += 1;
+      const displayed = Number(m[1]) - 2 * Number(m[2]);
+      const width = Number(m[3].match(/\swidth="(\d+)"/)?.[1]);
+      assert.equal(
+        width,
+        displayed,
+        `${page}: image declares ${width}px for a ${displayed}px slot`,
+      );
+      assert.match(m[3], /\s3x"?[ >]|\s3x,|\s3x"/, `${page}: no 3x candidate`);
+    }
+  }
+  assert.ok(frames > 0, "no phone frame found to check");
 });
