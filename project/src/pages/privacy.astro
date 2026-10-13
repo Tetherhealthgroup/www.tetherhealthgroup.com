@@ -10,6 +10,7 @@ import SupportEmail from "../components/SupportEmail.astro";
   eyebrow="Trust"
   intro="This notice covers this website. It is short because the site does very little: it has no analytics, no advertising, no cookies and no third-party trackers."
   updated="2026-08-29"
+  contactMailbox="privacy"
   scopeNote="This notice covers www.tetherhealthgroup.com only. BreatheFree is still in development and is not available to use; when it is released it will have its own in-product privacy notice and consent flow covering health information, which this notice does not address."
 >
   <h2>The short version</h2>
@@ -27,7 +28,7 @@ import SupportEmail from "../components/SupportEmail.astro";
   <h2>Who we are</h2>
   <p>
     {site.name}, trading as {site.legalName}, is the controller of the personal
-    data described here. You can reach us at <SupportEmail />.
+    data described here. You can reach us at <SupportEmail mailbox="privacy" />.
   </p>
 
   <h2>What this site collects automatically</h2>
@@ -99,7 +100,7 @@ import SupportEmail from "../components/SupportEmail.astro";
     act on these requests quickly.
   </p>
   <p>
-    To exercise any of them, write to <SupportEmail />.
+    To exercise any of them, write to <SupportEmail mailbox="privacy" />.
   </p>
 
   <h2>Children</h2>

@@ -488,3 +488,20 @@ unit 8/8 PASS · smoke 25/25 PASS.
 certificate is still wrong — the fix above removes an obstacle to running it,
 it does not run it. No mail has been sent or received end to end. Nothing is
 deployed to `public_html`.
+
+---
+
+## WEB-003 — team and role contacts, security.txt
+
+- About page: Leadership section (names and titles only) from `leadership` in
+  `src/data/site.ts`.
+- Role mailboxes (support, privacy, security, partnerships, careers) live in
+  `contact` in `src/data/site.ts` and render through `SupportEmail`
+  (`mailbox` prop). Support, privacy, security and terms use the one that fits.
+- `public/.well-known/security.txt` (RFC 9116), served as
+  `text/plain; charset=utf-8`. **Expires 2027-10-12: renew before then.**
+- `.cpanel.yml` no longer excludes all of `.well-known/` (that also blocked
+  copying security.txt); only `acme-challenge/` and `pki-validation/` are
+  spared from `--delete`.
+- Unknown until the owner confirms a test message: whether any role mailbox
+  receives mail.

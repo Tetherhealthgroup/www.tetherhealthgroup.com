@@ -77,3 +77,23 @@ test("nothing links to the removed updates page", async () => {
     `these pages still link to the removed /updates/ page: ${offenders.join(", ")}`,
   );
 });
+
+test("no page carries a personal, safecodeg.com or legacy contact address", () => {
+  // Public contacts are the role mailboxes only. Personal addresses and
+  // safecodeg.com (the hosting account's domain) must never be published.
+  const allowed =
+    /^(support|privacy|security|partnerships|careers)@tetherhealthgroup\.com$/;
+  const offenders = [];
+  for (const page of htmlFiles()) {
+    const html = readFileSync(join(dist, page), "utf8");
+    if (/safecodeg/i.test(html)) offenders.push(`${page} mentions safecodeg`);
+    for (const address of html.match(
+      /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/g,
+    ) ?? []) {
+      // The waitlist form's placeholder is an example address, not a contact.
+      if (address === "you@example.com") continue;
+      if (!allowed.test(address)) offenders.push(`${page} -> ${address}`);
+    }
+  }
+  assert.deepEqual(offenders, []);
+});

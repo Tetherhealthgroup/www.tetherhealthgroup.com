@@ -70,3 +70,11 @@ test("the share card and robots.txt ship, and the card is not just promised", ()
     assert.match(html, /og:image:alt/, `${page} share card has no alt text`);
   }
 });
+
+test("security.txt is emitted at /.well-known/security.txt", () => {
+  // Astro copies public/ verbatim, dot-directories included. A build that
+  // drops it publishes no vulnerability-reporting route at all.
+  const file = join(dist, ".well-known", "security.txt");
+  assert.ok(existsSync(file), "dist/.well-known/security.txt is missing");
+  assert.match(readFileSync(file, "utf8"), /^Contact: mailto:security@/m);
+});

@@ -150,3 +150,62 @@ test("the ACME challenge is not redirected into https://", () => {
       `runs rules in order, so the redirect wins and the exemption is dead.`,
   );
 });
+
+// --- security.txt (RFC 9116) --------------------------------------------------
+
+const securityTxt = () =>
+  readFileSync(join(dist, ".well-known", "security.txt"), "utf8");
+
+const field = (name) =>
+  [...securityTxt().matchAll(new RegExp(`^${name}:[ \\t]*(.+)$`, "gm"))].map(
+    (m) => m[1].trim(),
+  );
+
+test("security.txt carries the required RFC 9116 fields", () => {
+  assert.deepEqual(field("Contact"), ["mailto:security@tetherhealthgroup.com"]);
+  assert.deepEqual(field("Preferred-Languages"), ["en"]);
+  assert.equal(field("Expires").length, 1, "Expires must appear exactly once");
+  assert.deepEqual(field("Canonical"), [
+    "https://www.tetherhealthgroup.com/.well-known/security.txt",
+  ]);
+  assert.deepEqual(field("Policy"), [
+    "https://www.tetherhealthgroup.com/security/",
+  ]);
+});
+
+test("security.txt Expires is in the future and no more than a year away", () => {
+  const raw = field("Expires")[0];
+  assert.match(raw, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/);
+  const expires = new Date(raw);
+  const now = new Date();
+  const limit = new Date(now);
+  limit.setUTCFullYear(limit.getUTCFullYear() + 1);
+  assert.ok(expires > now, `security.txt expired on ${raw}; renew it`);
+  assert.ok(expires <= limit, `Expires ${raw} is more than a year away`);
+});
+
+test("security.txt is not blocked or rewritten by .htaccess and is served as text/plain", () => {
+  // The dotfile deny-list is a <FilesMatch> on FILENAMES. It must not match
+  // "security.txt", and the directory ".well-known" is a path segment it
+  // cannot match.
+  const deny = htaccess.match(/<FilesMatch "([^"]*\^\\\.[^"]*)">/)?.[1];
+  assert.ok(deny, "dotfile deny-list not found; re-check this test");
+  assert.equal(new RegExp(deny).test("security.txt"), false);
+
+  // No RewriteRule other than the ACME exemption may reference .well-known,
+  // and the .git rule must not catch it.
+  const rules = htaccess.split("\n").filter((l) => /^\s*RewriteRule\b/.test(l));
+  assert.equal(
+    new RegExp("(^|/)\\.git(/|$)").test(".well-known/security.txt"),
+    false,
+  );
+  for (const rule of rules) {
+    if (/acme-challenge/.test(rule)) continue;
+    assert.doesNotMatch(rule, /well-known/, `unexpected rule: ${rule}`);
+  }
+  assert.match(
+    htaccess,
+    /<Files "security\.txt">\s*ForceType "text\/plain; charset=utf-8"/,
+    "security.txt is not forced to text/plain; charset=utf-8",
+  );
+});

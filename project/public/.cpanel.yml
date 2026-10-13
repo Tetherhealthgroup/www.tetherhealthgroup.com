@@ -59,8 +59,11 @@ deployment:
     #                has no leading dot — so exposure here is real, not
     #                theoretical.
     #   .cpanel.yml  deployment config is not site content.
-    #   .well-known/ AutoSSL writes HTTP-01 challenge tokens here. A deploy
+    #   .well-known/acme-challenge/, .well-known/pki-validation/
+    #                AutoSSL writes its HTTP-01 / DCV tokens here. A deploy
     #                running mid-validation must not delete them, or it fails
-    #                the renewal it is unrelated to.
+    #                the renewal it is unrelated to. The rest of .well-known/
+    #                is deliberately NOT excluded: security.txt ships from
+    #                public/.well-known/ and must reach the document root.
     #   cgi-bin/     cPanel's, not ours.
-    - test -d $DOCROOT && if command -v rsync >/dev/null 2>&1; then rsync -a --delete --exclude=.git/ --exclude=.cpanel.yml --exclude=.well-known/ --exclude=cgi-bin/ ./ $DOCROOT/; else tar --exclude=./.git --exclude=./.cpanel.yml --exclude=./.well-known --exclude=./cgi-bin -cf - . | tar -xf - -C $DOCROOT; fi
+    - test -d $DOCROOT && if command -v rsync >/dev/null 2>&1; then rsync -a --delete --exclude=.git/ --exclude=.cpanel.yml --exclude=/.well-known/acme-challenge/ --exclude=/.well-known/pki-validation/ --exclude=cgi-bin/ ./ $DOCROOT/; else tar --exclude=./.git --exclude=./.cpanel.yml --exclude=./cgi-bin -cf - . | tar -xf - -C $DOCROOT; fi

@@ -221,6 +221,14 @@ ErrorDocument 404 /404.html
   AddType image/webp .webp
   AddType image/svg+xml .svg
   AddType application/manifest+json .webmanifest
+
+  # RFC 9116 requires security.txt to be text/plain with charset=utf-8. Served
+  # at /.well-known/security.txt. The directory is a path SEGMENT, not a
+  # filename, so the dotfile deny-list at the foot of this file does not match
+  # it, and the .git rule above does not either.
+  <Files "security.txt">
+    ForceType "text/plain; charset=utf-8"
+  </Files>
 </IfModule>
 
 # --- Do not serve what is not the site --------------------------------------

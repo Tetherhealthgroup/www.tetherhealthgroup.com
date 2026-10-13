@@ -5,7 +5,7 @@ import Section from "../components/Section.astro";
 import Button from "../components/Button.astro";
 import Card from "../components/Card.astro";
 import Icon from "../components/Icon.astro";
-import { site } from "../data/site";
+import { site, leadership } from "../data/site";
 import { programCount } from "../data/programs";
 
 const beliefs = [
@@ -153,6 +153,31 @@ const beliefs = [
         ))
       }
     </ol>
+  </Section>
+
+  <!-- Leadership -->
+  <Section width="default">
+    <div class="mb-12 max-w-2xl">
+      <p class="eyebrow mb-5">Leadership</p>
+      <h2 id="leadership-heading" class="text-3xl sm:text-4xl">
+        Who leads Tether Health.
+      </h2>
+    </div>
+
+    <ul aria-labelledby="leadership-heading" class="grid gap-5 md:grid-cols-3">
+      {
+        leadership.map((person) => (
+          <li class="rounded-3xl border border-hairline-soft bg-paper p-7">
+            <span class="block text-xl font-extrabold tracking-[-0.03em] text-teal-deep">
+              {person.name}
+            </span>
+            <span class="mt-2 block leading-relaxed text-teal-mid">
+              {person.title}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
   </Section>
 
   <!-- Company facts -->

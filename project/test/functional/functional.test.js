@@ -100,3 +100,55 @@ test("every health area page offers a route onward", async () => {
     );
   }
 });
+
+test("the About page lists the three leaders, names and titles only", () => {
+  const html = readFileSync(join(dist, "about/index.html"), "utf8");
+  const start = html.indexOf('id="leadership-heading"');
+  assert.notEqual(start, -1, "the About page has no Leadership heading");
+
+  const section = html.slice(start, html.indexOf("</section>", start));
+  assert.match(html, /<h2[^>]*id="leadership-heading"/, "heading is not an h2");
+
+  const items = [...section.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
+    m[1]
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/\s+/g, " ")
+      .trim(),
+  );
+  assert.deepEqual(items, [
+    "Srikanth CEO",
+    "Hariharan COO & CTO",
+    "Kushal CFO",
+  ]);
+
+  assert.doesNotMatch(
+    section,
+    /<img|<picture|<svg|mailto:|@/,
+    "the section carries more than names and titles",
+  );
+});
+
+test("each role mailbox is a mailto link on the page where it fits", () => {
+  const expected = {
+    "support/index.html": [
+      "support",
+      "privacy",
+      "security",
+      "partnerships",
+      "careers",
+    ],
+    "privacy/index.html": ["privacy"],
+    "security/index.html": ["security"],
+    "terms/index.html": ["support", "partnerships"],
+  };
+  for (const [page, boxes] of Object.entries(expected)) {
+    const html = readFileSync(join(dist, page), "utf8");
+    for (const box of boxes) {
+      assert.ok(
+        html.includes(`href="mailto:${box}@tetherhealthgroup.com"`),
+        `${page} has no mailto link to ${box}@tetherhealthgroup.com`,
+      );
+    }
+  }
+});
