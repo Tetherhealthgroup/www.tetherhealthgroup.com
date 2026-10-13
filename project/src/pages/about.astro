@@ -172,7 +172,10 @@ const beliefs = [
               {person.name}
             </strong>
             <span class="mt-2 block leading-relaxed text-teal-mid">
-              <abbr title={person.fullTitle}>{person.title}</abbr>
+              <abbr title={person.fullTitle} aria-hidden="true">
+                {person.title}
+              </abbr>
+              <span class="sr-only">{person.fullTitle}</span>
             </span>
           </li>
         ))
