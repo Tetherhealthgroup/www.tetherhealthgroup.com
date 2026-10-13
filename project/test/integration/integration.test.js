@@ -137,18 +137,19 @@ test("the deploy does not delete what it must not delete", () => {
   const yml = readFileSync(join(dist, ".cpanel.yml"), "utf8");
   if (!/--delete/.test(yml)) return; // nothing is removed; nothing to protect
 
-  for (const path of [
-    ".git",
-    ".well-known/acme-challenge",
-    ".well-known/pki-validation",
-    ".cpanel.yml",
-  ]) {
+  for (const path of [".git", ".cpanel.yml"]) {
     assert.match(
       yml,
       new RegExp(`--exclude=\\.?/?${path.replace(/[.]/g, "\\.")}`),
       `${path} is not excluded from a --delete copy into the document root`,
     );
   }
+  assert.match(
+    yml,
+    /--filter='P \/\.well-known\/\*\*'/,
+    "everything under /.well-known/ must be protected from --delete " +
+      "(--filter='P /.well-known/**')",
+  );
 });
 
 test("the deploy does not exclude .well-known wholesale, or security.txt never ships", () => {

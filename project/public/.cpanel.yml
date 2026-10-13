@@ -59,11 +59,13 @@ deployment:
     #                has no leading dot — so exposure here is real, not
     #                theoretical.
     #   .cpanel.yml  deployment config is not site content.
-    #   .well-known/acme-challenge/, .well-known/pki-validation/
-    #                AutoSSL writes its HTTP-01 / DCV tokens here. A deploy
-    #                running mid-validation must not delete them, or it fails
-    #                the renewal it is unrelated to. The rest of .well-known/
-    #                is deliberately NOT excluded: security.txt ships from
-    #                public/.well-known/ and must reach the document root.
+    #   .well-known/ is PROTECTED, not excluded: --filter='P /.well-known/**'.
+    #                AutoSSL/cPanel write HTTP-01 and DCV tokens here
+    #                (acme-challenge/, pki-validation/, cpanel-dcv/), and the
+    #                host may keep other live files such as assetlinks.json. A
+    #                deploy must never delete any of them. A protect rule only
+    #                guards against deletion; it does not stop the copy, so
+    #                security.txt still ships from public/.well-known/. An
+    #                --exclude would have blocked that copy as well.
     #   cgi-bin/     cPanel's, not ours.
-    - test -d $DOCROOT && if command -v rsync >/dev/null 2>&1; then rsync -a --delete --exclude=.git/ --exclude=.cpanel.yml --exclude=/.well-known/acme-challenge/ --exclude=/.well-known/pki-validation/ --exclude=cgi-bin/ ./ $DOCROOT/; else tar --exclude=./.git --exclude=./.cpanel.yml --exclude=./cgi-bin -cf - . | tar -xf - -C $DOCROOT; fi
+    - test -d $DOCROOT && if command -v rsync >/dev/null 2>&1; then rsync -a --delete --exclude=.git/ --exclude=.cpanel.yml --filter='P /.well-known/**' --exclude=cgi-bin/ ./ $DOCROOT/; else tar --exclude=./.git --exclude=./.cpanel.yml --exclude=./cgi-bin -cf - . | tar -xf - -C $DOCROOT; fi

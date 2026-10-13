@@ -40,9 +40,13 @@ export type Mailbox = keyof typeof contact;
  * until the owner supplies and approves it.
  */
 export const leadership = [
-  { name: "Srikanth", title: "CEO" },
-  { name: "Hariharan", title: "COO & CTO" },
-  { name: "Kushal", title: "CFO" },
+  { name: "Srikanth", title: "CEO", fullTitle: "Chief Executive Officer" },
+  {
+    name: "Hariharan",
+    title: "COO & CTO",
+    fullTitle: "Chief Operating Officer & Chief Technology Officer",
+  },
+  { name: "Kushal", title: "CFO", fullTitle: "Chief Financial Officer" },
 ] as const;
 
 /**

@@ -180,7 +180,12 @@ test("security.txt Expires is in the future and no more than a year away", () =>
   const now = new Date();
   const limit = new Date(now);
   limit.setUTCFullYear(limit.getUTCFullYear() + 1);
-  assert.ok(expires > now, `security.txt expired on ${raw}; renew it`);
+  const soon = new Date(now);
+  soon.setUTCDate(soon.getUTCDate() + 30);
+  assert.ok(
+    expires > soon,
+    `renew security.txt (expires ${raw}, less than 30 days away or past)`,
+  );
   assert.ok(expires <= limit, `Expires ${raw} is more than a year away`);
 });
 

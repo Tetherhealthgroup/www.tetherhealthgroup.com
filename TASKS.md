@@ -505,3 +505,5 @@ deployed to `public_html`.
   spared from `--delete`.
 - Unknown until the owner confirms a test message: whether any role mailbox
   receives mail.
+- Legal-page contact changes (privacy, security, terms; "Last updated" bumped to
+  2026-10-12) are **needs-counsel** and owner **Tier 4** before publishing.

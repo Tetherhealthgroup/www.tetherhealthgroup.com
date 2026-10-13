@@ -168,11 +168,11 @@ const beliefs = [
       {
         leadership.map((person) => (
           <li class="rounded-3xl border border-hairline-soft bg-paper p-7">
-            <span class="block text-xl font-extrabold tracking-[-0.03em] text-teal-deep">
+            <strong class="block text-xl font-extrabold tracking-[-0.03em] text-teal-deep">
               {person.name}
-            </span>
+            </strong>
             <span class="mt-2 block leading-relaxed text-teal-mid">
-              {person.title}
+              <abbr title={person.fullTitle}>{person.title}</abbr>
             </span>
           </li>
         ))
