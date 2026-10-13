@@ -111,6 +111,9 @@ test("the About page lists the three leaders, names and titles only", () => {
 
   const items = [...section.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
     m[1]
+      // Visible text only: the visually hidden full title (WEB-007) is
+      // asserted in the regression suite.
+      .replace(/<span class="sr-only">[\s\S]*?<\/span>/g, "")
       .replace(/<[^>]+>/g, " ")
       .replace(/&amp;/g, "&")
       .replace(/\s+/g, " ")
