@@ -13,8 +13,9 @@ export const site = {
   domain: "www.tetherhealthgroup.com",
   url: "https://www.tetherhealthgroup.com",
   tagline: "Care that meets people where they are.",
+  // needs-counsel: WEB-005 (feeds meta/og/twitter description and JSON-LD; changing it re-pins a CSP hash)
   description:
-    "Tether Health Group builds calm, private, evidence-informed digital health tools. Our first product, BreatheFree, supports people quitting smoking without judgment.",
+    "Tether Health Group is building private, evidence-informed health tools. Our first program, BreatheFree, is in development for Android to support quitting smoking.",
 } as const;
 
 /**
@@ -41,7 +42,8 @@ export const contact = {
  */
 export const waitlist = {
   email: contact.support,
-  subject: "BreatheFree early access request",
+  // needs-counsel: WEB-005
+  subject: "BreatheFree waitlist",
 } as const;
 
 export interface NavLink {

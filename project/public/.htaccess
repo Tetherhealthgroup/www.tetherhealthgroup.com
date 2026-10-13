@@ -110,7 +110,7 @@ ErrorDocument 404 /404.html
   # connect-src is 'self' because the form has no endpoint by default. Setting
   # PUBLIC_WAITLIST_ENDPOINT means adding that origin here, or the browser
   # blocks the POST — see README.
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-ZvHI7dAQf+RvTh3JR4SKvDIB2OD5V8b4f3ytqXhQVZQ=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-4daKGa3Y2Vbk8v2Ug+z6rdJ/5ObNaArcWP53uY/D+zk='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-Eg/+GJCZrNd/GL2ELp+2qiqjT+PJiMv99RzGhOxj16s=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-agtC0Z2alY9mIy7zyN4WSplfXR0jh8EzmUB/MNayqjc='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
 
   # HSTS — one year, and the ramp is finished.
   #
