@@ -323,10 +323,15 @@ Two details in it are load-bearing, and both are guarded by tests:
   `.cpanel.yml` examples, does not match `.htaccess` — so the deploy reports
   success and ships the site with no CSP, no HSTS and no redirects. It uses
   `rsync` (falling back to `tar`) instead.
-- **`--delete` must spare `.well-known/`.** AutoSSL writes HTTP-01 challenge
-  tokens into the document root; a deploy running during validation would
-  otherwise fail a renewal it has nothing to do with. `.git/` and `cgi-bin/`
-  are excluded too.
+- **`--delete` must spare everything under `.well-known/`.** AutoSSL and cPanel
+  write validation tokens there (`acme-challenge/`, `pki-validation/`,
+  `cpanel-dcv/`) and the host may hold other live files such as
+  `assetlinks.json`; a deploy running during validation would otherwise fail a
+  renewal it has nothing to do with. The copy uses `--filter='P /.well-known/**'`
+  (protect from deletion) rather than `--exclude`, because an exclude also
+  blocks the transfer and `/.well-known/security.txt` (RFC 9116, from
+  `public/.well-known/`) would then never reach the document root. `.git/` and
+  `cgi-bin/` are excluded too.
 
 `.git/` matters twice. The deny-list at the foot of `.htaccess` matches
 filenames, so it stops `/.git` but not `/.git/config` — `config` has no leading

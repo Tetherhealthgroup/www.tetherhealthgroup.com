@@ -1,0 +1,5 @@
+Contact: mailto:security@tetherhealthgroup.com
+Expires: 2027-10-12T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://www.tetherhealthgroup.com/.well-known/security.txt
+Policy: https://www.tetherhealthgroup.com/security/

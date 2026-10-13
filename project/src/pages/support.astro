@@ -7,6 +7,29 @@ import Icon from "../components/Icon.astro";
 import WaitlistForm from "../components/WaitlistForm.astro";
 import { quitlines } from "../data/site";
 import SupportEmail from "../components/SupportEmail.astro";
+
+const otherMailboxes = [
+  {
+    mailbox: "privacy" as const,
+    label: "Privacy",
+    use: "Privacy requests and questions about how we handle data.",
+  },
+  {
+    mailbox: "security" as const,
+    label: "Security",
+    use: "Vulnerability reports and security concerns.",
+  },
+  {
+    mailbox: "partnerships" as const,
+    label: "Partnerships",
+    use: "Healthcare and business partnership enquiries.",
+  },
+  {
+    mailbox: "careers" as const,
+    label: "Careers",
+    use: "Recruitment and working with us.",
+  },
+];
 ---
 
 <Base
@@ -87,10 +110,11 @@ import SupportEmail from "../components/SupportEmail.astro";
   <Section id="contact" width="wide">
     <div class="mb-12 max-w-2xl">
       <p class="eyebrow mb-5">Contact</p>
-      <h2 class="text-3xl sm:text-4xl">One inbox, read by the team.</h2>
+      <h2 class="text-3xl sm:text-4xl">Write to the right inbox.</h2>
       <p class="mt-5 text-lg leading-relaxed">
-        We are small enough that everything goes to one address, and it is read
-        by the people building the product.
+        Support questions go to the support address below. For privacy,
+        security, partnerships and careers there is a dedicated address for
+        each.
       </p>
     </div>
 
@@ -105,6 +129,26 @@ import SupportEmail from "../components/SupportEmail.astro";
         <Icon name="support" size={26} />
       </span>
     </SupportEmail>
+
+    <h3 class="mb-4 mt-12 text-xl">Other addresses</h3>
+    <ul class="grid gap-4 md:grid-cols-2">
+      {
+        otherMailboxes.map((item) => (
+          <li class="rounded-3xl border border-hairline-soft bg-paper p-6">
+            <p class="font-bold text-teal-deep">{item.label}</p>
+            <p class="mt-1 text-[0.95rem] leading-relaxed text-teal-mid">
+              {item.use}
+            </p>
+            <p class="mt-3">
+              <SupportEmail
+                mailbox={item.mailbox}
+                class="inline-block min-h-11 py-3 font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+              />
+            </p>
+          </li>
+        ))
+      }
+    </ul>
 
     <div class="mt-8 grid gap-6 md:grid-cols-3">
       <Card icon="stethoscope" title="Clinical and research">

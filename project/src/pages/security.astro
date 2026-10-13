@@ -8,7 +8,8 @@ import SupportEmail from "../components/SupportEmail.astro";
   description="How this site is built to minimise risk, the security commitments BreatheFree must meet before release, and how to report a vulnerability."
   eyebrow="Trust"
   intro="This page describes two different things: how this website is secured today, and the security bar our products must clear before anyone can use them."
-  updated="2026-08-29"
+  updated="2026-10-12"
+  contactMailbox="security"
   scopeNote="We make no claim to hold any security certification. Where this page describes controls for BreatheFree, it describes release requirements that have not yet been met — not controls that are in place today."
 >
   <h2>This website</h2>
@@ -85,8 +86,10 @@ import SupportEmail from "../components/SupportEmail.astro";
   <h2>Reporting a vulnerability</h2>
   <p>
     If you believe you have found a security issue in this website or in
-    anything else we run, please tell us at <SupportEmail /> with "Security" in the
-    subject line.
+    anything else we run, please tell us at <SupportEmail mailbox="security" />.
+    The same contact is published in our <a href="/.well-known/security.txt"
+      >security.txt</a
+    >.
   </p>
   <p>Please include, as far as you can:</p>
   <ul>
