@@ -380,23 +380,41 @@ test("repeated links and controls are at least 44px tall", () => {
 test("every mailto link meets the 44px bar or sits inside a sentence", () => {
   // WEB-007 coverage extension (no defect: all of these pass on the base).
   // The /support/ mailbox links (support.astro) and every other mailto: link
-  // in the build. A link inside a paragraph of prose is an inline target,
-  // which WCAG 2.5.8 exempts (the same reasoning as the footer 911 link
-  // above); every other mailto link must carry min-h-11 or, for the support
-  // card, be padded by p-8 (2rem each side, well over 44px).
+  // in the build. A link inside a paragraph that still has prose after the
+  // link is removed is an inline target, which WCAG 2.5.8 exempts (the same
+  // reasoning as the footer 911 link above). A link alone in its own
+  // paragraph is not inline, so it must carry min-h-11. The one other
+  // allowance is the support card on /support/, padded by p-8 (2rem each
+  // side, well over 44px) and laid out as a flex block.
   const hasMin = (tag) => /(?:^|\s)!?min-h-11(?=\s|$)/.test(classOf(tag));
-  const isPaddedCard = (tag) => /(?:^|\s)p-8(?=\s|$)/.test(classOf(tag));
+  const hasClass = (tag, name) => classOf(tag).split(/\s+/).includes(name);
+  const isSupportCard = (page, tag) =>
+    page === "support/index.html" &&
+    hasClass(tag, "p-8") &&
+    (hasClass(tag, "flex") || hasClass(tag, "block"));
+  const anchorRe = /<a [^>]*href="mailto:[^"]*"[^>]*>[\s\S]*?<\/a>/g;
   const missing = [];
   let seen = 0;
 
   for (const page of htmlFiles()) {
     const html = pageHtml(page);
-    for (const match of html.matchAll(/<a [^>]*href="mailto:[^"]*"[^>]*>/g)) {
+    const paragraphs = [
+      ...html.matchAll(/<p(?:\s[^>]*)?>([\s\S]*?)<\/p>/g),
+    ].map((p) => ({ start: p.index, end: p.index + p[0].length, body: p[1] }));
+
+    for (const match of html.matchAll(anchorRe)) {
       seen += 1;
-      const before = html.slice(0, match.index);
-      const inProse = before.lastIndexOf("<p") > before.lastIndexOf("</p>");
-      const tag = match[0];
-      if (!inProse && !hasMin(tag) && !isPaddedCard(tag))
+      const tag = match[0].match(/^<a [^>]*>/)[0];
+      const para = paragraphs.find(
+        (p) => match.index >= p.start && match.index < p.end,
+      );
+      const inSentence =
+        para !== undefined &&
+        para.body
+          .replace(match[0], "")
+          .replace(/<[^>]+>/g, "")
+          .trim() !== "";
+      if (!inSentence && !hasMin(tag) && !isSupportCard(page, tag))
         missing.push(`${page} ${tag.slice(0, 70)}`);
     }
   }
@@ -441,6 +459,11 @@ test("leadership titles are announced in full, once, without relying on title=",
     const item = items[i];
     const hidden = item.match(/<span class="sr-only">([^<]*)<\/span>/)?.[1];
     assert.equal(hidden, escape(full), `leader ${i}: no sr-only full title`);
+    assert.equal(
+      item.match(/class="sr-only"/g)?.length,
+      1,
+      `leader ${i}: expected exactly one sr-only element`,
+    );
     const abbr = item.match(/<abbr\b[^>]*>/)?.[0] ?? "";
     assert.match(
       abbr,
