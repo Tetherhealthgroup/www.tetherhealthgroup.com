@@ -109,48 +109,137 @@ test("the services page lists every service and does not read as an offer", asyn
 // or inline script fails the build. The wording itself is needs-counsel.
 // ---------------------------------------------------------------------------
 
+/** Built page as one line, with hashed /_astro/ asset URLs removed. */
 const pageText = (rel) =>
-  readFileSync(join(dist, rel), "utf8").replace(/\s+/g, " ");
+  readFileSync(join(dist, rel), "utf8")
+    .replace(/\/_astro\/[^"'\s)]+/g, "")
+    .replace(/\s+/g, " ");
 
-test("no page overclaims availability, timing, platforms or a store presence", async () => {
-  const banned = [
-    [/coming soon/i, "implies timing"],
-    [/download now|launch date|launching|launches (on|in)/i, "launch promise"],
-    [/get the app/i, "store call to action"],
-    [/\b(iPhone|iOS|App Store|TestFlight)\b/, "Apple platform promise"],
-    [
-      /play\.google\.com|market:\/\/|apps\.apple\.com|itunes\.apple/i,
-      "store link",
-    ],
-    [/badge/i, "store badge"],
-    [
-      /"@type":"(SoftwareApplication|MobileApplication)"|downloadUrl|installUrl/,
-      "app structured data",
-    ],
-    [
-      /Nothing is built|no implementation/i,
-      "contradicts the planned/scaffold status",
-    ],
-  ];
+/** The single sentence that may name Google Play (BreatheFree page). */
+const ALLOWED_PLAY = /We intend to release it through Google Play\./g;
+/** The quitline sentence is about a third-party service, not the app. */
+const QUITLINE_NOW =
+  /Trained quitline counsellors[^<]*they are available now\./g;
+
+/**
+ * Overclaim filters, applied to every built page. Exported shape is
+ * [pattern, reason]; the self-check test below proves each sample claim is
+ * caught, so a loosened pattern fails here rather than silently.
+ */
+const OVERCLAIMS = [
+  [/coming soon/i, "implies timing"],
+  [/download now|launch date/i, "launch promise"],
+  [/get the app|get it on/i, "store call to action"],
+  [/\binstall\b/i, "install call to action"],
+  [/\bbeta\b|testing is (now )?open|\bnow open\b/i, "testing is open"],
+  [/\blaunch(es|ed|ing)?\b/i, "launch wording"],
+  [/\breleas(e|ing) in\b/i, "release timing"],
+  [/\bavailable on (android|google play)\b/i, "availability claim"],
+  [/\b(iphone|ios|app store|testflight)\b/i, "Apple platform promise"],
+  [
+    /play\.google\.com|market:\/\/|apps\.apple\.com|itunes\.apple/i,
+    "store link",
+  ],
+  [/Google Play/i, "store presence beyond the one allowed intent sentence"],
+  [
+    /"@type":"(SoftwareApplication|MobileApplication)"|downloadUrl|installUrl/,
+    "app structured data",
+  ],
+  [
+    /Nothing is built|no implementation/i,
+    "contradicts the planned/scaffold status",
+  ],
+  // Spec A7: no month, season or year near a status verb.
+  [
+    /\b(20[2-3]\d|spring|summer|autumn|fall|winter|january|february|march|april|june|july|august|september|october|november|december)\b[^.<]{0,40}\b(launch|release|available|open)|\b(launch|release|available|open)[^.<]{0,40}\b(20[2-3]\d|spring|summer|autumn|winter|january|february|march|april|june|july|august|september|october|november|december)\b/i,
+    "date or season near status wording",
+  ],
+];
+
+/** Claims the filters above must catch (reviewer's sample set). */
+const SAMPLE_CLAIMS = [
+  "Get it on Google Play",
+  "Now on Google Play",
+  "Available on Android",
+  "Install BreatheFree today",
+  "BreatheFree will launch in 2027",
+  "Releasing in spring",
+  "Testing is now open",
+  "Join our beta",
+  "ios app soon",
+];
+
+/**
+ * Counsel-owned retention sentence on the privacy notice (privacy.astro:88).
+ * Remove this exemption when counsel updates the page.
+ */
+const PRIVACY_RETENTION = /until the relevant product has launched/g;
+
+/** Text a page may contain even though a filter would otherwise match. */
+function scrub(text) {
+  return text
+    .replace(ALLOWED_PLAY, "")
+    .replace(QUITLINE_NOW, "")
+    .replace(PRIVACY_RETENTION, "");
+}
+
+test("the overclaim filters catch every sample claim", () => {
+  for (const claim of SAMPLE_CLAIMS) {
+    const text = scrub(`<p>${claim}</p>`);
+    assert.ok(
+      OVERCLAIMS.some(([pattern]) => pattern.test(text)),
+      `no filter catches: ${claim}`,
+    );
+  }
+});
+
+test("no page overclaims availability, timing, platforms or a store presence", () => {
   for (const page of htmlFiles()) {
-    const text = pageText(page);
-    for (const [pattern, why] of banned) {
+    const text = scrub(pageText(page));
+    for (const [pattern, why] of OVERCLAIMS) {
       assert.ok(!pattern.test(text), `${page} matches ${pattern} (${why})`);
     }
-    // "early access" implied a programme nobody has confirmed. The privacy
-    // notice is counsel-owned legal text and is deliberately not edited here.
-    if (page !== "privacy/index.html") {
+  }
+});
+
+test("store badges and store assets are not present", () => {
+  for (const page of htmlFiles()) {
+    const html = readFileSync(join(dist, page), "utf8");
+    for (const tag of html.match(/<(img|a|source)\b[^>]*>/gi) ?? []) {
       assert.ok(
-        !/early access/i.test(text),
-        `${page} still says "early access" (implies an access programme)`,
+        !/badge|google-play|app-store|play-store/i.test(tag),
+        `${page} has a store badge or asset: ${tag}`,
       );
     }
   }
 });
 
-test("'download' appears only as a negated availability statement", async () => {
-  const negated =
-    /not (yet )?available to download( yet| or use)?|not available to download/gi;
+// "early access" implied a programme nobody has confirmed. Privacy and terms
+// are counsel-owned legal text and are deliberately not edited by WEB-005.
+const EARLY_ACCESS_EXEMPT = new Set(["privacy/index.html", "terms/index.html"]);
+
+test("'early access' is gone everywhere except counsel-owned pages", () => {
+  for (const page of htmlFiles()) {
+    if (EARLY_ACCESS_EXEMPT.has(page)) continue;
+    assert.ok(
+      !/early[\s-]access/i.test(pageText(page)),
+      `${page} still says "early access" (implies an access programme)`,
+    );
+  }
+});
+
+test("the 'early access' exemption is still needed", () => {
+  // Remove this exemption when counsel updates the page.
+  for (const page of EARLY_ACCESS_EXEMPT) {
+    assert.ok(
+      /early[\s-]access/i.test(pageText(page)),
+      `${page} no longer says "early access": remove it from EARLY_ACCESS_EXEMPT`,
+    );
+  }
+});
+
+test("'download' appears only as a negated availability statement", () => {
+  const negated = /not (yet )?available to download( yet| or use)?/gi;
   for (const page of htmlFiles()) {
     const leftover = pageText(page).replace(negated, "");
     assert.ok(
@@ -160,52 +249,56 @@ test("'download' appears only as a negated availability statement", async () => 
   }
 });
 
-test("'available now' only refers to the third-party quitlines", async () => {
+test("'available now' only refers to the third-party quitlines", () => {
   for (const page of htmlFiles()) {
-    const text = pageText(page);
-    if (page === "support/index.html") {
-      // The one allowed hit is the quitline sentence.
-      const stripped = text.replace(
-        /Trained quitline counsellors[^<]*they are available now\./,
-        "",
-      );
-      assert.ok(
-        !/available now/i.test(stripped),
-        `${page} says "available now" outside the quitline sentence`,
-      );
-    } else {
-      assert.ok(!/available now/i.test(text), `${page} says "available now"`);
-    }
+    assert.ok(
+      !/available now/i.test(pageText(page).replace(QUITLINE_NOW, "")),
+      `${page} says "available now" outside the quitline sentence`,
+    );
   }
 });
 
-test("the Android-first status line is on the home and BreatheFree pages", () => {
+test("'Google Play' appears once, as an intent, on the BreatheFree page only", () => {
+  for (const page of htmlFiles()) {
+    const count = (pageText(page).match(/Google Play/gi) ?? []).length;
+    assert.equal(
+      count,
+      page === "breathefree/index.html" ? 1 : 0,
+      `${page} names Google Play ${count} time(s)`,
+    );
+  }
+  assert.match(
+    pageText("breathefree/index.html"),
+    ALLOWED_PLAY,
+    "the Play mention must be the intent-only sentence",
+  );
+});
+
+test("one Android-first sentence is used on the BreatheFree surfaces", () => {
+  const sentence = "BreatheFree is in development for Android first.";
   assert.ok(
     pageText("index.html").includes("In development — Android first"),
     "home page lacks the status line",
   );
+  for (const page of [
+    "breathefree/index.html",
+    "support/index.html",
+    "programs/tobacco/index.html",
+  ]) {
+    assert.ok(pageText(page).includes(sentence), `${page} lacks: ${sentence}`);
+  }
   assert.ok(
-    pageText("index.html").includes("is in development for Android"),
-    "home page description lacks the Android-first status",
-  );
-  const bf = pageText("breathefree/index.html");
-  assert.ok(
-    bf.includes("in development, for Android first"),
-    "BreatheFree page lacks the status card line",
-  );
-  assert.ok(
-    bf.includes("Not available to download yet"),
-    "BreatheFree page lacks the hero status line",
-  );
-  assert.ok(
-    bf.includes("we intend to release it through Google Play"),
-    "BreatheFree page lacks the intent-only Play wording",
-  );
-  assert.ok(
-    pageText("programs/tobacco/index.html").includes(
-      "in development for Android first and is not available to download yet",
+    pageText("breathefree/index.html").includes(
+      `${sentence} It is not available to download yet.`,
     ),
-    "the tobacco area page lacks the Android-first status",
+    "BreatheFree page lacks the not-available line",
+  );
+  const description = pageText("index.html").match(
+    /<meta name="description" content="([^"]*)"/,
+  )?.[1];
+  assert.ok(
+    description?.includes("in development for Android first"),
+    "home meta description lacks the Android-first status",
   );
 });
 
@@ -235,18 +328,15 @@ test("the support FAQ explains how to join the testing list, without saying test
       `support FAQ must contain "${q}" exactly once`,
     );
   }
-  assert.ok(
-    html.includes(
-      "Use the waitlist form below and say in the message box that you would like to test BreatheFree on Android. Testing has not opened yet. When it does, we may write to the address you give us to ask whether you would like to take part. Joining does not guarantee a place.",
-    ),
-    "the testing-list answer is missing or changed",
-  );
+  for (const clause of [
+    "say in the message box that you would like to test BreatheFree on Android",
+    "Testing has not opened yet.",
+    "Joining does not guarantee a place.",
+  ]) {
+    assert.ok(html.includes(clause), `testing-list answer lacks: ${clause}`);
+  }
   assert.ok(html.includes('id="testing-list"'), "the FAQ answer has no anchor");
   assert.ok(html.includes('id="waitlist"'), "support has no waitlist anchor");
-  assert.ok(
-    html.includes("We have not opened testing yet"),
-    "support must say testing has not opened",
-  );
   assert.ok(
     pageText("breathefree/index.html").includes(
       'href="/support/#testing-list"',

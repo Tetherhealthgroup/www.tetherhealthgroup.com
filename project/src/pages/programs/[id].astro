@@ -163,8 +163,9 @@ const horizonTone: Record<string, string> = {
           <h2 class="text-3xl">{program.product.name}</h2>
           {/* needs-counsel: WEB-005 */}
           <p class="mt-4 max-w-2xl leading-relaxed text-teal-mid">
-            This is the area {program.product.name} covers. It is in development
-            for Android first and is not available to download yet.
+            This is the area {program.product.name} covers.{" "}
+            {program.product.name} is in development for Android first. It is
+            not available to download yet.
           </p>
           <div class="mt-7">
             <Button href={program.product.href} arrow>
@@ -192,7 +193,11 @@ const horizonTone: Record<string, string> = {
       {/* needs-counsel: WEB-005 */}
       <p class="eyebrow mb-5">Waitlist</p>
       <h2 class="text-3xl sm:text-4xl">
-        Want to know when we start on {program.area.toLowerCase()}?
+        {
+          program.product
+            ? `Want to hear about ${program.product.name} for Android?`
+            : `Want to know when we start on ${program.area.toLowerCase()}?`
+        }
       </h2>
       <p class="mt-5 leading-relaxed text-teal-mid">
         Tell us which area matters to you and we will write once, when there is
