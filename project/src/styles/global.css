@@ -111,11 +111,18 @@
     text-wrap: pretty;
   }
 
-  /* A single, consistent focus ring everywhere, including inside dark panels. */
+  /* A single, consistent focus ring. WCAG 1.4.11 asks 3:1 against the surface
+     it sits on. Coral was 2.15-2.47:1 on cream, paper and mint, so the ring is
+     deep teal (11:1 on cream) on light surfaces and lime (9.5:1 on deep teal)
+     inside the dark panels, where deep teal would vanish. */
   :focus-visible {
-    outline: 3px solid var(--color-coral);
+    outline: 3px solid var(--color-teal-deep);
     outline-offset: 3px;
     border-radius: 4px;
+  }
+
+  :is(.bg-teal-deep, .bg-teal-raised) :focus-visible {
+    outline-color: var(--color-lime);
   }
 
   ::selection {
@@ -201,6 +208,14 @@
     color: var(--color-teal-deep);
     font-weight: 700;
   }
+}
+
+/* A field the visitor has been told is invalid. The script sets aria-invalid;
+   the border it also toggles (coral) is 2.5:1 on paper, below the 3:1 a
+   component boundary needs, so the state is drawn in deep teal instead. This
+   sits outside @layer so it outranks the utility class. */
+input[aria-invalid="true"] {
+  border-color: var(--color-teal-deep);
 }
 
 /* ---------------------------------------------------------------------------
