@@ -73,7 +73,7 @@ export const phases: Phase[] = [
     id: "resources",
     label: "Resources",
     summary:
-      "Medication education without prescribing, reviewed lessons, patterns without punishment, and real human support.",
+      "Medication education without prescribing, plain-language lessons awaiting clinical review, patterns without punishment, and real human support.",
   },
   {
     id: "account",
@@ -277,8 +277,7 @@ export const screens: Screen[] = [
   {
     number: 25,
     title: "Learn library",
-    description:
-      "Offers plain-language learning resources. Clinical review has not yet taken place.",
+    description: "Plain-language learning resources, pending clinical review.",
     phase: "resources",
     slug: "learn-library",
   },

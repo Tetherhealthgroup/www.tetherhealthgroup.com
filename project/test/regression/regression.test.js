@@ -79,11 +79,17 @@ test("nothing links to the removed updates page", async () => {
 });
 
 test("no built page claims offline use or clinical review as fact", async () => {
-  /* WEB-002 (R-018, R-044): the app blocks signed-in users offline at
-     startup and clinical review has not happened, so the site must not say
-     "works offline" or "clinically reviewed". Draft replacement wording is
-     needs-counsel; this test only guards the two unhedged phrases. */
-  const banned = [/works offline/i, /clinically reviewed/i];
+  /* WEB-002 (R-018, R-044): per R-018 the app blocks signed-in users offline
+     at startup, and clinical review has not happened, so the site must not
+     say "works offline" or "clinically reviewed". Replacement wording is a
+     needs-counsel draft; this test only guards the unhedged phrases.
+     The negative lookbehind (?<!designed\s+to\s+) lets the hedged
+     "designed to work offline" through while still flagging "work offline"
+     and "works offline" anywhere else. */
+  const banned = [
+    /(?<!designed\s+to\s+)works?\s+offline/i,
+    /clinically\s+reviewed/i,
+  ];
   const offenders = [];
   const pages = await htmlFiles();
   assert.ok(pages.length > 0, "expected built pages in dist/");
@@ -93,5 +99,9 @@ test("no built page claims offline use or clinical review as fact", async () => 
       if (pattern.test(html)) offenders.push(`${page} matches ${pattern}`);
     }
   }
-  assert.deepEqual(offenders, [], "unhedged claims found in built pages");
+  assert.deepEqual(
+    offenders,
+    [],
+    `unhedged offline or clinical-review claims in: ${offenders.join(", ")}`,
+  );
 });
