@@ -84,9 +84,11 @@ test("nothing links to the removed updates page", async () => {
    defect measured on the build before it was fixed.
 --------------------------------------------------------------------------- */
 
-const tokens = colorTokens();
+// Read lazily so a missing dist/ fails the test that needs it, not the import.
+let tokenCache;
 const token = (name) => {
-  const hex = tokens.get(name);
+  tokenCache ??= colorTokens();
+  const hex = tokenCache.get(name);
   assert.ok(hex, `design token --color-${name} is not in the built CSS`);
   return hex;
 };
@@ -115,10 +117,16 @@ test("the focus ring is at least 3:1 on every surface it lands on", () => {
     );
   }
 
-  const dark = css.match(
-    /\.bg-teal-deep[^{]*:focus-visible[^{]*\{[^}]*outline-color:\s*var\(--color-([a-z-]+)\)/,
+  // The override is `:is(<dark classes>) :focus-visible{outline-color:...}`.
+  // Match the :is() list and require both dark classes, in any order.
+  const darkRule = css.match(
+    /:is\(([^)]*)\)\s*:focus-visible\s*\{[^}]*outline-color:\s*var\(--color-([a-z-]+)\)/,
   );
-  assert.ok(dark, "no focus-ring override for the dark teal panels");
+  assert.ok(darkRule, "no focus-ring override for the dark teal panels");
+  const darkClasses = darkRule[1].split(",").map((c) => c.trim());
+  for (const cls of [".bg-teal-deep", ".bg-teal-raised"])
+    assert.ok(darkClasses.includes(cls), `dark override omits ${cls}`);
+  const dark = [null, darkRule[2]];
   for (const surface of DARK_SURFACES) {
     const ratio = contrast(token(dark[1]), token(surface));
     assert.ok(
@@ -188,7 +196,7 @@ test("the home link's accessible name comes from the logo text it shows", () => 
     );
     const name = link
       .replace(/<svg[\s\S]*?<\/svg>/g, "")
-      .replace(/<[^>]+>/g, " ")
+      .replace(/<[^>]+>/g, "")
       .replace(/\s+/g, " ")
       .trim();
     assert.equal(name, "Tether Health Group — home", `${page}: ${name}`);
@@ -265,4 +273,28 @@ test("phone screenshots are encoded for the size they are displayed at", () => {
     }
   }
   assert.ok(frames > 0, "no phone frame found to check");
+});
+
+test("a field marked invalid keeps a border of at least 3:1 on paper", () => {
+  // WCAG 1.4.11. The form script marks a bad address with aria-invalid and
+  // also toggles the `border-coral` utility (2.47:1 on paper). The border the
+  // visitor actually sees is the unlayered `input[aria-invalid=true]` rule in
+  // global.css if there is one, otherwise the toggled utility.
+  const paper = token("paper");
+  const css = builtCss();
+  const rule = css.match(
+    /input\[aria-invalid=["']?true["']?\]\s*\{[^}]*border-color:\s*var\(--color-([a-z-]+)\)/,
+  );
+
+  const script = pageHtml("index.html").match(
+    /classList\.toggle\(\s*["'`]border-([a-z-]+)["'`]/,
+  );
+  const effective = rule?.[1] ?? script?.[1];
+  assert.ok(effective, "no invalid-state border colour could be found");
+
+  const ratio = contrast(token(effective), paper);
+  assert.ok(
+    ratio >= 3,
+    `invalid-state border ${effective} is ${ratio.toFixed(2)}:1 on paper`,
+  );
 });

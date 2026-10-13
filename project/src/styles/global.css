@@ -210,10 +210,13 @@
   }
 }
 
-/* A field the visitor has been told is invalid. The script sets aria-invalid;
-   the border it also toggles (coral) is 2.5:1 on paper, below the 3:1 a
-   component boundary needs, so the state is drawn in deep teal instead. This
-   sits outside @layer so it outranks the utility class. */
+/* A field the visitor has been told is invalid. The form script sets
+   aria-invalid; this rule is the one place the invalid border is drawn, in
+   deep teal (11:1 on paper). The script also still toggles a coral border
+   utility (2.5:1, below the 3:1 a component boundary needs); that class is
+   inert because this rule sits outside @layer and outranks it. The script is
+   left as it is because editing it changes its CSP hash in public/.htaccess.
+   Delete the toggle and this note together when the CSP is next regenerated. */
 input[aria-invalid="true"] {
   border-color: var(--color-teal-deep);
 }
