@@ -22,10 +22,11 @@
 // no `libc` for any of those exact versions (`npm view <name>@<version> libc
 // --json` prints nothing, and the registry's version document has no `libc`
 // key). The lockfile therefore mirrors the registry and npm has not stripped
-// anything, so there is no field to lose and nothing to guard. If a future
-// version of one of these starts publishing `libc`, the lockfile will gain it,
-// and it should then be added to the baseline in a reviewed commit (not
-// before: a baseline entry needs a value to compare).
+// it from these entries, so there is no field to lose and nothing to guard.
+// When any of these is bumped, re-run `npm view <name>@<new version> libc
+// --json`; if it prints a value, run this check clean, then --write-baseline,
+// in a reviewed commit (a baseline entry needs a value to compare, so there is
+// nothing to add before then).
 //
 // Baseline entry that no longer exists in the lockfile (package dropped or
 // renamed): reported as a NOTICE, exit code unaffected. The guard is about a
