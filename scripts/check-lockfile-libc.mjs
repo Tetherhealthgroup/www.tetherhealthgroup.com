@@ -13,6 +13,20 @@
 // checkout and offline. Node built-ins only. Every value must be a non-empty
 // array of non-empty strings; anything else (including `[]`) is exit 2.
 //
+// Not baselined, on purpose (WEB-019, checked 2026-10-14): the 13 Linux binary
+// entries with no `libc` in the lockfile, namely @esbuild/linux-{arm,arm64,
+// ia32,loong64,mips64el,ppc64,riscv64,s390x,x64} 0.28.2,
+// @rolldown/binding-linux-arm-gnueabihf 1.2.6,
+// @tailwindcss/oxide-linux-arm-gnueabihf 4.3.3 and
+// lightningcss-linux-arm-gnueabihf 1.32.0 and 1.33.0. The registry publishes
+// no `libc` for any of those exact versions (`npm view <name>@<version> libc
+// --json` prints nothing, and the registry's version document has no `libc`
+// key). The lockfile therefore mirrors the registry and npm has not stripped
+// anything, so there is no field to lose and nothing to guard. If a future
+// version of one of these starts publishing `libc`, the lockfile will gain it,
+// and it should then be added to the baseline in a reviewed commit (not
+// before: a baseline entry needs a value to compare).
+//
 // Baseline entry that no longer exists in the lockfile (package dropped or
 // renamed): reported as a NOTICE, exit code unaffected. The guard is about a
 // field disappearing from an entry that is still installed; a removed package
