@@ -215,7 +215,15 @@ function main() {
   const args = parseArgs(process.argv.slice(2));
 
   if (args.writeBaseline) {
-    const snapshot = snapshotLibc(readJson(args.writeBaseline, "lockfile"));
+    const source = readJson(args.writeBaseline, "lockfile");
+    let snapshot;
+    try {
+      snapshot = snapshotLibc(source);
+    } catch (error) {
+      throw new Error(
+        `lockfile ${args.writeBaseline} is not usable, nothing written: ${error.message}`,
+      );
+    }
     try {
       validateBaseline(snapshot);
     } catch (error) {

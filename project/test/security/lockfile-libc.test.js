@@ -386,6 +386,30 @@ test("--write-baseline refuses a lockfile with no libc entries", () => {
   assert.throws(() => readFileSync(out), { code: "ENOENT" });
 });
 
+for (const [label, content] of [
+  ["a packages array", JSON.stringify({ packages: [] })],
+  ["no packages map", "{}"],
+]) {
+  test(`--write-baseline with ${label} exits 2 and names the lockfile`, () => {
+    const source = join(tmp, "bad-source-lock.json");
+    const out = join(tmp, "bad-source-baseline.json");
+    writeFileSync(source, content);
+    const result = spawnSync(
+      process.execPath,
+      [script, "--write-baseline", source, "--baseline", out],
+      { encoding: "utf8" },
+    );
+    assert.equal(result.status, 2, result.stdout + result.stderr);
+    assert.ok(
+      result.stderr.startsWith(
+        `error: lockfile ${source} is not usable, nothing written: lockfile has no \`packages\` map`,
+      ),
+      result.stderr,
+    );
+    assert.throws(() => readFileSync(out), { code: "ENOENT" });
+  });
+}
+
 test("exits 2 on an unreadable lockfile and says which file", () => {
   const missing = join(tmp, "does-not-exist.json");
   const result = run(missing);
