@@ -92,7 +92,31 @@ test("a baseline entry removed from the lockfile is a notice, not a failure", ()
       `notice: baseline entry no longer in lockfile: ${gone}`,
     ),
   );
+  assert.match(
+    result.stdout,
+    /ok: 41 of 42 baseline libc entries present and unchanged in .*; 1 no longer in the lockfile \(see notices\)/,
+  );
+  assert.doesNotMatch(result.stdout, /all still present/);
 });
+
+for (const [label, packages] of [
+  ["an empty packages map", {}],
+  ["a packages array", []],
+]) {
+  test(`a lockfile with ${label} exits 2, never ok`, () => {
+    const path = join(tmp, "hollow-lock.json");
+    writeFileSync(path, JSON.stringify({ packages }));
+    const result = run(path);
+    assert.equal(result.status, 2, result.stdout + result.stderr);
+    assert.doesNotMatch(result.stdout, /ok:/);
+    assert.match(
+      result.stderr,
+      Array.isArray(packages)
+        ? /^error: lockfile has no `packages` map/
+        : /^error: none of the 42 baseline entries is in the lockfile/,
+    );
+  });
+}
 
 test("a lockfile with no packages map exits 2, never ok", () => {
   const path = join(tmp, "empty-object.json");
@@ -271,7 +295,12 @@ test("--write-baseline refuses a lockfile with no libc entries", () => {
     { encoding: "utf8" },
   );
   assert.equal(result.status, 2, result.stdout + result.stderr);
-  assert.match(result.stderr, /baseline is empty/);
+  assert.ok(
+    result.stderr.startsWith(
+      `error: lockfile ${source} gives no valid baseline, nothing written: baseline is empty`,
+    ),
+    result.stderr,
+  );
   assert.throws(() => readFileSync(out), { code: "ENOENT" });
 });
 

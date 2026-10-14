@@ -16,7 +16,9 @@
 // Baseline entry that no longer exists in the lockfile (package dropped or
 // renamed): reported as a NOTICE, exit code unaffected. The guard is about a
 // field disappearing from an entry that is still installed; a removed package
-// has no binary left to mis-select. A baseline entry whose libc VALUE changed
+// has no binary left to mis-select. If NONE of the baseline entries is in the
+// lockfile, that is exit 2, not a pass: it means the wrong lockfile or an
+// emptied `packages` map, and would otherwise check nothing. A baseline entry whose libc VALUE changed
 // (for example glibc to musl) is a FAILURE (exit 1): a wrong value mis-selects
 // a binary just as a lost one does. Order is ignored (["glibc","musl"] equals
 // ["musl","glibc"]). If the change is genuine upstream, confirm it with
@@ -26,12 +28,14 @@
 // Regenerating the baseline (--write-baseline): do it only after a clean run
 // (exit 0) of this check on that same lockfile. Regenerating from a lockfile
 // that has lost libc silently drops the guard for those entries. The written
-// file is byte-identical to what prettier (default printWidth 80) gives: one
-// line per entry, except that an entry whose line would exceed 80 columns
-// (trailing comma included) puts each libc value on its own line, as prettier
-// does. --write-baseline refuses (exit 2) a lockfile with no libc entries.
+// file is byte-identical to what prettier (default printWidth 80) gives for
+// ASCII keys (npm package names always are; prettier counts wide characters
+// as two columns): one line per entry, except that an entry whose line would
+// exceed 80 columns (trailing comma included) puts each libc value on its own
+// line, as prettier does. --write-baseline refuses (exit 2) a lockfile with no
+// libc entries.
 // An empty, non-object or malformed baseline, or a lockfile without a
-// `packages` map, is an error (exit 2), never a pass.
+// `packages` object, is an error (exit 2), never a pass.
 //
 // Usage:
 //   node scripts/check-lockfile-libc.mjs [--lockfile <path>] [--baseline <path>]
@@ -64,7 +68,11 @@ function libcOf(entry) {
 
 function packagesOf(lockfile) {
   const packages = lockfile?.packages;
-  if (typeof packages !== "object" || packages === null) {
+  if (
+    typeof packages !== "object" ||
+    packages === null ||
+    Array.isArray(packages)
+  ) {
     throw new Error("lockfile has no `packages` map (need lockfileVersion 2+)");
   }
   return packages;
@@ -130,7 +138,13 @@ function compareLibc(baseline, lockfile) {
       changed.push(`${key}: ${baseLibc.join(",")} -> ${now.join(",")}`);
     }
   }
-  return { lost, removed, changed, checked: Object.keys(baseline).length };
+  const checked = Object.keys(baseline).length;
+  if (removed.length === checked) {
+    throw new Error(
+      `none of the ${checked} baseline entries is in the lockfile; wrong lockfile, or its \`packages\` map was emptied`,
+    );
+  }
+  return { lost, removed, changed, checked };
 }
 
 const FLAGS = {
@@ -177,7 +191,13 @@ function main() {
 
   if (args.writeBaseline) {
     const snapshot = snapshotLibc(readJson(args.writeBaseline, "lockfile"));
-    validateBaseline(snapshot);
+    try {
+      validateBaseline(snapshot);
+    } catch (error) {
+      throw new Error(
+        `lockfile ${args.writeBaseline} gives no valid baseline, nothing written: ${error.message}`,
+      );
+    }
     writeFileSync(args.baseline, formatBaseline(snapshot));
     console.log(
       `wrote ${Object.keys(snapshot).length} entries to ${args.baseline}`,
@@ -211,8 +231,11 @@ function main() {
     );
     return 1;
   }
+  const present = result.checked - result.removed.length;
   console.log(
-    `ok: ${result.checked} baseline libc entries all still present in ${args.lockfile}`,
+    result.removed.length === 0
+      ? `ok: ${result.checked} baseline libc entries all still present in ${args.lockfile}`
+      : `ok: ${present} of ${result.checked} baseline libc entries present and unchanged in ${args.lockfile}; ${result.removed.length} no longer in the lockfile (see notices)`,
   );
   return 0;
 }
