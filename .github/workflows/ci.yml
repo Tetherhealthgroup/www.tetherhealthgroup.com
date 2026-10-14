@@ -42,6 +42,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Fails on any high or critical advisory in the installed tree. Dev
+      # dependencies are deliberately included (no --omit=dev): astro, vite,
+      # sharp and the compiler run on this runner and produce the shipped
+      # static files, and prettier/typescript/@astrojs/check gate the build.
+      # Result is point-in-time; the advisory database changes daily.
+      - name: Audit dependencies (high or critical)
+        run: npm audit --audit-level=high
+
+      # Fails if a Linux binary lockfile entry loses the "libc" field recorded
+      # in scripts/lockfile-libc-baseline.json (npm 10.9.8 drops it; R-074).
+      - name: Check lockfile libc fields
+        run: npm run check:lockfile-libc
+
       # Existing project script: `prettier --check .` (no eslint in the repo).
       - name: Lint (prettier check)
         working-directory: project
