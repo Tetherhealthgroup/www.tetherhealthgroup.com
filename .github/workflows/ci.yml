@@ -53,8 +53,12 @@ jobs:
       - name: Audit dependencies (high or critical)
         run: npm audit --audit-level=high
 
-      # Fails if a Linux binary lockfile entry loses the "libc" field recorded
-      # in scripts/lockfile-libc-baseline.json (npm 10.9.8 drops it; R-074).
+      # Fails (exit 1) if a baselined Linux binary lockfile entry loses its
+      # "libc" field (npm 10.9.8 drops it; R-074), is no longer a plain object,
+      # or has a different libc value (for example glibc to musl), per
+      # scripts/lockfile-libc-baseline.json. A baselined package that is gone
+      # from the lockfile is only a notice. Exit 2 if no baseline entry is in
+      # the lockfile or an input is unusable.
       - name: Check lockfile libc fields
         run: npm run check:lockfile-libc
 
