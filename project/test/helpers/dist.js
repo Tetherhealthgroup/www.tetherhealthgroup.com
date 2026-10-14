@@ -36,6 +36,8 @@ export const REQUIRED_PAGES = [
   "support/index.html",
   "terms/index.html",
   "services/index.html",
+  // WEB-009 draft: built, but noindex, unlinked and out of the sitemap
+  "delete-account/index.html",
   // one page per health area, generated from programs.ts
   "programs/tobacco/index.html",
   "programs/metabolic/index.html",
