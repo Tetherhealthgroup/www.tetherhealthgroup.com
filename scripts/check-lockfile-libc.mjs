@@ -4,7 +4,8 @@
 // npm 10.9.8 has been seen to drop the `libc` field from optional Linux native
 // binary entries during `npm audit fix` / `npm install`. Without `libc`, npm
 // stops choosing glibc vs musl binaries correctly on Linux. This script fails
-// when an entry that has `libc` in the committed BASELINE has lost it, or has a
+// when an entry that has `libc` in the committed BASELINE has lost it (an entry
+// that is present but is not a plain object counts as lost), or has a
 // different libc value, in the current lockfile.
 //
 // Baseline: scripts/lockfile-libc-baseline.json, a committed snapshot of
@@ -56,8 +57,8 @@
 //   node scripts/check-lockfile-libc.mjs [--lockfile <path>] [--baseline <path>]
 //   node scripts/check-lockfile-libc.mjs --write-baseline <source-lockfile> [--baseline <path>]
 //
-// Exit codes: 0 ok, 1 libc lost or changed, 2 usage or unreadable/invalid
-// input.
+// Exit codes: 0 ok, 1 libc lost (including an entry that is present but not a
+// plain object) or changed, 2 usage or unreadable/invalid input.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -73,6 +74,10 @@ function readJson(path, label) {
   } catch (error) {
     throw new Error(`cannot read ${label} ${path}: ${error.message}`);
   }
+}
+
+function isPlainObject(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function libcOf(entry) {
@@ -142,12 +147,15 @@ function compareLibc(baseline, lockfile) {
   const removed = [];
   const changed = [];
   for (const [key, baseLibc] of Object.entries(baseline)) {
-    const entry = packages[key];
-    if (!entry) {
+    // Only a key that is absent from `packages` is "removed". An entry that is
+    // present but is not a plain object (null, false, 0, "", an array, a string,
+    // a number) is a corrupted entry, so it counts as "lost".
+    if (!Object.hasOwn(packages, key)) {
       removed.push(key);
       continue;
     }
-    const now = libcOf(entry);
+    const entry = packages[key];
+    const now = isPlainObject(entry) ? libcOf(entry) : null;
     if (!now) lost.push(key);
     else if (!sameLibc(now, baseLibc)) {
       changed.push(`${key}: ${baseLibc.join(",")} -> ${now.join(",")}`);

@@ -99,6 +99,54 @@ test("a baseline entry removed from the lockfile is a notice, not a failure", ()
   assert.doesNotMatch(result.stdout, /all still present/);
 });
 
+for (const [label, value] of [
+  ["null", null],
+  ["false", false],
+  ["0", 0],
+  ["an empty string", ""],
+  ["a non-empty string", "x"],
+  ["a number", 1],
+  ["an empty array", []],
+  ["an array", [{ libc: ["glibc"] }]],
+]) {
+  test(`a baseline entry present as ${label} is lost (exit 1), not removed`, () => {
+    const victim = baselineKeys[0];
+    const path = writeLockfile("one-not-object.json", (packages) => {
+      packages[victim] = value;
+    });
+    const result = run(path);
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    assert.doesNotMatch(result.stdout, /notice: baseline entry no longer/);
+    assert.doesNotMatch(result.stdout, /ok:/);
+    assert.match(result.stderr, /1 lockfile entry lost/);
+    assert.ok(result.stderr.includes(`  ${victim}\n`), result.stderr);
+  });
+}
+
+test("a baseline key that only exists on Object.prototype is removed, not lost", () => {
+  const baselineFile = writeBaseline(
+    "proto-baseline.json",
+    JSON.stringify({
+      constructor: ["glibc"],
+      "node_modules/a-linux-x64-gnu": ["glibc"],
+    }),
+  );
+  const lockfileFile = writeBaseline(
+    "proto-lock.json",
+    JSON.stringify({
+      packages: { "node_modules/a-linux-x64-gnu": { libc: ["glibc"] } },
+    }),
+  );
+  const result = runWithBaseline(baselineFile, lockfileFile);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.ok(
+    result.stdout.includes(
+      "notice: baseline entry no longer in lockfile: constructor",
+    ),
+    result.stdout,
+  );
+});
+
 for (const [label, packages] of [
   ["an empty packages map", {}],
   ["a packages array", []],
