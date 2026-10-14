@@ -226,7 +226,7 @@ the document root.
 
 To publish, in cPanel → Git Version Control, clone this repository with
 `deploy` as the checked-out branch and `public_html` as the path. To refresh it
-after a source change:
+after a source change, do the Node security check below first, then:
 
 ```bash
 npm run build          # from the repository root
@@ -244,15 +244,18 @@ cPanel copies it into the document root. The second step is what
 blocker" below for why a copy step is needed at all.
 
 **Before each publish, check Node's security releases. This is a manual
-check: nothing watches it automatically** (source: WEB-020). Read
-<https://nodejs.org/en/blog/vulnerability> for Node 22 releases published
-since the `node-version` floor in `.github/workflows/ci.yml` was last raised
-(`git log -s -L '/node-version:/,+1:.github/workflows/ci.yml'` shows when;
-the newest commit listed last changed that line). If one fixes Node's bundled
-undici (the copy behind global `fetch`) or another advisory relevant to the
-build, raise that floor in its own ticket. Then confirm that `node --version`
-on the machine running `npm run build` and `npm run deploy` satisfies the
-floor, and upgrade Node there first if it does not.
+check: nothing watches it automatically** (source: WEB-020). From the
+repository root, `git log -s -L '/node-version:/,+1:.github/workflows/ci.yml'`
+lists the commits that changed the `node-version` floor in
+`.github/workflows/ci.yml`; the first (newest) one is when it last changed.
+Read <https://nodejs.org/en/blog/vulnerability> for Node 22 security releases
+published since then. If one fixes Node's bundled undici (the copy behind
+global `fetch` and `WebSocket`; `node -p process.versions.undici` prints its
+version) or another advisory relevant to the build, raise that floor in its
+own ticket. If a post announces an upcoming Node 22 security release, check
+again once it ships, before publishing. Then confirm that `node --version` on
+the machine running `npm run build` and `npm run deploy` satisfies the
+`node-version` range in `ci.yml`, and upgrade Node there first if it does not.
 
 ### The certificate is done
 
