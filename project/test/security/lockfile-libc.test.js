@@ -8,6 +8,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { format } from "prettier";
 import { projectRoot } from "../helpers/dist.js";
 
 const repoRoot = join(projectRoot, "..");
@@ -31,6 +32,20 @@ function run(lockfileArg) {
   const args = [script, "--baseline", baselinePath];
   if (lockfileArg) args.push("--lockfile", lockfileArg);
   return spawnSync(process.execPath, args, { encoding: "utf8" });
+}
+
+function runWithBaseline(baselineArg, lockfileArg = lockfilePath) {
+  return spawnSync(
+    process.execPath,
+    [script, "--baseline", baselineArg, "--lockfile", lockfileArg],
+    { encoding: "utf8" },
+  );
+}
+
+function writeBaseline(name, content) {
+  const path = join(tmp, name);
+  writeFileSync(path, content);
+  return path;
 }
 
 function writeLockfile(name, mutate) {
@@ -89,16 +104,67 @@ test("a lockfile with no packages map exits 2, never ok", () => {
 });
 
 test("an empty baseline exits 2, never ok", () => {
-  const path = join(tmp, "empty-baseline.json");
-  writeFileSync(path, "{}");
-  const result = spawnSync(
-    process.execPath,
-    [script, "--baseline", path, "--lockfile", lockfilePath],
-    { encoding: "utf8" },
-  );
+  const result = runWithBaseline(writeBaseline("empty-baseline.json", "{}"));
   assert.equal(result.status, 2, result.stdout + result.stderr);
   assert.match(result.stderr, /baseline is empty/);
 });
+
+test("a changed libc value fails with exit 1, not a notice", () => {
+  const victim = baselineKeys[0];
+  const swapped = baseline[victim][0] === "glibc" ? "musl" : "glibc";
+  const path = writeLockfile("one-changed.json", (packages) => {
+    packages[victim].libc = [swapped];
+  });
+  const result = run(path);
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.doesNotMatch(result.stdout, /ok:/);
+  assert.ok(
+    result.stderr.includes(
+      `  ${victim}: ${baseline[victim].join(",")} -> ${swapped}`,
+    ),
+    result.stderr,
+  );
+});
+
+test("a reordered libc list is not a change", () => {
+  const key = "node_modules/both-linux-x64";
+  const baselineFile = writeBaseline(
+    "both-baseline.json",
+    JSON.stringify({ [key]: ["glibc", "musl"] }),
+  );
+  const lockfileFile = writeBaseline(
+    "both-lock.json",
+    JSON.stringify({ packages: { [key]: { libc: ["musl", "glibc"] } } }),
+  );
+  const result = runWithBaseline(baselineFile, lockfileFile);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+for (const [label, value] of [
+  ["an empty array", []],
+  ["a string", "glibc"],
+  ["null", null],
+  ["a number", 1],
+  ["an array with a non-string", ["glibc", 1]],
+  ["an array with an empty string", [""]],
+]) {
+  test(`a baseline value that is ${label} exits 2 and names the key`, () => {
+    const key = baselineKeys[0];
+    const path = writeBaseline(
+      "bad-value-baseline.json",
+      JSON.stringify({ ...baseline, [key]: value }),
+    );
+    const result = runWithBaseline(path);
+    assert.equal(result.status, 2, result.stdout + result.stderr);
+    assert.doesNotMatch(result.stdout, /ok:/);
+    assert.ok(
+      result.stderr.includes(
+        `error: baseline value for ${key} must be a non-empty array of non-empty strings`,
+      ),
+      result.stderr,
+    );
+  });
+}
 
 test("--write-baseline writes the one-line-per-entry layout of the committed file", () => {
   const source = join(tmp, "small-lock.json");
@@ -126,7 +192,96 @@ test("--write-baseline writes the one-line-per-entry layout of the committed fil
   );
 });
 
-test("exits 2 on an unreadable lockfile", () => {
-  const result = run(join(tmp, "does-not-exist.json"));
-  assert.equal(result.status, 2);
+// Lockfile keys whose one-value line is exactly `width` characters long,
+// without the trailing comma.
+function keyForLineWidth(width) {
+  // `  "` + key + `": ["glibc"]` is 15 characters around the key.
+  return `node_modules/${"x".repeat(width - 15 - "node_modules/".length)}`;
+}
+
+test("--write-baseline output is what prettier gives, including lines over 80", async () => {
+  // Prettier keeps `"key": [...]` on one line only when it fits in 80
+  // columns including the trailing comma; otherwise one value per line.
+  const packages = { "": {} };
+  for (const [index, width] of [78, 79, 80, 81, 82, 100].entries()) {
+    packages[`${keyForLineWidth(width).slice(0, -1)}${index}`] = {
+      libc: ["glibc"],
+    };
+  }
+  packages[keyForLineWidth(80).replace("xx", "z1")] = { libc: ["glibc"] };
+  packages[keyForLineWidth(81).replace("xx", "z2")] = {
+    libc: ["glibc", "musl"],
+  };
+  packages[keyForLineWidth(80).replace("xx", "zz")] = { libc: ["musl"] };
+  const source = join(tmp, "long-lock.json");
+  const out = join(tmp, "long-baseline.json");
+  writeFileSync(source, JSON.stringify({ packages }));
+  const result = spawnSync(
+    process.execPath,
+    [script, "--write-baseline", source, "--baseline", out],
+    { encoding: "utf8" },
+  );
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  const written = readFileSync(out, "utf8");
+  assert.equal(written, await format(written, { parser: "json" }));
+  assert.ok(written.split("\n").some((line) => line.length > 80));
+});
+
+test("--write-baseline breaks an over-long entry one value per line", () => {
+  const key = keyForLineWidth(90);
+  const source = join(tmp, "one-long-lock.json");
+  const out = join(tmp, "one-long-baseline.json");
+  writeFileSync(
+    source,
+    JSON.stringify({ packages: { [key]: { libc: ["glibc", "musl"] } } }),
+  );
+  const result = spawnSync(
+    process.execPath,
+    [script, "--write-baseline", source, "--baseline", out],
+    { encoding: "utf8" },
+  );
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(
+    readFileSync(out, "utf8"),
+    `{\n  ${JSON.stringify(key)}: [\n    "glibc",\n    "musl"\n  ]\n}\n`,
+  );
+});
+
+test("the committed baseline is byte-identical to a --write-baseline of the committed lockfile", () => {
+  const out = join(tmp, "regenerated-baseline.json");
+  const result = spawnSync(
+    process.execPath,
+    [script, "--write-baseline", lockfilePath, "--baseline", out],
+    { encoding: "utf8" },
+  );
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(readFileSync(out, "utf8"), readFileSync(baselinePath, "utf8"));
+});
+
+test("--write-baseline refuses a lockfile with no libc entries", () => {
+  const source = join(tmp, "no-libc-lock.json");
+  const out = join(tmp, "no-libc-baseline.json");
+  writeFileSync(
+    source,
+    JSON.stringify({ packages: { "node_modules/a": { os: ["linux"] } } }),
+  );
+  const result = spawnSync(
+    process.execPath,
+    [script, "--write-baseline", source, "--baseline", out],
+    { encoding: "utf8" },
+  );
+  assert.equal(result.status, 2, result.stdout + result.stderr);
+  assert.match(result.stderr, /baseline is empty/);
+  assert.throws(() => readFileSync(out), { code: "ENOENT" });
+});
+
+test("exits 2 on an unreadable lockfile and says which file", () => {
+  const missing = join(tmp, "does-not-exist.json");
+  const result = run(missing);
+  assert.equal(result.status, 2, result.stdout + result.stderr);
+  assert.doesNotMatch(result.stdout, /ok:/);
+  assert.ok(
+    result.stderr.startsWith(`error: cannot read lockfile ${missing}: ENOENT`),
+    result.stderr,
+  );
 });

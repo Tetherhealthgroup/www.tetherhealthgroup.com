@@ -1,35 +1,44 @@
 #!/usr/bin/env node
-// Lockfile libc guard (WEB-013, R-074).
+// Lockfile libc guard (WEB-013, R-074; hardened in WEB-016).
 //
 // npm 10.9.8 has been seen to drop the `libc` field from optional Linux native
 // binary entries during `npm audit fix` / `npm install`. Without `libc`, npm
 // stops choosing glibc vs musl binaries correctly on Linux. This script fails
-// when an entry that has `libc` in the committed BASELINE has lost it in the
-// current lockfile.
+// when an entry that has `libc` in the committed BASELINE has lost it, or has a
+// different libc value, in the current lockfile.
 //
 // Baseline: scripts/lockfile-libc-baseline.json, a committed snapshot of
 // `{ "<lockfile key>": ["glibc"|"musl", ...] }` taken from the lockfile at
 // 1ccb7c0 (WEB-008). It is a file, not `git show`, so it works on a shallow CI
-// checkout and offline. Node built-ins only.
+// checkout and offline. Node built-ins only. Every value must be a non-empty
+// array of non-empty strings; anything else (including `[]`) is exit 2.
 //
 // Baseline entry that no longer exists in the lockfile (package dropped or
 // renamed): reported as a NOTICE, exit code unaffected. The guard is about a
 // field disappearing from an entry that is still installed; a removed package
 // has no binary left to mis-select. A baseline entry whose libc VALUE changed
-// (for example glibc to musl) is also only a NOTICE, not a failure: the guard
-// detects lost fields, not a wrong value. Review such notices by hand.
+// (for example glibc to musl) is a FAILURE (exit 1): a wrong value mis-selects
+// a binary just as a lost one does. Order is ignored (["glibc","musl"] equals
+// ["musl","glibc"]). If the change is genuine upstream, confirm it with
+// `npm view <pkg>@<version> libc` and regenerate the baseline in a reviewed
+// commit.
 //
 // Regenerating the baseline (--write-baseline): do it only after a clean run
 // (exit 0) of this check on that same lockfile. Regenerating from a lockfile
-// that has lost libc silently drops the guard for those entries.
-// An empty or non-object baseline, or a lockfile without a `packages` map, is
-// an error (exit 2), never a pass.
+// that has lost libc silently drops the guard for those entries. The written
+// file is byte-identical to what prettier (default printWidth 80) gives: one
+// line per entry, except that an entry whose line would exceed 80 columns
+// (trailing comma included) puts each libc value on its own line, as prettier
+// does. --write-baseline refuses (exit 2) a lockfile with no libc entries.
+// An empty, non-object or malformed baseline, or a lockfile without a
+// `packages` map, is an error (exit 2), never a pass.
 //
 // Usage:
 //   node scripts/check-lockfile-libc.mjs [--lockfile <path>] [--baseline <path>]
 //   node scripts/check-lockfile-libc.mjs --write-baseline <source-lockfile> [--baseline <path>]
 //
-// Exit codes: 0 ok, 1 libc lost, 2 usage or unreadable/invalid input.
+// Exit codes: 0 ok, 1 libc lost or changed, 2 usage or unreadable/invalid
+// input.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -53,12 +62,46 @@ function libcOf(entry) {
     : null;
 }
 
-/** key -> libc[] for every node_modules entry that has libc. Sorted by key. */
-function snapshotLibc(lockfile) {
+function packagesOf(lockfile) {
   const packages = lockfile?.packages;
   if (typeof packages !== "object" || packages === null) {
     throw new Error("lockfile has no `packages` map (need lockfileVersion 2+)");
   }
+  return packages;
+}
+
+/** Throws unless baseline is a non-empty { key: non-empty string[] } map. */
+function validateBaseline(baseline) {
+  if (
+    typeof baseline !== "object" ||
+    baseline === null ||
+    Array.isArray(baseline) ||
+    Object.keys(baseline).length === 0
+  ) {
+    throw new Error(
+      "baseline is empty or not an object; an empty baseline checks nothing",
+    );
+  }
+  for (const [key, libc] of Object.entries(baseline)) {
+    const valid =
+      Array.isArray(libc) &&
+      libc.length > 0 &&
+      libc.every((value) => typeof value === "string" && value.length > 0);
+    if (!valid) {
+      throw new Error(
+        `baseline value for ${key} must be a non-empty array of non-empty strings, got ${JSON.stringify(libc)}`,
+      );
+    }
+  }
+}
+
+function sameLibc(a, b) {
+  return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+}
+
+/** key -> libc[] for every node_modules entry that has libc. Sorted by key. */
+function snapshotLibc(lockfile) {
+  const packages = packagesOf(lockfile);
   const out = {};
   for (const key of Object.keys(packages).sort()) {
     if (!key.includes("node_modules/")) continue;
@@ -70,20 +113,8 @@ function snapshotLibc(lockfile) {
 
 /** Compare a baseline snapshot with a lockfile. Pure; returns the findings. */
 function compareLibc(baseline, lockfile) {
-  const packages = lockfile?.packages;
-  if (typeof packages !== "object" || packages === null) {
-    throw new Error("lockfile has no `packages` map (need lockfileVersion 2+)");
-  }
-  if (
-    typeof baseline !== "object" ||
-    baseline === null ||
-    Array.isArray(baseline) ||
-    Object.keys(baseline).length === 0
-  ) {
-    throw new Error(
-      "baseline is empty or not an object; an empty baseline checks nothing",
-    );
-  }
+  const packages = packagesOf(lockfile);
+  validateBaseline(baseline);
   const lost = [];
   const removed = [];
   const changed = [];
@@ -95,7 +126,7 @@ function compareLibc(baseline, lockfile) {
     }
     const now = libcOf(entry);
     if (!now) lost.push(key);
-    else if (JSON.stringify(now) !== JSON.stringify(baseLibc)) {
+    else if (!sameLibc(now, baseLibc)) {
       changed.push(`${key}: ${baseLibc.join(",")} -> ${now.join(",")}`);
     }
   }
@@ -123,13 +154,22 @@ function parseArgs(argv) {
   return args;
 }
 
-/** Same layout prettier gives the committed file: one line per entry. */
+const PRINT_WIDTH = 80; // prettier's default; no prettier config here sets one
+
+/**
+ * Same layout prettier gives the committed file: one line per entry, or one
+ * libc value per line when the entry (with its trailing comma) is too wide.
+ */
 function formatBaseline(snapshot) {
-  const lines = Object.entries(snapshot).map(
-    ([key, libc]) =>
-      `  ${JSON.stringify(key)}: [${libc.map((v) => JSON.stringify(v)).join(", ")}]`,
-  );
-  return lines.length === 0 ? "{}\n" : `{\n${lines.join(",\n")}\n}\n`;
+  const entries = Object.entries(snapshot);
+  const lines = entries.map(([key, libc], index) => {
+    const comma = index < entries.length - 1 ? "," : "";
+    const values = libc.map((value) => JSON.stringify(value));
+    const oneLine = `  ${JSON.stringify(key)}: [${values.join(", ")}]${comma}`;
+    if (oneLine.length <= PRINT_WIDTH) return oneLine;
+    return `  ${JSON.stringify(key)}: [\n${values.map((v) => `    ${v}`).join(",\n")}\n  ]${comma}`;
+  });
+  return lines.length === 0 ? "{}\n" : `{\n${lines.join("\n")}\n}\n`;
 }
 
 function main() {
@@ -137,6 +177,7 @@ function main() {
 
   if (args.writeBaseline) {
     const snapshot = snapshotLibc(readJson(args.writeBaseline, "lockfile"));
+    validateBaseline(snapshot);
     writeFileSync(args.baseline, formatBaseline(snapshot));
     console.log(
       `wrote ${Object.keys(snapshot).length} entries to ${args.baseline}`,
@@ -150,16 +191,23 @@ function main() {
   for (const key of result.removed) {
     console.log(`notice: baseline entry no longer in lockfile: ${key}`);
   }
-  for (const line of result.changed) {
-    console.log(`notice: libc value changed: ${line}`);
-  }
+  const describeCount = (count) =>
+    `${count} lockfile entr${count === 1 ? "y" : "ies"}`;
   if (result.lost.length > 0) {
     console.error(
-      `FAIL: ${result.lost.length} lockfile entr${result.lost.length === 1 ? "y" : "ies"} lost the "libc" field that the baseline records:`,
+      `FAIL: ${describeCount(result.lost.length)} lost the "libc" field that the baseline records:`,
     );
     for (const key of result.lost) console.error(`  ${key}`);
+  }
+  if (result.changed.length > 0) {
     console.error(
-      "Restore the field (do not hand-edit blindly: compare with `npm view <pkg>@<version> libc`). Do not regenerate the baseline to silence this.",
+      `FAIL: ${describeCount(result.changed.length)} changed the "libc" value that the baseline records (baseline -> lockfile):`,
+    );
+    for (const line of result.changed) console.error(`  ${line}`);
+  }
+  if (result.lost.length > 0 || result.changed.length > 0) {
+    console.error(
+      "Restore the field or value (do not hand-edit blindly: compare with `npm view <pkg>@<version> libc`). Do not regenerate the baseline to silence this.",
     );
     return 1;
   }
