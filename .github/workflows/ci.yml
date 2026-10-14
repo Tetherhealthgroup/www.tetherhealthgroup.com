@@ -43,9 +43,12 @@ jobs:
         run: npm ci
 
       # Fails on any high or critical advisory in the installed tree. Dev
-      # dependencies are deliberately included (no --omit=dev): astro, vite,
-      # sharp and the compiler run on this runner and produce the shipped
-      # static files, and prettier/typescript/@astrojs/check gate the build.
+      # dependencies are deliberately included (no --omit=dev). This is a
+      # static site, so every package runs only on this build runner, and the
+      # devDependencies (prettier, typescript, @astrojs/check,
+      # prettier-plugin-astro) gate what ships. astro, sharp and vite (a
+      # transitive dependency) are runtime dependencies in the lockfile, so
+      # --omit=dev would audit them anyway.
       # Result is point-in-time; the advisory database changes daily.
       - name: Audit dependencies (high or critical)
         run: npm audit --audit-level=high

@@ -15,7 +15,15 @@
 // Baseline entry that no longer exists in the lockfile (package dropped or
 // renamed): reported as a NOTICE, exit code unaffected. The guard is about a
 // field disappearing from an entry that is still installed; a removed package
-// has no binary left to mis-select. Regenerate the baseline to clear notices.
+// has no binary left to mis-select. A baseline entry whose libc VALUE changed
+// (for example glibc to musl) is also only a NOTICE, not a failure: the guard
+// detects lost fields, not a wrong value. Review such notices by hand.
+//
+// Regenerating the baseline (--write-baseline): do it only after a clean run
+// (exit 0) of this check on that same lockfile. Regenerating from a lockfile
+// that has lost libc silently drops the guard for those entries.
+// An empty or non-object baseline, or a lockfile without a `packages` map, is
+// an error (exit 2), never a pass.
 //
 // Usage:
 //   node scripts/check-lockfile-libc.mjs [--lockfile <path>] [--baseline <path>]
@@ -46,7 +54,7 @@ function libcOf(entry) {
 }
 
 /** key -> libc[] for every node_modules entry that has libc. Sorted by key. */
-export function snapshotLibc(lockfile) {
+function snapshotLibc(lockfile) {
   const packages = lockfile?.packages;
   if (typeof packages !== "object" || packages === null) {
     throw new Error("lockfile has no `packages` map (need lockfileVersion 2+)");
@@ -61,8 +69,21 @@ export function snapshotLibc(lockfile) {
 }
 
 /** Compare a baseline snapshot with a lockfile. Pure; returns the findings. */
-export function compareLibc(baseline, lockfile) {
-  const packages = lockfile?.packages ?? {};
+function compareLibc(baseline, lockfile) {
+  const packages = lockfile?.packages;
+  if (typeof packages !== "object" || packages === null) {
+    throw new Error("lockfile has no `packages` map (need lockfileVersion 2+)");
+  }
+  if (
+    typeof baseline !== "object" ||
+    baseline === null ||
+    Array.isArray(baseline) ||
+    Object.keys(baseline).length === 0
+  ) {
+    throw new Error(
+      "baseline is empty or not an object; an empty baseline checks nothing",
+    );
+  }
   const lost = [];
   const removed = [];
   const changed = [];
@@ -81,19 +102,34 @@ export function compareLibc(baseline, lockfile) {
   return { lost, removed, changed, checked: Object.keys(baseline).length };
 }
 
+const FLAGS = {
+  "--lockfile": "lockfile",
+  "--baseline": "baseline",
+  "--write-baseline": "writeBaseline",
+};
+
 function parseArgs(argv) {
   const args = { lockfile: defaultLockfile, baseline: defaultBaseline };
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i];
     const value = argv[i + 1];
-    if (!["--lockfile", "--baseline", "--write-baseline"].includes(flag)) {
+    if (!Object.hasOwn(FLAGS, flag)) {
       throw new Error(`unknown argument: ${flag}`);
     }
     if (value === undefined) throw new Error(`${flag} needs a value`);
-    args[flag.slice(2).replace("-b", "B")] = resolve(value);
+    args[FLAGS[flag]] = resolve(value);
     i += 1;
   }
   return args;
+}
+
+/** Same layout prettier gives the committed file: one line per entry. */
+function formatBaseline(snapshot) {
+  const lines = Object.entries(snapshot).map(
+    ([key, libc]) =>
+      `  ${JSON.stringify(key)}: [${libc.map((v) => JSON.stringify(v)).join(", ")}]`,
+  );
+  return lines.length === 0 ? "{}\n" : `{\n${lines.join(",\n")}\n}\n`;
 }
 
 function main() {
@@ -101,7 +137,7 @@ function main() {
 
   if (args.writeBaseline) {
     const snapshot = snapshotLibc(readJson(args.writeBaseline, "lockfile"));
-    writeFileSync(args.baseline, `${JSON.stringify(snapshot, null, 2)}\n`);
+    writeFileSync(args.baseline, formatBaseline(snapshot));
     console.log(
       `wrote ${Object.keys(snapshot).length} entries to ${args.baseline}`,
     );
@@ -133,15 +169,9 @@ function main() {
   return 0;
 }
 
-// Run only when executed directly, so the test can import the pure functions.
-if (
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
-  try {
-    process.exitCode = main();
-  } catch (error) {
-    console.error(`error: ${error.message}`);
-    process.exitCode = 2;
-  }
+try {
+  process.exitCode = main();
+} catch (error) {
+  console.error(`error: ${error.message}`);
+  process.exitCode = 2;
 }

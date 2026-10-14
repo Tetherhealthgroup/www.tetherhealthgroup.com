@@ -79,6 +79,53 @@ test("a baseline entry removed from the lockfile is a notice, not a failure", ()
   );
 });
 
+test("a lockfile with no packages map exits 2, never ok", () => {
+  const path = join(tmp, "empty-object.json");
+  writeFileSync(path, "{}");
+  const result = run(path);
+  assert.equal(result.status, 2, result.stdout + result.stderr);
+  assert.doesNotMatch(result.stdout, /ok:/);
+  assert.match(result.stderr, /no `packages` map/);
+});
+
+test("an empty baseline exits 2, never ok", () => {
+  const path = join(tmp, "empty-baseline.json");
+  writeFileSync(path, "{}");
+  const result = spawnSync(
+    process.execPath,
+    [script, "--baseline", path, "--lockfile", lockfilePath],
+    { encoding: "utf8" },
+  );
+  assert.equal(result.status, 2, result.stdout + result.stderr);
+  assert.match(result.stderr, /baseline is empty/);
+});
+
+test("--write-baseline writes the one-line-per-entry layout of the committed file", () => {
+  const source = join(tmp, "small-lock.json");
+  const out = join(tmp, "small-baseline.json");
+  writeFileSync(
+    source,
+    JSON.stringify({
+      packages: {
+        "": {},
+        "node_modules/b-linux-x64-musl": { libc: ["musl"] },
+        "node_modules/a-linux-x64-gnu": { libc: ["glibc"] },
+        "node_modules/no-libc": { os: ["darwin"] },
+      },
+    }),
+  );
+  const result = spawnSync(
+    process.execPath,
+    [script, "--write-baseline", source, "--baseline", out],
+    { encoding: "utf8" },
+  );
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(
+    readFileSync(out, "utf8"),
+    '{\n  "node_modules/a-linux-x64-gnu": ["glibc"],\n  "node_modules/b-linux-x64-musl": ["musl"]\n}\n',
+  );
+});
+
 test("exits 2 on an unreadable lockfile", () => {
   const result = run(join(tmp, "does-not-exist.json"));
   assert.equal(result.status, 2);
