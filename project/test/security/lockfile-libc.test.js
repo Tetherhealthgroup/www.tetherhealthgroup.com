@@ -192,8 +192,42 @@ test("a changed libc value fails with exit 1, not a notice", () => {
   assert.doesNotMatch(result.stdout, /ok:/);
   assert.ok(
     result.stderr.includes(
-      `  ${victim}: ${baseline[victim].join(",")} -> ${swapped}`,
+      `  ${victim}: ${JSON.stringify(baseline[victim])} -> ${JSON.stringify([swapped])}`,
     ),
+    result.stderr,
+  );
+});
+
+test("a libc value with a newline and :: prints on one escaped line", () => {
+  const key = "node_modules/crafted-linux-x64";
+  const crafted = "glibc\n::error::injected";
+  const baselineFile = writeBaseline(
+    "crafted-baseline.json",
+    JSON.stringify({
+      [key]: [crafted],
+      "node_modules/other-linux-x64": ["glibc"],
+    }),
+  );
+  const lockfileFile = writeBaseline(
+    "crafted-lock.json",
+    JSON.stringify({
+      packages: {
+        [key]: { libc: ["musl\n::warning::injected"] },
+        "node_modules/other-linux-x64": { libc: ["glibc"] },
+      },
+    }),
+  );
+  const result = runWithBaseline(baselineFile, lockfileFile);
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  const lines = result.stderr.split("\n");
+  assert.ok(
+    lines.includes(
+      `  ${key}: ["glibc\\n::error::injected"] -> ["musl\\n::warning::injected"]`,
+    ),
+    result.stderr,
+  );
+  assert.ok(
+    lines.every((line) => !line.trimStart().startsWith("::")),
     result.stderr,
   );
 });

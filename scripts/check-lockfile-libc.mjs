@@ -158,7 +158,9 @@ function compareLibc(baseline, lockfile) {
     const now = isPlainObject(entry) ? libcOf(entry) : null;
     if (!now) lost.push(key);
     else if (!sameLibc(now, baseLibc)) {
-      changed.push(`${key}: ${baseLibc.join(",")} -> ${now.join(",")}`);
+      changed.push(
+        `${key}: ${JSON.stringify(baseLibc)} -> ${JSON.stringify(now)}`,
+      );
     }
   }
   const checked = Object.keys(baseline).length;
