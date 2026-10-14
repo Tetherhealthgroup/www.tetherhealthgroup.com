@@ -34,12 +34,12 @@
 // field disappearing from an entry that is still installed; a removed package
 // has no binary left to mis-select. If NONE of the baseline entries is in the
 // lockfile, that is exit 2, not a pass: it means the wrong lockfile or an
-// emptied `packages` map, and would otherwise check nothing. A baseline entry whose libc VALUE changed
-// (for example glibc to musl) is a FAILURE (exit 1): a wrong value mis-selects
-// a binary just as a lost one does. Order is ignored (["glibc","musl"] equals
-// ["musl","glibc"]). If the change is genuine upstream, confirm it with
-// `npm view <pkg>@<version> libc` and regenerate the baseline in a reviewed
-// commit.
+// emptied `packages` map, and would otherwise check nothing. A baseline entry
+// whose libc VALUE changed (for example glibc to musl) is a FAILURE (exit 1): a
+// wrong value mis-selects a binary just as a lost one does. Order is ignored
+// (["glibc","musl"] equals ["musl","glibc"]). If the change is genuine
+// upstream, confirm it with `npm view <pkg>@<version> libc` and regenerate the
+// baseline in a reviewed commit.
 //
 // Regenerating the baseline (--write-baseline): do it only after a clean run
 // (exit 0) of this check on that same lockfile. Regenerating from a lockfile
@@ -148,8 +148,8 @@ function compareLibc(baseline, lockfile) {
   const changed = [];
   for (const [key, baseLibc] of Object.entries(baseline)) {
     // Only a key that is absent from `packages` is "removed". An entry that is
-    // present but is not a plain object (null, false, 0, "", an array, a string,
-    // a number) is a corrupted entry, so it counts as "lost".
+    // present but is not a plain object (null, false, 0, "", an array, a
+    // string, a number) is a corrupted entry, so it counts as "lost".
     if (!Object.hasOwn(packages, key)) {
       removed.push(key);
       continue;
