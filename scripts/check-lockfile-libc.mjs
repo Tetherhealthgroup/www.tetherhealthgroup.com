@@ -25,8 +25,12 @@
 // key). The lockfile therefore mirrors the registry and npm has not stripped
 // it from these entries, so there is no field to lose and nothing to guard.
 // When any of these is bumped, re-run `npm view <name>@<new version> libc
-// --json`; if it prints a value, run this check clean, then --write-baseline,
-// in a reviewed commit (a baseline entry needs a value to compare, so there is
+// --json` (always `npm view`, the full packument: the abbreviated metadata npm
+// installs from omits `libc`, seen even for the control package that has it).
+// If it prints a value, confirm the lockfile entry now carries that `libc` (if
+// not, npm stripped it; restore the registry value first), run this check
+// clean, then --write-baseline, and confirm the reported count rose by one, in
+// a reviewed commit (a baseline entry needs a value to compare, so there is
 // nothing to add before then).
 //
 // Baseline entry that no longer exists in the lockfile (package dropped or
