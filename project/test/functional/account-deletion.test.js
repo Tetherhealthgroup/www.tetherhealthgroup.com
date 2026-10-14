@@ -25,6 +25,7 @@ const textOf = (html) =>
     .replace(/&lt;/g, "<")
     .replace(/&#39;|&apos;/g, "'")
     .replace(/&quot;/g, '"')
+    .replace(/&nbsp;|&#160;/g, " ")
     .replace(/\s+/g, " ");
 
 const main = (html) => html.match(/<main[\s\S]*?<\/main>/)?.[0] ?? "";
@@ -43,12 +44,12 @@ test("the account-deletion page is kept out of search", () => {
 
 test("the page names the app and the developer", () => {
   const text = textOf(main(readPage(PAGE)));
-  assert.match(text, /\bTether Health\b/, "app name missing");
-  assert.match(text, /\bTether Health LLC\b/, "developer name missing");
+  assert.match(text, /\bTether Health app\b/, "app name missing");
+  assert.match(text, /\bdeveloped by Tether Health LLC\b/, "developer missing");
 });
 
 test("the page gives the in-app deletion steps in order", () => {
-  // PLAY_CONSOLE_ANSWERS.md section F, lines 449-454.
+  // PLAY_CONSOLE_ANSWERS.md section F, lines 449-454, verbatim as drafted.
   const steps = main(readPage(PAGE)).match(
     /<ol[^>]*id="in-app-steps"[\s\S]*?<\/ol>/,
   )?.[0];
@@ -56,19 +57,15 @@ test("the page gives the in-app deletion steps in order", () => {
   const items = [...steps.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
     textOf(m[1]).trim(),
   );
-  const expected = [
-    /sign in/i,
-    /Home/,
-    /profile avatar.*top right/i,
-    /"Settings & privacy"/,
-    /"Your data"/,
-    /"Delete account and data"/,
-    /current password.*DELETE/,
-  ];
-  assert.equal(items.length, expected.length, `steps: ${items.join(" | ")}`);
-  expected.forEach((pattern, i) =>
-    assert.match(items[i], pattern, `step ${i + 1}: ${items[i]}`),
-  );
+  assert.deepEqual(items, [
+    "1 Open the Tether Health app and sign in.",
+    "2 Go to Home.",
+    "3 Tap your profile avatar at the top right.",
+    '4 Tap "Settings & privacy".',
+    '5 Scroll to "Your data".',
+    '6 Tap "Delete account and data".',
+    "7 Enter your current password and type DELETE to confirm.",
+  ]);
   assert.match(
     textOf(main(readPage(PAGE))),
     /If you are signed out, the same option first asks you to sign in\./,
@@ -84,12 +81,17 @@ test("the cannot-sign-in route uses only a mailbox the site already publishes", 
 });
 
 test("unconfirmed facts stay visibly marked as to be confirmed", () => {
-  // Retention period, the manual mailbox process and any timeline are owner
-  // and counsel decisions. Until they are made, the page must say so rather
-  // than guess.
+  // Whether the mailbox route is staffed, any timeline and the retention
+  // period are owner and counsel decisions. Until they are made, the page
+  // must say so rather than guess. Each is asserted on its own so removing
+  // one cannot hide behind the others.
   const text = textOf(main(readPage(PAGE)));
-  const marks = text.match(/To be confirmed/g) ?? [];
-  assert.ok(marks.length >= 3, `only ${marks.length} "To be confirmed" marks`);
+  for (const placeholder of [
+    /To be confirmed: whether email requests are being handled yet/,
+    /To be confirmed: how long it takes to complete a request\./,
+    /To be confirmed: how long backups and logs are kept\./,
+  ])
+    assert.match(text, placeholder);
 });
 
 test("no other built page and no sitemap links to the draft page", () => {

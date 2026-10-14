@@ -12,6 +12,11 @@
  * Not published: noindex, linked from nowhere, and filtered out of the
  * sitemap in astro.config.mjs. The owner removes noindex, adds links and
  * drops the sitemap filter only after counsel signs off (Tier 4).
+ *
+ * The evidence comments are HTML comments, so they ship in the built page.
+ * Before publishing, strip them or turn them into Astro expression
+ * comments (which the build drops), remove the draft notice, and update
+ * test/functional/account-deletion.test.js in the same change.
  */
 
 import Base from "../layouts/Base.astro";
@@ -24,7 +29,7 @@ import { site } from "../data/site";
 const appName = "Tether Health";
 const emailSubject = `Delete my ${appName} account`;
 
-/* The in-app path, in order: PLAY_CONSOLE_ANSWERS F:449-453. Rendered with
+/* The in-app path, in order: PLAY_CONSOLE_ANSWERS F:449-454. Rendered with
    the numbered-step pattern from breathefree/how-it-works.astro so the page
    adds no utility class the shared stylesheet does not already contain. */
 const inAppSteps = [
@@ -40,7 +45,7 @@ const inAppSteps = [
 
 <Base
   title={`Delete your ${appName} account`}
-  description={`How to delete your ${appName} account and data, in the app or by email if you cannot sign in, and what is deleted and kept.`}
+  description={`How to delete your ${appName} account and data in the app, what to do if you cannot sign in, and what is deleted and kept.`}
   noindex
 >
   <PageHero
@@ -49,7 +54,6 @@ const inAppSteps = [
     intro={`How to delete your account and data in the ${appName} app, developed by ${site.legalName}, including if you cannot sign in.`}
     width="narrow"
   />
-  <!-- intro: PLAY_CONSOLE_ANSWERS F:429 (app and developer names), F:419-421 (Play asks for a no-reinstall route) -->
 
   <Section width="narrow">
     <p
@@ -57,6 +61,7 @@ const inAppSteps = [
     >
       <Icon name="info" size={20} class="mt-0.5 shrink-0 text-teal-deep" />
       <span>
+        <!-- title, description and hero intro above (top-level slot comments are not emitted, so it sits here): F:429 (app and developer names), F:419-421 (Play asks for a no-reinstall route) -->
         <!-- draft notice: WEB-009 ticket; F:426-427 (owner and counsel to finalize, not published) -->
         Draft for review by {site.legalName} and its counsel. Items marked "To be
         confirmed" are not decided yet.
@@ -82,7 +87,7 @@ const inAppSteps = [
       <p>If you are signed out, the same option first asks you to sign in.</p>
 
       <h2>If you cannot sign in</h2>
-      <!-- A.6:311-312 (a reset is implied there; the reset flow itself is not cited: needs-owner to confirm it exists) -->
+      <!-- A.6:311-312; reset exists in app code (Tether-Health 44c5510 lib/widgets/sign_in_dialog.dart:206-208, lib/auth/auth_gateway.dart:131-135); end-to-end reset email: Unknown -->
       <p>
         If you have forgotten your password, reset it first and then follow the
         steps above.
@@ -94,14 +99,15 @@ const inAppSteps = [
       </p>
       <!-- needs-owner: F:432-433 (whether a manual mailbox process exists and who runs it: Unknown) -->
       <p>
-        To be confirmed: who handles these requests, and how we check that a
-        request comes from the account holder.
+        To be confirmed: whether email requests are being handled yet, who
+        handles them, and how we check that a request comes from the account
+        holder.
       </p>
       <!-- needs-owner, needs-counsel: no timeline in F or A.6 -->
       <p>To be confirmed: how long it takes to complete a request.</p>
 
       <h2>What is deleted</h2>
-      <!-- F:434-435; matches A.6:278-285 (server-side, Observed in code; live run NOT RUN, A.6:307) -->
+      <!-- F:434-435; matches A.6:278-285 (server-side, Observed in code); needs-counsel: A.6:297-300 (unconfirmed server result) and A.6:304-308 (depends on the deployed API; live run NOT RUN) -->
       <p>Deleting a signed-in account deletes:</p>
       <ul>
         <li>your profile and display name</li>
