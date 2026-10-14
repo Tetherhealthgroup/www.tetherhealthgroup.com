@@ -243,6 +243,17 @@ cPanel copies it into the document root. The second step is what
 `project/public/.cpanel.yml` provides — see "The document root was the
 blocker" below for why a copy step is needed at all.
 
+**Before each publish, check Node's security releases. This is a manual
+check: nothing watches it automatically** (source: WEB-020). Read
+<https://nodejs.org/en/blog/vulnerability> for Node 22 releases published
+since the `node-version` floor in `.github/workflows/ci.yml` was last raised
+(`git log -s -L '/node-version:/,+1:.github/workflows/ci.yml'` shows when;
+the newest commit listed last changed that line). If one fixes Node's bundled
+undici (the copy behind global `fetch`) or another advisory relevant to the
+build, raise that floor in its own ticket. Then confirm that `node --version`
+on the machine running `npm run build` and `npm run deploy` satisfies the
+floor, and upgrade Node there first if it does not.
+
 ### The certificate is done
 
 AutoSSL has issued it. Measured on 2026-08-30 against `:443`:
