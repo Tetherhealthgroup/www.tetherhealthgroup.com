@@ -27,6 +27,26 @@ const textOf = (src) =>
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ");
 
+/**
+ * Wording that says a capability is missing or unchecked, whatever its
+ * subject. Public drafts state scope ("To be confirmed: …") instead.
+ */
+const GAP_WORDING = [
+  /\b(has|have) not (yet )?been (checked|verified|tested|confirmed)\b/i,
+  /\b(does|do) not (currently |yet )?(check|verify|protect|encrypt|remove|delete|handle)\b/i,
+  /\bno (in-app )?way\b/i,
+  /\bwhether .{0,40} (is|are) (being )?(handled|checked|protected|removed)\b/i,
+];
+
+const sentencesOf = (text) =>
+  text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const gapSentences = (text) =>
+  sentencesOf(text).filter((s) => GAP_WORDING.some((p) => p.test(s)));
+
 test("the app privacy policy draft is not built", () => {
   assert.ok(existsSync(SOURCE), "the draft source is missing");
   assert.ok(
@@ -121,15 +141,29 @@ test("unconfirmed facts stay visibly marked as to be confirmed", () => {
 test("the draft describes no unverified security or privacy weakness", () => {
   // Public text states scope ("To be confirmed: …"), never a gap that has
   // not been verified on the final app.
-  const text = textOf(source());
-  for (const weakness of [
-    /has not been checked/i,
-    /location data/i,
-    /does not currently check/i,
-    /signing out does not remove/i,
-    /whether the production service addresses use HTTPS/i,
+  assert.deepEqual(gapSentences(textOf(source())), []);
+});
+
+test("the draft's to-be-confirmed lines state scope, not a gap", () => {
+  const marker = "To be confirmed:";
+  const open = sentencesOf(textOf(source()))
+    .filter((s) => s.includes(marker))
+    .map((s) => s.slice(s.indexOf(marker)));
+  assert.ok(open.length >= 14, `only ${open.length} open items found`);
+  assert.deepEqual(
+    open.filter((s) => gapSentences(s).length > 0),
+    [],
+  );
+});
+
+test("the gap-wording patterns catch generic samples", () => {
+  for (const sample of [
+    "It has not yet been verified.",
+    "It does not currently verify that.",
+    "There is no way to undo it.",
+    "It is unclear whether these are being handled.",
   ])
-    assert.doesNotMatch(text, weakness);
+    assert.deepEqual(gapSentences(sample), [sample], `not caught: ${sample}`);
 });
 
 test("the draft links the account-deletion page and uses only role mailboxes", () => {
@@ -155,13 +189,12 @@ test("the draft makes none of the banned words and ships no comment", () => {
 });
 
 test("the draft claims no encryption at rest", () => {
-  // The sources evidence HTTPS in transit only. How data is kept on the phone
-  // or at the providers is not stated.
+  // Any encryption claim is limited to protection in transit.
   const text = textOf(source());
   assert.doesNotMatch(text, /\bat rest\b/i);
   const sentences = text.split(/(?<=[.!?])\s+/);
   for (const sentence of sentences.filter((s) => /encrypt/i.test(s)))
-    assert.match(sentence, /in transit|HTTPS/i, `unsupported: ${sentence}`);
+    assert.match(sentence, /in transit/i, `unsupported: ${sentence}`);
 });
 
 test("the draft adds no inline script or style", () => {

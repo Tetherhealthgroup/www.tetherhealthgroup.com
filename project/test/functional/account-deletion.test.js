@@ -19,6 +19,42 @@ const SOURCE = join(projectRoot, "src/pages/_delete-account.astro");
 const PUBLISHED_SOURCE = join(projectRoot, "src/pages/delete-account.astro");
 const source = () => readFileSync(SOURCE, "utf8");
 
+/** Visible text of the source: expressions, tags and comments removed. */
+const textOf = (src) =>
+  src
+    .replace(/^---[\s\S]*?\n---\n/, " ")
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ");
+
+/**
+ * Wording that says a capability is missing or unchecked, whatever its
+ * subject. Public drafts state scope ("To be confirmed: …") instead.
+ */
+const GAP_WORDING = [
+  /\b(has|have) not (yet )?been (checked|verified|tested|confirmed)\b/i,
+  /\b(does|do) not (currently |yet )?(check|verify|protect|encrypt|remove|delete|handle)\b/i,
+  /\bno (in-app )?way\b/i,
+  /\bwhether .{0,40} (is|are) (being )?(handled|checked|protected|removed)\b/i,
+];
+
+const sentencesOf = (text) =>
+  text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const gapSentences = (text) =>
+  sentencesOf(text).filter((s) => GAP_WORDING.some((p) => p.test(s)));
+
+/**
+ * Scope statements that read like the patterns above but describe the
+ * user's own copies, not a gap in the app.
+ */
+const SCOPE_STATEMENTS = [
+  "Deleting your account does not delete any copy you made outside the app yourself.",
+];
+
 test("the account-deletion draft is not built", () => {
   assert.ok(existsSync(SOURCE), "the draft source is missing");
   assert.ok(
@@ -106,17 +142,35 @@ test("unconfirmed facts stay visibly marked as to be confirmed", () => {
 test("the draft describes no unverified security or privacy weakness", () => {
   // Public text states scope ("To be confirmed: …"), never a gap that has
   // not been verified on the final app.
-  const text = source().replace(/\s+/g, " ");
-  for (const weakness of [
-    /whether email requests are being handled/i,
-    /no in-app way/i,
-    /removes only/i,
-    /signing out does not remove/i,
-    /but not Heartwise/i,
-    /whether a mailbox process exists/i,
-    /works end to end/i,
+  const found = gapSentences(textOf(source()));
+  assert.deepEqual(
+    found.filter((s) => !SCOPE_STATEMENTS.includes(s)),
+    [],
+  );
+  for (const statement of SCOPE_STATEMENTS)
+    assert.ok(found.includes(statement), `stale allowance: ${statement}`);
+});
+
+test("the draft's to-be-confirmed lines state scope, not a gap", () => {
+  const marker = "To be confirmed:";
+  const open = sentencesOf(textOf(source()))
+    .filter((s) => s.includes(marker))
+    .map((s) => s.slice(s.indexOf(marker)));
+  assert.ok(open.length >= 4, `only ${open.length} open items found`);
+  assert.deepEqual(
+    open.filter((s) => gapSentences(s).length > 0),
+    [],
+  );
+});
+
+test("the gap-wording patterns catch generic samples", () => {
+  for (const sample of [
+    "It has not yet been verified.",
+    "It does not currently verify that.",
+    "There is no way to undo it.",
+    "It is unclear whether these are being handled.",
   ])
-    assert.doesNotMatch(text, weakness);
+    assert.deepEqual(gapSentences(sample), [sample], `not caught: ${sample}`);
 });
 
 test("the draft makes none of the banned claims and ships no comment", () => {
