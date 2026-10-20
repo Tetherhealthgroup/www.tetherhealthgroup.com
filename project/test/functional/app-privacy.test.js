@@ -1,7 +1,7 @@
 // Functional — the draft app privacy policy page (WEB-014).
 //
 // Google Play and the App Store both need a privacy policy URL that covers the
-// app (R-054). This page is a DRAFT for counsel and the owner: it must exist in
+// app. This page is a DRAFT for counsel and the owner: it must exist in
 // the build, but stay out of search, navigation and the sitemap until counsel
 // signs off. The owner removes `noindex`, adds links and drops the sitemap
 // filter then, and updates these tests in the same change.
@@ -153,8 +153,8 @@ test("the page makes none of the banned words, comments included", () => {
 });
 
 test("the page claims no encryption at rest", () => {
-  // The sources evidence HTTPS in transit only (A.1:186). How data is kept on
-  // the phone or at the providers is Unknown (A.4:224-227).
+  // The sources evidence HTTPS in transit only. How data is kept on the phone
+  // or at the providers is not stated.
   const text = textOf(main(readPage(PAGE)));
   assert.doesNotMatch(text, /\bat rest\b/i);
   const sentences = text.split(/(?<=[.!?])\s+/);

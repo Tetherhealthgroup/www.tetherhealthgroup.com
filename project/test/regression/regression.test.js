@@ -82,7 +82,7 @@ test("nothing links to the removed updates page", async () => {
 });
 
 test("no built page claims offline use or clinical review as fact", async () => {
-  /* WEB-002 (R-018, R-044): per R-018 the app blocks signed-in users offline
+  /* WEB-002: the app blocks signed-in users offline
      at startup, and clinical review has not happened, so the site must not
      say "works offline" or "clinically reviewed". Replacement wording is a
      needs-counsel draft; this test only guards the unhedged phrases.

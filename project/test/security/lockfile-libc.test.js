@@ -1,4 +1,4 @@
-// Lockfile libc guard (WEB-013, R-074): scripts/check-lockfile-libc.mjs must
+// Lockfile libc guard (WEB-013): scripts/check-lockfile-libc.mjs must
 // fail when a Linux binary entry loses `libc`, and pass on the committed
 // lockfile. Synthetic lockfiles are written to a temp dir, never to the repo.
 

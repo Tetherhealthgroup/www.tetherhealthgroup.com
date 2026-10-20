@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Lockfile libc guard (WEB-013, R-074; hardened in WEB-016).
+// Lockfile libc guard (WEB-013; hardened in WEB-016).
 //
 // npm 10.9.8 has been seen to drop the `libc` field from optional Linux native
 // binary entries during `npm audit fix` / `npm install`. Without `libc`, npm

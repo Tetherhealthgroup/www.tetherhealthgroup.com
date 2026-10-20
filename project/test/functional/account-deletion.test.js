@@ -1,7 +1,7 @@
 // Functional — the draft account-deletion page (WEB-009).
 //
 // Play needs a public web resource that explains how to delete an account
-// without the app (R-054). This page is a draft for counsel and the owner: it
+// without the app. This page is a draft for counsel and the owner: it
 // must exist in the build, but stay out of search, navigation and the sitemap
 // until counsel signs off. The owner removes `noindex` and adds links then,
 // and updates these tests in the same change.
@@ -49,7 +49,7 @@ test("the page names the app and the developer", () => {
 });
 
 test("the page gives the in-app deletion steps in order", () => {
-  // PLAY_CONSOLE_ANSWERS.md section F, lines 449-454, verbatim as drafted.
+  // The in-app path, verbatim as drafted.
   const steps = main(readPage(PAGE)).match(
     /<ol[^>]*id="in-app-steps"[\s\S]*?<\/ol>/,
   )?.[0];
@@ -119,7 +119,7 @@ test("no other built page and no sitemap links to the draft page", () => {
 });
 
 test("the page makes none of the banned claims", () => {
-  // Comments included: they ship in the built HTML.
+  // The whole document, so a comment that ever ships is scanned too.
   const html = readPage(PAGE);
   const banned = [
     /\bsecure(ly)?\b/i,

@@ -156,7 +156,7 @@ const OVERCLAIMS = [
   ],
 ];
 
-/** Claims the filters above must catch (reviewer's sample set). */
+/** Claims the filters above must catch (sample set). */
 const SAMPLE_CLAIMS = [
   "Get it on Google Play",
   "Now on Google Play",
