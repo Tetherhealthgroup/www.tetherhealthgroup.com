@@ -97,6 +97,14 @@ test("unconfirmed facts stay visibly marked as to be confirmed", () => {
 test("no other built page and no sitemap links to the draft page", () => {
   const offenders = htmlFiles()
     .filter((page) => page !== PAGE)
+    // WEB-014: the draft app privacy policy points at this page by design,
+    // but only while it is itself a noindex draft. Once it loses noindex, the
+    // exemption lapses and this guard fires.
+    .filter(
+      (page) =>
+        page !== "app-privacy/index.html" ||
+        !/<meta name="robots" content="noindex/.test(readPage(page)),
+    )
     .filter((page) => /delete-account/.test(readPage(page)));
   assert.deepEqual(offenders, [], `pages linking the draft: ${offenders}`);
 

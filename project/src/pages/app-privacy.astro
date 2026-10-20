@@ -1,0 +1,281 @@
+---
+/**
+ * Privacy policy for the Tether Health app (WEB-014, draft).
+ *
+ * The app privacy policy URL Google Play and the App Store ask for (R-054).
+ * Content comes only from docs/PLAY_CONSOLE_ANSWERS.md (Tether-Health, at
+ * 44c5510) and the in-app privacy and saving copy (Tether-Health, at
+ * f06b7c7). Every sentence is mapped to a source line and an evidence label
+ * in tether-health-ai-office/runs/2026-10-13-WEB-014-app-privacy-policy.md.
+ * That mapping is kept out of the built page on purpose, so no source path or
+ * "Unknown" note ships in the HTML (th-security WEB-009 finding F5).
+ *
+ * Anything the sources do not state is a visible "To be confirmed" line.
+ * Nothing here is final legal text: it needs counsel and the owner.
+ *
+ * Not published: noindex, linked from nowhere, and filtered out of the
+ * sitemap in astro.config.mjs. The owner removes noindex, adds links and
+ * drops the sitemap filter only after counsel signs off (Tier 4), and updates
+ * test/functional/app-privacy.test.js in the same change. This page does not
+ * replace privacy.astro, which covers the website only.
+ */
+
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Icon from "../components/Icon.astro";
+import SupportEmail from "../components/SupportEmail.astro";
+import { site } from "../data/site";
+
+const appName = "Tether Health";
+const packageName = "com.TetherHealthLLC.tetherhealth";
+---
+
+<Base
+  title={`${appName} app privacy policy`}
+  description={`How the ${appName} app collects, uses and keeps your information, who handles it for us, and how to delete it or contact us.`}
+  noindex
+>
+  <PageHero
+    eyebrow="Privacy"
+    title={`${appName} app privacy policy`}
+    intro={`How the ${appName} app, developed by ${site.legalName}, handles your information.`}
+    width="narrow"
+  />
+
+  <Section width="narrow">
+    <p
+      class="mb-12 flex items-start gap-3 rounded-3xl border border-mint-strong bg-mint p-6 leading-relaxed text-teal-mid"
+    >
+      <Icon name="info" size={20} class="mt-0.5 shrink-0 text-teal-deep" />
+      <span>
+        Draft for review by {site.legalName} and its counsel. Items marked "To be
+        confirmed" are not decided yet.
+      </span>
+    </p>
+
+    <div class="prose-tether">
+      <h2>About this policy</h2>
+      <p>
+        This policy covers the {appName} app (Android package {packageName}),
+        developed by {site.legalName}.
+      </p>
+      <p>
+        It does not cover www.tetherhealthgroup.com, which has its own privacy
+        notice.
+      </p>
+      <p>To be confirmed: the date this policy takes effect.</p>
+      <p>
+        To be confirmed: whether this policy also covers an iOS version of the
+        app.
+      </p>
+
+      <h2>Using the app as a guest</h2>
+      <p>
+        You can use the app as a guest, without an account. While you use the
+        app as a guest, your data is kept on your device only.
+      </p>
+      <p>
+        As a guest, your quit plan and any Heartwise, Steady or ClearAir entries
+        are stored on your device.
+      </p>
+      <p>
+        Heartwise, Steady or ClearAir entries you make as a guest are not
+        uploaded to an account when you later sign in.
+      </p>
+      <p>
+        If you sign in on a phone that holds a guest quit plan, the app asks
+        whether to back it up to your account. It uploads the plan only if you
+        agree.
+      </p>
+      <p>
+        The daily check-in, Craving Rescue, the stress reset, slip recovery and
+        medication status are held only while the app is open. They are not
+        saved and not sent.
+      </p>
+
+      <h2>Information we collect when you have an account</h2>
+      <p>If you create an account and sign in, the app collects:</p>
+      <ul>
+        <li>your email address</li>
+        <li>an account ID that links your data to your account</li>
+        <li>a display name, if you set one</li>
+        <li>a profile photo, if you add one</li>
+        <li>
+          your quit plan: how much you smoke, your triggers, your readiness and
+          quit path, your quit date, your reasons and preparation tasks, your
+          treatment-support and care-team-reminder settings, and any
+          support-person names, relationships and check-in text you type in
+        </li>
+        <li>
+          program health data, if you use Heartwise, Steady or ClearAir: blood
+          pressure readings, cholesterol panels, glucose-style readings, target
+          ranges, your ClearAir clinician plan, symptom logs, peak flow, zone
+          and notes
+        </li>
+      </ul>
+      <p>
+        Anything you type into a free-text field, such as a note or the name of
+        a clinician, is saved with that entry.
+      </p>
+      <p>
+        You choose a profile photo from your photo library. The app does not ask
+        for camera access.
+      </p>
+      <p>
+        To be confirmed: whether a photo you add carries location data from your
+        phone, and whether that data is removed before the photo is uploaded.
+      </p>
+      <p>The app keeps a sign-in session on your device.</p>
+      <p>
+        The app does not ask for permission to use your location, contacts or
+        microphone.
+      </p>
+      <p>The app has no ads and sends no analytics or crash reports.</p>
+      <p>
+        To be confirmed: what our service providers record when the app connects
+        to them, such as your IP address and the web addresses the app calls,
+        and for how long.
+      </p>
+
+      <h2>How we use your information</h2>
+      <p>
+        We use your information to run the app: to create your account and sign
+        you in, to save your quit plan and program entries to your account, and
+        to show you your own data.
+      </p>
+      <p>
+        We use your email address to create your account, sign you in and reset
+        your password.
+      </p>
+      <p>We do not sell your health data.</p>
+      <p>
+        We do not share your information with third parties for their own use.
+      </p>
+      <p>The app has no feature for sharing your data with other users.</p>
+
+      <h2>Who handles your information for us</h2>
+      <p>These service providers handle your information to run the app:</p>
+      <ul>
+        <li>
+          Supabase, for sign-in accounts, the database and photo storage. Our
+          Supabase database is in the West US region.
+        </li>
+        <li>
+          An application server that handles your profile, quit plan, program
+          data, data copy and account deletion.
+        </li>
+      </ul>
+      <p>
+        To be confirmed: which company hosts the production application server,
+        and where it runs.
+      </p>
+      <p>
+        To be confirmed: which service sends the sign-up confirmation and
+        password-reset emails.
+      </p>
+      <p>
+        To be confirmed: the contract terms we have with our service providers.
+      </p>
+
+      <h2>Protection in transit</h2>
+      <p>
+        A release build of the app refuses to connect to a service address that
+        does not use HTTPS.
+      </p>
+      <p>
+        To be confirmed: whether the production service addresses use HTTPS in
+        practice. This has not been checked yet.
+      </p>
+      <p>
+        To be confirmed: how the data kept on your phone is protected, and how
+        data is protected on our service providers' systems.
+      </p>
+
+      <h2>Keeping and deleting your information</h2>
+      <p>
+        You can delete your account and data in the app. The steps, and what to
+        do if you cannot sign in, are on the <a href="/delete-account/"
+          >account deletion page</a
+        >.
+      </p>
+      <p>
+        To be confirmed: how long we keep your account data if you never delete
+        your account.
+      </p>
+      <p>
+        Copies of your data in backups and logs may remain after you delete your
+        account.
+      </p>
+      <p>To be confirmed: how long backups and logs are kept.</p>
+      <p>
+        Signing out does not remove your account's program data from your
+        device. To remove it, delete the account, uninstall the app or clear its
+        storage.
+      </p>
+      <p>
+        Signed-in users can view their account data and copy it as text. The
+        copy contains your profile, quit plan and program health data.
+      </p>
+      <p>
+        A copy you make is outside the app and is not deleted when you delete
+        your account.
+      </p>
+
+      <h2>Your rights</h2>
+      <p>
+        In the app you can view and copy your account data, change your display
+        name and photo, and delete your account.
+      </p>
+      <p>
+        Depending on where you live, you may also have the right to ask for
+        access to, correction of or deletion of your personal data, to object to
+        or restrict how we use it, and to complain to a data protection
+        authority.
+      </p>
+      <p>
+        To be confirmed: which privacy laws apply to the app and which rights
+        they give you.
+      </p>
+      <p>
+        To use these rights, write to <SupportEmail mailbox="privacy" />.
+      </p>
+      <p>
+        To be confirmed: who answers these emails, how we check who you are, and
+        how quickly we reply.
+      </p>
+
+      <h2>Contact us</h2>
+      <p>
+        For questions about this policy, email <SupportEmail
+          mailbox="privacy"
+        />.
+      </p>
+      <p>
+        For help with the app, email <SupportEmail />.
+      </p>
+
+      <h2>Children</h2>
+      <p>The app does not currently check your age.</p>
+      <p>
+        To be confirmed: the minimum age for the app (the draft recommendation
+        is 18 and over), and what we do if we learn that a child has an account.
+      </p>
+      <p>
+        If you believe a child has created an account, email <SupportEmail
+          mailbox="privacy"
+        />.
+      </p>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        When this policy changes, we will update the effective date on this
+        page.
+      </p>
+      <p>
+        To be confirmed: how people who already have an account will be told
+        about a material change, for example inside the app.
+      </p>
+    </div>
+  </Section>
+</Base>

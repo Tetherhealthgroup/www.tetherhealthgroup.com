@@ -90,6 +90,21 @@ test("the account-deletion draft has one h1 and one main landmark", () => {
   assert.match(html, /<main id="main">/, "main lost the skip-link target");
 });
 
+test("the app privacy policy draft has one h1 and one main landmark", () => {
+  // WEB-014: reached directly from a store listing, so its outline must stand
+  // on its own.
+  const page = "app-privacy/index.html";
+  assert.ok(htmlFiles().includes(page), `${page} was not built`);
+  const html = readFileSync(join(dist, page), "utf8");
+  assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1, "expected one h1");
+  assert.equal(
+    (html.match(/<main[\s>]/g) ?? []).length,
+    1,
+    "expected one main",
+  );
+  assert.match(html, /<main id="main">/, "main lost the skip-link target");
+});
+
 test("meta descriptions are a length a search result will actually show", async () => {
   // Four pages shipped descriptions over 165 characters, which search results
   // truncate mid-sentence. Under 50 is too thin to be useful.
