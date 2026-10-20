@@ -529,3 +529,31 @@ deployed to `public_html`.
   the seven; `/support/` must link finance@ and admin@.
 - Unknown until the owner confirms a test message: whether admin@ and finance@
   receive mail.
+
+---
+
+## WEB-903a — app claims, metadata, links and accessibility checks
+
+- Copy now matches the app as it exists today. The screen tour says its
+  screens are design artwork, not screenshots of a released app. Craving help
+  is described as "One tap, no typing" rather than tools that "work
+  anywhere". Screen-reader, larger-text, Spanish and audio features are
+  described as designed, not as things the app does. "Release gates" and
+  "evidence-informed" are gone from the home, about and clinician pages.
+  The security page is legal text and is unchanged; it needs counsel.
+- New checks, all against the build: the claim families above, with
+  paraphrases (`test/acceptance/claims.test.js`); more availability and
+  testing paraphrases in the existing overclaim filter; title, description,
+  canonical and share tags on every page, the sitemap listing exactly the
+  indexed pages, and robots.txt (`test/ui/seo.test.js`); every internal
+  link, image, script and fragment resolving to something built
+  (`test/functional/links.test.js`); language, viewport, one h1, landmarks,
+  skip link, image and SVG text alternatives, accessible names, field labels
+  and the focus ring (`test/ui/a11y.test.js`).
+- Published addresses: tracked text files may name only the seven role
+  mailboxes at the company domain; the mailto check reads URLs as a browser
+  does (tab and newline removed, `=` allowed in unquoted attribute values).
+- The draft-page wording check also reads attribute strings, frontmatter
+  string literals and expression comments.
+- Not checked here: layout at 320, 390 and 768 px, tap-target size, and
+  keyboard focus in a real browser. Those need a rendered page.
