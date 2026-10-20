@@ -366,6 +366,9 @@ test("repeated links and controls are at least 44px tall", () => {
     }
   }
 
+  // WEB-009: the account-deletion draft goes through the same walk.
+  assert.ok(htmlFiles().includes("delete-account/index.html"));
+
   const tour = pageHtml("breathefree/tour/index.html");
   for (const tag of tour.match(/<a [^>]*href="#tour-[^"]*"[^>]*>/g) ?? [])
     if (!hasMin(tag)) missing.push(`tour ${tag.slice(0, 60)}`);
@@ -419,6 +422,12 @@ test("every mailto link meets the 44px bar or sits inside a sentence", () => {
     }
   }
   assert.ok(seen > 0, "no mailto links found in the build");
+  // WEB-009: the account-deletion draft's email route is one of them.
+  assert.match(
+    pageHtml("delete-account/index.html"),
+    /href="mailto:support@/,
+    "the account-deletion draft has no mailto link to walk",
+  );
   assert.deepEqual(
     missing,
     [],
