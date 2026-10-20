@@ -9,11 +9,12 @@
  * visible "To be confirmed" lines, marked needs-owner or needs-counsel in
  * expression comments, which the build drops.
  *
- * Not published: noindex, linked from nowhere, and filtered out of the
- * sitemap in astro.config.mjs. The owner removes noindex, adds links and
- * drops the sitemap filter only after counsel signs off, removes the draft
- * notice, and updates test/functional/account-deletion.test.js in the same
- * change.
+ * Not built: the leading underscore in the file name makes Astro skip it,
+ * so /delete-account/ does not exist in the build, the sitemap or any link.
+ * It stays that way until it is rewritten for the final app and counsel
+ * signs off. Publishing then means renaming the file, removing noindex and
+ * the draft notice, linking it, and updating
+ * test/functional/account-deletion.test.js in the same change.
  */
 
 import Base from "../layouts/Base.astro";
@@ -80,7 +81,7 @@ const inAppSteps = [
       <p>If you are signed out, the same option first asks you to sign in.</p>
 
       <h2>If you cannot sign in</h2>
-      {/* needs-owner: whether the password-reset email works end to end */}
+      {/* needs-owner: password-reset email */}
       <p>
         If you have forgotten your password, reset it first and then follow the
         steps above.
@@ -89,17 +90,16 @@ const inAppSteps = [
         Or email <SupportEmail subject={emailSubject} /> from the email address on
         your account, with the subject "{emailSubject}".
       </p>
-      {/* needs-owner: whether a mailbox process exists, and who runs it */}
+      {/* needs-owner: email request handling */}
       <p>
-        To be confirmed: whether email requests are being handled yet, who
-        handles them, and how we check that a request comes from the account
-        holder.
+        To be confirmed: who handles email requests, and how we check that a
+        request comes from the account holder.
       </p>
       {/* needs-owner, needs-counsel: how long a request takes */}
       <p>To be confirmed: how long it takes to complete a request.</p>
 
       <h2>What is deleted</h2>
-      {/* needs-counsel: server-side result unconfirmed on the live service */}
+      {/* needs-counsel: server-side deletion result */}
       <p>Deleting a signed-in account deletes:</p>
       <ul>
         <li>your profile and display name</li>
@@ -127,22 +127,16 @@ const inAppSteps = [
         only on your device.
       </p>
       <p>
-        Deleting a signed-in account also clears the guest quit plan on that
-        device, but not Heartwise, Steady or ClearAir entries made as a guest.
-      </p>
-      <p>"Remove device plan" in Settings removes only the guest quit plan.</p>
-      <p>
-        There is no in-app way for a guest to remove Heartwise or ClearAir
-        entries, and Steady readings can only be removed one at a time.
+        To be confirmed: which data made as a guest is cleared from the device
+        when a signed-in account is deleted.
       </p>
       <p>
         To remove all guest data, uninstall the app, or on Android go to
         Settings &gt; Apps &gt; {appName} &gt; Storage &gt; Clear storage.
       </p>
       <p>
-        Signing out does not remove your account's program data from the device.
-        To remove it, delete the account, uninstall the app or clear its
-        storage.
+        To remove your account's data from the device, delete the account,
+        uninstall the app or clear its storage.
       </p>
     </div>
   </Section>

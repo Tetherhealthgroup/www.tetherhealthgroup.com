@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { dist, htmlFiles } from "../helpers/dist.js";
+import { dist, projectRoot, htmlFiles } from "../helpers/dist.js";
 
 test("every page carries a title, description and canonical URL", async () => {
   for (const page of await htmlFiles()) {
@@ -75,34 +75,21 @@ test("no page skips a heading level", async () => {
   }
 });
 
-test("the account-deletion draft has one h1 and one main landmark", () => {
-  // WEB-009: the page is reached directly from a store listing, not from the
-  // site's navigation, so its outline must stand on its own.
-  const page = "delete-account/index.html";
-  assert.ok(htmlFiles().includes(page), `${page} was not built`);
-  const html = readFileSync(join(dist, page), "utf8");
-  assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1, "expected one h1");
-  assert.equal(
-    (html.match(/<main[\s>]/g) ?? []).length,
-    1,
-    "expected one main",
-  );
-  assert.match(html, /<main id="main">/, "main lost the skip-link target");
-});
-
-test("the app privacy policy draft has one h1 and one main landmark", () => {
-  // WEB-014: reached directly from a store listing, so its outline must stand
-  // on its own.
-  const page = "app-privacy/index.html";
-  assert.ok(htmlFiles().includes(page), `${page} was not built`);
-  const html = readFileSync(join(dist, page), "utf8");
-  assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1, "expected one h1");
-  assert.equal(
-    (html.match(/<main[\s>]/g) ?? []).length,
-    1,
-    "expected one main",
-  );
-  assert.match(html, /<main id="main">/, "main lost the skip-link target");
+test("each unbuilt store draft keeps one h1 and the shared layout", () => {
+  // WEB-009 and WEB-014: the drafts are not built (src/pages/_*.astro), but
+  // each is reached directly from a store listing once published, so its
+  // outline must stand on its own: Base supplies the one <main id="main">
+  // and PageHero the one h1.
+  for (const name of ["_delete-account.astro", "_app-privacy.astro"]) {
+    const src = readFileSync(join(projectRoot, "src/pages", name), "utf8");
+    assert.equal((src.match(/<Base\b/g) ?? []).length, 1, `${name}: Base`);
+    assert.equal(
+      (src.match(/<PageHero\b/g) ?? []).length,
+      1,
+      `${name}: expected one PageHero (its h1)`,
+    );
+    assert.doesNotMatch(src, /<(h1|main)\b/, `${name}: a second h1 or main`);
+  }
 });
 
 test("meta descriptions are a length a search result will actually show", async () => {

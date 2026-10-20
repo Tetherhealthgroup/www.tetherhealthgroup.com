@@ -9,11 +9,13 @@
  * Anything the sources do not state is a visible "To be confirmed" line.
  * Nothing here is final legal text: it needs counsel and the owner.
  *
- * Not published: noindex, linked from nowhere, and filtered out of the
- * sitemap in astro.config.mjs. The owner removes noindex, adds links and
- * drops the sitemap filter only after counsel signs off, and updates
- * test/functional/app-privacy.test.js in the same change. This page does not
- * replace privacy.astro, which covers the website only.
+ * Not built: the leading underscore in the file name makes Astro skip it,
+ * so /app-privacy/ does not exist in the build, the sitemap or any link. It
+ * stays that way until it is rewritten for the final app and counsel signs
+ * off. Publishing then means renaming the file, removing noindex and the
+ * draft notice, linking it, and updating test/functional/app-privacy.test.js
+ * in the same change. This page does not replace privacy.astro, which covers
+ * the website only.
  */
 
 import Base from "../layouts/Base.astro";
@@ -119,8 +121,7 @@ const packageName = "com.TetherHealthLLC.tetherhealth";
         for camera access.
       </p>
       <p>
-        To be confirmed: whether a photo you add carries location data from your
-        phone, and whether that data is removed before the photo is uploaded.
+        To be confirmed: how a profile photo is handled when it is uploaded.
       </p>
       <p>The app keeps a sign-in session on your device.</p>
       <p>
@@ -180,12 +181,8 @@ const packageName = "com.TetherHealthLLC.tetherhealth";
         does not use HTTPS.
       </p>
       <p>
-        To be confirmed: whether the production service addresses use HTTPS in
-        practice. This has not been checked yet.
-      </p>
-      <p>
-        To be confirmed: how the data kept on your phone is protected, and how
-        data is protected on our service providers' systems.
+        To be confirmed: how your data is protected on your phone, in transit
+        and at our service providers.
       </p>
 
       <h2>Keeping and deleting your information</h2>
@@ -205,9 +202,8 @@ const packageName = "com.TetherHealthLLC.tetherhealth";
       </p>
       <p>To be confirmed: how long backups and logs are kept.</p>
       <p>
-        Signing out does not remove your account's program data from your
-        device. To remove it, delete the account, uninstall the app or clear its
-        storage.
+        To remove your account's data from your device, delete the account,
+        uninstall the app or clear its storage.
       </p>
       <p>
         Signed-in users can view their account data and copy it as text. The
@@ -252,7 +248,6 @@ const packageName = "com.TetherHealthLLC.tetherhealth";
       </p>
 
       <h2>Children</h2>
-      <p>The app does not currently check your age.</p>
       <p>
         To be confirmed: the minimum age for the app (the draft recommendation
         is 18 and over), and what we do if we learn that a child has an account.

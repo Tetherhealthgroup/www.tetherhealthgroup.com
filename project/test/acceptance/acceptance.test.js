@@ -175,21 +175,12 @@ const SAMPLE_CLAIMS = [
  */
 const PRIVACY_RETENTION = /until the relevant product has launched/g;
 
-/**
- * Open question on the draft app privacy policy (app-privacy.astro, WEB-014).
- * It names iOS as undecided, which is not a platform promise. Remove this
- * exemption when counsel settles the policy's platform scope.
- */
-const APP_PRIVACY_IOS_OPEN =
-  /To be confirmed: whether this policy also covers an iOS version of the app\./g;
-
 /** Text a page may contain even though a filter would otherwise match. */
 function scrub(text) {
   return text
     .replace(ALLOWED_PLAY, "")
     .replace(QUITLINE_NOW, "")
-    .replace(PRIVACY_RETENTION, "")
-    .replace(APP_PRIVACY_IOS_OPEN, "");
+    .replace(PRIVACY_RETENTION, "");
 }
 
 test("the overclaim filters catch every sample claim", () => {

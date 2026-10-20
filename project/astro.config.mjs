@@ -18,13 +18,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
 
-  // /delete-account/ (WEB-009) and /app-privacy/ (WEB-014) are drafts awaiting
-  // counsel: kept out of the sitemap until the owner publishes them, then each
-  // entry is removed from this filter.
-  integrations: [
-    sitemap({
-      filter: (page) =>
-        !page.includes("/delete-account/") && !page.includes("/app-privacy/"),
-    }),
-  ],
+  // The account-deletion and app privacy drafts (WEB-009, WEB-014) are not
+  // built at all (src/pages/_*.astro), so the sitemap needs no filter.
+  integrations: [sitemap()],
 });

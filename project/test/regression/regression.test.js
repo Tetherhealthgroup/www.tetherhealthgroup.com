@@ -366,11 +366,6 @@ test("repeated links and controls are at least 44px tall", () => {
     }
   }
 
-  // WEB-009: the account-deletion draft goes through the same walk.
-  assert.ok(htmlFiles().includes("delete-account/index.html"));
-  // WEB-014: so does the app privacy policy draft.
-  assert.ok(htmlFiles().includes("app-privacy/index.html"));
-
   const tour = pageHtml("breathefree/tour/index.html");
   for (const tag of tour.match(/<a [^>]*href="#tour-[^"]*"[^>]*>/g) ?? [])
     if (!hasMin(tag)) missing.push(`tour ${tag.slice(0, 60)}`);
@@ -424,19 +419,6 @@ test("every mailto link meets the 44px bar or sits inside a sentence", () => {
     }
   }
   assert.ok(seen > 0, "no mailto links found in the build");
-  // WEB-009: the account-deletion draft's email route is one of them.
-  assert.match(
-    pageHtml("delete-account/index.html"),
-    /href="mailto:support@/,
-    "the account-deletion draft has no mailto link to walk",
-  );
-  // WEB-014: the app privacy policy draft's role-mailbox links are walked too.
-  const policyMailtos =
-    pageHtml("app-privacy/index.html").match(/href="mailto:[^"]+"/g) ?? [];
-  assert.ok(
-    policyMailtos.some((m) => m.includes("mailto:privacy@")),
-    "the app privacy policy draft has no privacy@ mailto link to walk",
-  );
   assert.deepEqual(
     missing,
     [],
