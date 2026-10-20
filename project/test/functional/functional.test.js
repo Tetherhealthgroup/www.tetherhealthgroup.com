@@ -140,6 +140,8 @@ test("each role mailbox is a mailto link on the page where it fits", () => {
       "security",
       "partnerships",
       "careers",
+      "finance",
+      "admin",
     ],
     "privacy/index.html": ["privacy"],
     "security/index.html": ["security"],

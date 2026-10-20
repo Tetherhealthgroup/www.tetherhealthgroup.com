@@ -509,4 +509,23 @@ deployed to `public_html`.
 - Unknown until the owner confirms a test message: whether any role mailbox
   receives mail.
 - Legal-page contact changes (privacy, security, terms; "Last updated" bumped to
-  2026-10-12) are **needs-counsel** and owner **Tier 4** before publishing.
+  2026-10-12) are **needs-counsel**: they need counsel's review and the owner's
+  sign-off before publishing.
+
+---
+
+## WEB-902 — admin and finance mailboxes
+
+- `contact` in `src/data/site.ts` now holds seven role mailboxes: support,
+  privacy, security, partnerships, careers, finance and admin. No personal
+  address is published anywhere on the site.
+- `/support/` lists finance (invoices and other financial matters) and admin
+  (general company and administrative matters) with the other addresses.
+  The footer still shows support only, and the legal pages are unchanged: no
+  page offers anything for sale or mentions billing, so there is no text for
+  finance to sit beside, and changing legal-page contacts needs counsel.
+- `security.txt` Contact stays security@.
+- Tests: every address and every `mailto:` on every built page must be one of
+  the seven; `/support/` must link finance@ and admin@.
+- Unknown until the owner confirms a test message: whether admin@ and finance@
+  receive mail.

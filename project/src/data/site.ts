@@ -19,7 +19,8 @@ export const site = {
 } as const;
 
 /**
- * Role mailboxes for Tether Health Group (owner-provided, 2026-10-12).
+ * Role mailboxes for Tether Health Group (owner-provided, 2026-10-12; admin and
+ * finance added 2026-10-20).
  *
  * This is the only place an address is written down; pages and components
  * read it from here. Never publish a personal address, and never use
@@ -32,6 +33,8 @@ export const contact = {
   security: "security@tetherhealthgroup.com",
   partnerships: "partnerships@tetherhealthgroup.com",
   careers: "careers@tetherhealthgroup.com",
+  finance: "finance@tetherhealthgroup.com",
+  admin: "admin@tetherhealthgroup.com",
 } as const;
 
 export type Mailbox = keyof typeof contact;

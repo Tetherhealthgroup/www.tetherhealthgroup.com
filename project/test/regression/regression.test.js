@@ -109,11 +109,22 @@ test("no built page claims offline use or clinical review as fact", async () => 
   );
 });
 
+/** The seven role mailboxes, the only addresses the site may publish. */
+const ROLE_MAILBOXES = [
+  "admin",
+  "careers",
+  "finance",
+  "partnerships",
+  "privacy",
+  "security",
+  "support",
+].map((box) => `${box}@tetherhealthgroup.com`);
+
 test("no page carries a personal, safecodeg.com or legacy contact address", () => {
   // Public contacts are the role mailboxes only. Personal addresses and
   // safecodeg.com (the hosting account's domain) must never be published.
   const allowed =
-    /^(support|privacy|security|partnerships|careers)@tetherhealthgroup\.com$/;
+    /^(admin|careers|finance|partnerships|privacy|security|support)@tetherhealthgroup\.com$/;
   const offenders = [];
   for (const page of htmlFiles()) {
     const html = readFileSync(join(dist, page), "utf8");
@@ -126,6 +137,38 @@ test("no page carries a personal, safecodeg.com or legacy contact address", () =
       if (!allowed.test(address)) offenders.push(`${page} -> ${address}`);
     }
   }
+  assert.deepEqual(offenders, []);
+});
+
+test("site data holds exactly the seven role mailboxes", async () => {
+  const { contact } = await import("../../src/data/site.ts");
+  assert.deepEqual(Object.values(contact).sort(), ROLE_MAILBOXES);
+});
+
+test("every mailto link on every built page targets a role mailbox", () => {
+  // Checked on the decoded href, so an address hidden behind percent-encoding
+  // or a second recipient after a comma is caught too.
+  const offenders = [];
+  let seen = 0;
+  for (const page of htmlFiles()) {
+    const html = readFileSync(join(dist, page), "utf8");
+    for (const [, href] of html.matchAll(
+      /href\s*=\s*["']mailto:([^"']*)["']/gi,
+    )) {
+      seen += 1;
+      let recipients = href.split("?")[0];
+      try {
+        recipients = decodeURIComponent(recipients);
+      } catch {
+        offenders.push(`${page} -> undecodable mailto:${href}`);
+        continue;
+      }
+      for (const address of recipients.split(",").map((a) => a.trim()))
+        if (!ROLE_MAILBOXES.includes(address))
+          offenders.push(`${page} -> mailto:${address}`);
+    }
+  }
+  assert.ok(seen > 0, "no mailto links found in the build");
   assert.deepEqual(offenders, []);
 });
 
@@ -426,9 +469,16 @@ test("every mailto link meets the 44px bar or sits inside a sentence", () => {
   );
 
   // The /support/ mailbox list stands on its own lines, so it must be sized
-  // explicitly: privacy, security, partnerships and careers.
+  // explicitly: privacy, security, partnerships, careers, finance and admin.
   const support = pageHtml("support/index.html");
-  for (const box of ["privacy", "security", "partnerships", "careers"]) {
+  for (const box of [
+    "privacy",
+    "security",
+    "partnerships",
+    "careers",
+    "finance",
+    "admin",
+  ]) {
     const tag = support.match(
       new RegExp(`<a [^>]*href="mailto:${box}@[^"]*"[^>]*>`),
     )?.[0];

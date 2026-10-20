@@ -29,6 +29,16 @@ const otherMailboxes = [
     label: "Careers",
     use: "Recruitment and working with us.",
   },
+  {
+    mailbox: "finance" as const,
+    label: "Finance",
+    use: "Invoices and other financial matters.",
+  },
+  {
+    mailbox: "admin" as const,
+    label: "Administration",
+    use: "General company and administrative matters.",
+  },
 ];
 ---
 
@@ -113,8 +123,8 @@ const otherMailboxes = [
       <h2 class="text-3xl sm:text-4xl">Write to the right inbox.</h2>
       <p class="mt-5 text-lg leading-relaxed">
         Support questions go to the support address below. For privacy,
-        security, partnerships and careers there is a dedicated address for
-        each.
+        security, partnerships, careers, finance and general company matters
+        there is a dedicated address for each.
       </p>
     </div>
 
