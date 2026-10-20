@@ -501,8 +501,11 @@ deployed to `public_html`.
 - `public/.well-known/security.txt` (RFC 9116), served as
   `text/plain; charset=utf-8`. **Expires 2027-10-12: renew before then.**
 - `.cpanel.yml` no longer excludes all of `.well-known/` (that also blocked
-  copying security.txt); only `acme-challenge/` and `pki-validation/` are
-  spared from `--delete`.
+  copying security.txt). Instead everything under `.well-known/` is protected
+  from `--delete` (`--filter='P /.well-known/**'`), so the host's own files
+  there survive a deploy. The flip side: a file removed from
+  `public/.well-known/` is not removed from the document root by the next
+  deploy, and has to be deleted on the host by hand.
 - Unknown until the owner confirms a test message: whether any role mailbox
   receives mail.
 - Legal-page contact changes (privacy, security, terms; "Last updated" bumped to

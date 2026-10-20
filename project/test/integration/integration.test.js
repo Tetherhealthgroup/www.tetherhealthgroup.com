@@ -133,19 +133,23 @@ test("the deploy does not delete what it must not delete", () => {
      the one thing here that can destroy something: .well-known/ holds AutoSSL's
      HTTP-01 challenge tokens, and a deploy that runs mid-validation would fail
      a certificate renewal it has nothing to do with. .git/ must never reach the
-     document root at all. */
-  const yml = readFileSync(join(dist, ".cpanel.yml"), "utf8");
-  if (!/--delete/.test(yml)) return; // nothing is removed; nothing to protect
+     document root at all. Comment lines are stripped first, so a comment
+     that merely mentions a flag cannot satisfy these checks. */
+  const commands = readFileSync(join(dist, ".cpanel.yml"), "utf8")
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("#"))
+    .join("\n");
+  if (!/--delete/.test(commands)) return; // nothing is removed; nothing to protect
 
   for (const path of [".git", ".cpanel.yml"]) {
     assert.match(
-      yml,
+      commands,
       new RegExp(`--exclude=\\.?/?${path.replace(/[.]/g, "\\.")}`),
       `${path} is not excluded from a --delete copy into the document root`,
     );
   }
   assert.match(
-    yml,
+    commands,
     /--filter='P \/\.well-known\/\*\*'/,
     "everything under /.well-known/ must be protected from --delete " +
       "(--filter='P /.well-known/**')",
@@ -155,8 +159,8 @@ test("the deploy does not delete what it must not delete", () => {
 test("the deploy does not exclude .well-known wholesale, or security.txt never ships", () => {
   /* rsync --exclude also stops the TRANSFER, not just the deletion. Excluding
      all of .well-known/ protected AutoSSL's tokens but meant
-     /.well-known/security.txt could never reach the document root. Only the
-     validation subdirectories are spared. */
+     /.well-known/security.txt could never reach the document root. Everything
+     under it is protected from deletion instead (see the test above). */
   const yml = readFileSync(join(dist, ".cpanel.yml"), "utf8");
   const commands = yml
     .split("\n")

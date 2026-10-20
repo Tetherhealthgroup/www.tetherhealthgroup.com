@@ -73,7 +73,10 @@ const FORBIDDEN_IN_TREE = [
     ),
     "review finding identifier",
   ],
-  [new RegExp("\\bsend" + "-back\\b|\\bsent back\\b", "i"), "review wording"],
+  [
+    new RegExp("\\bsend" + "-back\\b|\\bsen" + "t back\\b", "i"),
+    "review wording",
+  ],
   [new RegExp("\\bro" + "und \\d+\\b", "i"), "review-iteration wording"],
 ];
 
