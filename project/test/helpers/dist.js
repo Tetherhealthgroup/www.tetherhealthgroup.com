@@ -78,6 +78,42 @@ export const htmlFilesAbsolute = (dir = dist) =>
 
 export const readPage = (rel) => readFileSync(join(dist, rel), "utf8");
 
+const NAMED_ENTITIES = {
+  amp: "&",
+  AMP: "&",
+  lt: "<",
+  LT: "<",
+  gt: ">",
+  GT: ">",
+  quot: '"',
+  QUOT: '"',
+  apos: "'",
+  nbsp: " ",
+  commat: "@",
+  period: ".",
+  colon: ":",
+  comma: ",",
+  semi: ";",
+  quest: "?",
+  equals: "=",
+  percnt: "%",
+  sol: "/",
+  num: "#",
+};
+
+/** Text with HTML character references decoded once, as a browser does. */
+export function decodeEntities(text) {
+  return text.replace(
+    /&(?:#(\d+)|#[xX]([0-9A-Fa-f]+)|([A-Za-z][A-Za-z0-9]*));?/g,
+    (ref, dec, hex, name) => {
+      if (name !== undefined)
+        return Object.hasOwn(NAMED_ENTITIES, name) ? NAMED_ENTITIES[name] : ref;
+      const code = dec !== undefined ? Number(dec) : parseInt(hex, 16);
+      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : ref;
+    },
+  );
+}
+
 /** Map a dist-relative HTML path to the URL path it is served at. */
 export function routeOf(rel) {
   if (rel === "404.html") return "/404.html";
