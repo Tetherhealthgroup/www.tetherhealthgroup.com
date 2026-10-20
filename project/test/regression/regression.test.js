@@ -6,7 +6,12 @@ import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { join } from "node:path";
-import { dist, htmlFiles, projectRoot } from "../helpers/dist.js";
+import {
+  dist,
+  htmlFiles,
+  projectRoot,
+  decodeEntities,
+} from "../helpers/dist.js";
 import { builtCss, colorTokens, contrast, over } from "../helpers/contrast.js";
 
 test("the 404 document claims no canonical URL of its own", () => {
@@ -113,10 +118,11 @@ test("no page carries a personal, safecodeg.com or legacy contact address", () =
   // Public contacts are the role mailboxes only. Personal addresses and
   // safecodeg.com (the hosting account's domain) must never be published.
   const allowed =
-    /^(support|privacy|security|partnerships|careers)@tetherhealthgroup\.com$/;
+    /^(admin|careers|finance|partnerships|privacy|security|support)@tetherhealthgroup\.com$/;
+  // Character references are decoded first, so "&#64;" counts as "@".
   const offenders = [];
   for (const page of htmlFiles()) {
-    const html = readFileSync(join(dist, page), "utf8");
+    const html = decodeEntities(readFileSync(join(dist, page), "utf8"));
     if (/safecodeg/i.test(html)) offenders.push(`${page} mentions safecodeg`);
     for (const address of html.match(
       /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/g,
@@ -426,9 +432,16 @@ test("every mailto link meets the 44px bar or sits inside a sentence", () => {
   );
 
   // The /support/ mailbox list stands on its own lines, so it must be sized
-  // explicitly: privacy, security, partnerships and careers.
+  // explicitly: privacy, security, partnerships, careers, finance and admin.
   const support = pageHtml("support/index.html");
-  for (const box of ["privacy", "security", "partnerships", "careers"]) {
+  for (const box of [
+    "privacy",
+    "security",
+    "partnerships",
+    "careers",
+    "finance",
+    "admin",
+  ]) {
     const tag = support.match(
       new RegExp(`<a [^>]*href="mailto:${box}@[^"]*"[^>]*>`),
     )?.[0];
