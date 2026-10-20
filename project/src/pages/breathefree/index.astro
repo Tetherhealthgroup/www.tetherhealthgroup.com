@@ -12,7 +12,7 @@ const features = [
   {
     icon: "wave" as const,
     title: "Craving rescue",
-    body: "One tap opens immediate, one-handed help. Rate the craving, get one recommended tool, run it, then recheck. It works offline, because the hardest moments do not wait for a signal.",
+    body: "One tap opens immediate, one-handed help. Rate the craving, get one recommended tool, run it, then recheck. It is designed to work offline, because the hardest moments do not wait for a signal; offline use has not yet been tested.",
     screen: 19,
   },
   {
@@ -61,7 +61,7 @@ const safeguards = [
 
 <Base
   title="BreatheFree"
-  description="BreatheFree is our first program: calm, private, judgment-free support for quitting smoking. Craving rescue that works offline, and progress a slip never erases."
+  description="BreatheFree is our first program: calm, private, judgment-free support for quitting smoking. Craving rescue for hard moments, and progress a slip never erases."
 >
   <!-- Hero -->
   <Section width="wide" space="loose">
@@ -87,6 +87,12 @@ const safeguards = [
         </div>
 
         <Logo size={56} withWordmark class="mb-7" />
+
+        {/* needs-counsel: WEB-005 */}
+        <p class="mb-5 font-bold text-teal-deep">
+          BreatheFree is in development for Android first. It is not available
+          to download yet.
+        </p>
 
         <h1 class="text-[2.75rem] sm:text-[3.75rem]">
           Your next breath can be different.
@@ -131,7 +137,8 @@ const safeguards = [
         </ul>
 
         <div class="mt-10 flex flex-col gap-3 sm:flex-row">
-          <Button href="/#waitlist" arrow>Request early access</Button>
+          {/* needs-counsel: WEB-005 */}
+          <Button href="/#waitlist" arrow>Join the waitlist</Button>
           <Button href="/breathefree/how-it-works/" variant="secondary">
             How it works
           </Button>
@@ -229,15 +236,22 @@ const safeguards = [
   </Section>
 
   <Section width="default">
+    {/* needs-counsel: WEB-005 */}
     <Card icon="info" accent="coral" title="Where BreatheFree stands today">
-      BreatheFree is in active development. All {screens.length} screens are designed
-      and approved, and we are building them into a working application. It is not
-      yet available to download, and it has not been through the clinical, privacy
-      and security review that a release requires. <a
+      BreatheFree is in development for Android first. We intend to release it
+      through Google Play. It is not available to download yet. All {
+        screens.length
+      } screens are designed and approved, and we are building them into a working
+      application. It has not been through the clinical, privacy and security review
+      that a release requires. <a
         href="/#waitlist"
         class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
-        >Ask for early access</a
-      > and we will tell you when that changes.
+        >Join the waitlist</a
+      > and we will tell you when that changes. Want to test it on Android? <a
+        href="/support/#testing-list"
+        class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+        >See how to join the testing list</a
+      >.
     </Card>
   </Section>
 </Base>

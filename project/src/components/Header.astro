@@ -28,9 +28,9 @@ function isCurrent(href: string): boolean {
     <a
       href="/"
       class="flex min-h-11 items-center rounded-xl transition-opacity hover:opacity-80"
-      aria-label={`Tether Health Group — home`}
     >
       <TetherLogo size={34} />
+      <span class="sr-only"> — home</span>
     </a>
 
     <nav aria-label="Primary" class="ml-auto hidden lg:block">
@@ -42,7 +42,7 @@ function isCurrent(href: string): boolean {
                 href={link.href}
                 aria-current={isCurrent(link.href) ? "page" : undefined}
                 class:list={[
-                  "block rounded-xl px-3.5 py-2 text-[0.95rem] font-bold transition-colors",
+                  "flex min-h-11 items-center rounded-xl px-3.5 py-2 text-[0.95rem] font-bold transition-colors",
                   isCurrent(link.href)
                     ? "bg-mint text-teal-deep"
                     : "text-teal-mid hover:bg-mint-pale hover:text-teal-deep",
@@ -58,7 +58,7 @@ function isCurrent(href: string): boolean {
 
     <div class="ml-auto hidden lg:ml-0 lg:block">
       <Button href="/#waitlist" class="!px-5 !py-2.5 !text-[0.95rem]" arrow>
-        Request early access
+        Join the waitlist
       </Button>
     </div>
 
@@ -94,7 +94,7 @@ function isCurrent(href: string): boolean {
                   href={link.href}
                   aria-current={isCurrent(link.href) ? "page" : undefined}
                   class:list={[
-                    "block rounded-2xl px-4 py-3 font-bold transition-colors",
+                    "flex min-h-11 items-center rounded-2xl px-4 py-3 font-bold transition-colors",
                     isCurrent(link.href)
                       ? "bg-mint text-teal-deep"
                       : "text-teal-mid hover:bg-mint-pale hover:text-teal-deep",
@@ -107,7 +107,7 @@ function isCurrent(href: string): boolean {
           }
         </ul>
         <div class="mt-3 border-t border-hairline-soft pt-3">
-          <Button href="/#waitlist" full arrow>Request early access</Button>
+          <Button href="/#waitlist" full arrow>Join the waitlist</Button>
         </div>
       </nav>
     </details>

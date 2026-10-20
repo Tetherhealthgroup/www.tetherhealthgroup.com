@@ -9,7 +9,10 @@
  *                 and nicotine qualifies: the BreatheFree application repo has
  *                 28 approved screens and an in-progress `develop` branch
  *                 converting them to native responsive screens.
- *   "planned"   — described in the programme plan, no implementation exists.
+ *   "planned"   — described in the programme plan, nothing available to use.
+ *
+ * WEB-005: the nine "planned" summaries below ("Nothing is available to use.")
+ * are needs-counsel.
  *
  * Do not promote an area to "building" before there is something to point at.
  * A health company that overstates what it has built is the one thing this
@@ -90,7 +93,7 @@ export const programs: Program[] = [
       {
         name: "Cessation support",
         description:
-          "Day-to-day help through a quit attempt: a plan the person owns, craving tools that work offline, and check-ins that take under two minutes.",
+          "Day-to-day help through a quit attempt: a plan the person owns, craving tools designed to work offline, and check-ins that take under two minutes.",
       },
       {
         name: "Relapse prevention",
@@ -138,7 +141,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "wave",
     summary:
-      "Diabetes and metabolic health is planned. Nothing is built. The area is on the plan because the burden is large and much of the day-to-day work sits with the person rather than the clinic.",
+      "Diabetes and metabolic health is planned. Nothing is available to use. The area is on the plan because the burden is large and much of the day-to-day work sits with the person rather than the clinic.",
     services: [
       {
         name: "Screening",
@@ -195,7 +198,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "shield",
     summary:
-      "Cancer is planned. Nothing is built. This area needs the most care of any on the list: the boundary between useful information and implied diagnosis is narrow, and we will not cross it.",
+      "Cancer is planned. Nothing is available to use. This area needs the most care of any on the list: the boundary between useful information and implied diagnosis is narrow, and we will not cross it.",
     services: [
       {
         name: "Risk reduction",
@@ -251,7 +254,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "progress",
     summary:
-      "Cardiovascular health is planned. Nothing is built. It shares most of its machinery with the metabolic and nutrition areas, which is part of why the shared system is being built once.",
+      "Cardiovascular health is planned. Nothing is available to use. It shares most of its machinery with the metabolic and nutrition areas, which is part of why the shared system is being built once.",
     services: [
       {
         name: "Risk assessment",
@@ -307,7 +310,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "spark",
     summary:
-      "Obesity and nutrition is planned. Nothing is built. It is also the area where tone matters most: this is a subject people have usually been shamed about before they reach any software.",
+      "Obesity and nutrition is planned. Nothing is available to use. It is also the area where tone matters most: this is a subject people have usually been shamed about before they reach any software.",
     services: [
       {
         name: "Nutrition education",
@@ -363,7 +366,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "wave",
     summary:
-      "Respiratory health is planned. Nothing is built. It sits closest to the tobacco work, and much of what BreatheFree learns should carry over.",
+      "Respiratory health is planned. Nothing is available to use. It sits closest to the tobacco work, and much of what BreatheFree learns should carry over.",
     services: [
       {
         name: "Trigger and risk reduction",
@@ -415,7 +418,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "info",
     summary:
-      "Kidney and liver health is planned. Nothing is built. Both conditions are often advanced before they are noticed, which makes identification and plain explanation the useful contribution.",
+      "Kidney and liver health is planned. Nothing is available to use. Both conditions are often advanced before they are noticed, which makes identification and plain explanation the useful contribution.",
     services: [
       {
         name: "Risk identification",
@@ -471,7 +474,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "users",
     summary:
-      "Mental and behavioural health is planned. Nothing is built. Our role here is support and routing to qualified people \u2014 not therapy, and not crisis care. The safety routing on every page of this site exists because of areas like this one.",
+      "Mental and behavioural health is planned. Nothing is available to use. Our role here is support and routing to qualified people \u2014 not therapy, and not crisis care. The safety routing on every page of this site exists because of areas like this one.",
     services: [
       {
         name: "Screening",
@@ -527,7 +530,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "calendar",
     summary:
-      "Preventive health is planned. Nothing is built. It is the least glamorous area on the list and possibly the highest-yield: most of it is remembering things at the right time.",
+      "Preventive health is planned. Nothing is available to use. It is the least glamorous area on the list and possibly the highest-yield: most of it is remembering things at the right time.",
     services: [
       {
         name: "Reminders",
@@ -579,7 +582,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "accessibility",
     summary:
-      "Healthy aging is planned. Nothing is built. It is the area where accessibility stops being a compliance exercise and becomes the whole product.",
+      "Healthy aging is planned. Nothing is available to use. It is the area where accessibility stops being a compliance exercise and becomes the whole product.",
     services: [
       {
         name: "Prevention",

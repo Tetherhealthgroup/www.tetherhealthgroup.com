@@ -2,8 +2,8 @@
 /**
  * One page per health area.
  *
- * Everything here is scope, not availability. Nine of the ten areas have no
- * code behind them at all, and the page says so in the status line, the
+ * Everything here is scope, not availability. Nine of the ten areas are
+ * planned and none is available to use, and the page says so in the status line, the
  * summary and the project horizons. Only tobacco and nicotine links to a
  * product, and that product is itself still in development.
  */
@@ -41,7 +41,8 @@ const horizonTone: Record<string, string> = {
 <Base
   title={program.area}
   description={`${program.area} at Tether Health Group: ${program.examples}. ${
-    building ? "In development." : "Planned — no implementation exists yet."
+    // needs-counsel: WEB-005
+    building ? "In development." : "Planned — not available to use."
   }`}
 >
   <PageHero
@@ -160,9 +161,11 @@ const horizonTone: Record<string, string> = {
         <div class="rounded-3xl border-2 border-teal-deep bg-paper p-8">
           <p class="eyebrow mb-4">Our first program</p>
           <h2 class="text-3xl">{program.product.name}</h2>
+          {/* needs-counsel: WEB-005 */}
           <p class="mt-4 max-w-2xl leading-relaxed text-teal-mid">
-            This is the area {program.product.name} covers. It is in active
-            development and is not yet available to download.
+            This is the area {program.product.name} covers.{" "}
+            {program.product.name} is in development for Android first. It is
+            not available to download yet.
           </p>
           <div class="mt-7">
             <Button href={program.product.href} arrow>
@@ -187,9 +190,14 @@ const horizonTone: Record<string, string> = {
 
   <Section tone="mint" width="default" id="waitlist">
     <div class="mb-10 max-w-2xl">
-      <p class="eyebrow mb-5">Early access</p>
+      {/* needs-counsel: WEB-005 */}
+      <p class="eyebrow mb-5">Waitlist</p>
       <h2 class="text-3xl sm:text-4xl">
-        Want to know when we start on {program.area.toLowerCase()}?
+        {
+          program.product
+            ? `Want to hear about ${program.product.name} for Android?`
+            : `Want to know when we start on ${program.area.toLowerCase()}?`
+        }
       </h2>
       <p class="mt-5 leading-relaxed text-teal-mid">
         Tell us which area matters to you and we will write once, when there is

@@ -1,0 +1,143 @@
+---
+/**
+ * Account deletion for the Tether Health app (WEB-009, draft).
+ *
+ * The public web resource Google Play asks for: how to delete an account,
+ * including without the app, naming the app and developer, and what is
+ * deleted and kept. Content describes the app as documented in the
+ * Tether-Health repository when this draft was written. Open items are
+ * visible "To be confirmed" lines, marked needs-owner or needs-counsel in
+ * expression comments, which the build drops.
+ *
+ * Not built: the leading underscore in the file name makes Astro skip it,
+ * so /delete-account/ does not exist in the build, the sitemap or any link.
+ * It stays that way until it is rewritten for the final app and counsel
+ * signs off. Publishing then means renaming the file, removing noindex and
+ * the draft notice, linking it, and updating
+ * test/functional/account-deletion.test.js in the same change.
+ */
+
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Icon from "../components/Icon.astro";
+import SupportEmail from "../components/SupportEmail.astro";
+import { site } from "../data/site";
+
+const appName = "Tether Health";
+const emailSubject = `Delete my ${appName} account`;
+
+/* The in-app path, in order. Rendered with
+   the numbered-step pattern from breathefree/how-it-works.astro so the page
+   adds no utility class the shared stylesheet does not already contain. */
+const inAppSteps = [
+  `Open the ${appName} app and sign in.`,
+  "Go to Home.",
+  "Tap your profile avatar at the top right.",
+  'Tap "Settings & privacy".',
+  'Scroll to "Your data".',
+  'Tap "Delete account and data".',
+  "Enter your current password and type DELETE to confirm.",
+];
+---
+
+<Base
+  title={`Delete your ${appName} account`}
+  description={`How to delete your ${appName} account and data in the app, what to do if you cannot sign in, and what is deleted and kept.`}
+  noindex
+>
+  <PageHero
+    eyebrow="Account deletion"
+    title={`Delete your ${appName} account`}
+    intro={`How to delete your account and data in the ${appName} app, developed by ${site.legalName}, including if you cannot sign in.`}
+    width="narrow"
+  />
+
+  <Section width="narrow">
+    <p
+      class="mb-12 flex items-start gap-3 rounded-3xl border border-mint-strong bg-mint p-6 leading-relaxed text-teal-mid"
+    >
+      <Icon name="info" size={20} class="mt-0.5 shrink-0 text-teal-deep" />
+      <span>
+        Draft for review by {site.legalName} and its counsel. Items marked "To be
+        confirmed" are not decided yet.
+      </span>
+    </p>
+
+    <div class="prose-tether">
+      <h2>Delete your account in the app</h2>
+      <ol id="in-app-steps" class="grid gap-3">
+        {
+          inAppSteps.map((step, index) => (
+            <li class="flex items-start gap-4 rounded-3xl border border-hairline-soft bg-paper/80 p-5">
+              <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mint-pale text-[0.85rem] font-extrabold text-teal-mid">
+                {index + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <p>If you are signed out, the same option first asks you to sign in.</p>
+
+      <h2>If you cannot sign in</h2>
+      {/* needs-owner: password-reset email */}
+      <p>
+        If you have forgotten your password, reset it first and then follow the
+        steps above.
+      </p>
+      <p>
+        Or email <SupportEmail subject={emailSubject} /> from the email address on
+        your account, with the subject "{emailSubject}".
+      </p>
+      {/* needs-owner: email request handling */}
+      <p>
+        To be confirmed: who handles email requests, and how we check that a
+        request comes from the account holder.
+      </p>
+      {/* needs-owner, needs-counsel: how long a request takes */}
+      <p>To be confirmed: how long it takes to complete a request.</p>
+
+      <h2>What is deleted</h2>
+      {/* needs-counsel: server-side deletion result */}
+      <p>Deleting a signed-in account deletes:</p>
+      <ul>
+        <li>your profile and display name</li>
+        <li>your quit plan</li>
+        <li>your program health data</li>
+        <li>your profile photo</li>
+        <li>your sign-in account</li>
+      </ul>
+
+      <h2>What is kept</h2>
+      <p>
+        Copies in backups and logs are kept until those backups and logs expire.
+      </p>
+      {/* needs-counsel: retention period */}
+      <p>To be confirmed: how long backups and logs are kept.</p>
+      {/* needs-counsel: copies made outside the app */}
+      <p>
+        Deleting your account does not delete any copy you made outside the app
+        yourself.
+      </p>
+
+      <h2>Data on your device</h2>
+      <p>
+        If you use the app as a guest, without signing in, your data is stored
+        only on your device.
+      </p>
+      <p>
+        To be confirmed: which data made as a guest is cleared from the device
+        when a signed-in account is deleted.
+      </p>
+      <p>
+        To remove all guest data, uninstall the app, or on Android go to
+        Settings &gt; Apps &gt; {appName} &gt; Storage &gt; Clear storage.
+      </p>
+      <p>
+        To remove your account's data from the device, delete the account,
+        uninstall the app or clear its storage.
+      </p>
+    </div>
+  </Section>
+</Base>

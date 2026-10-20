@@ -18,5 +18,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
 
+  // The account-deletion and app privacy drafts (WEB-009, WEB-014) are not
+  // built at all (src/pages/_*.astro), so the sitemap needs no filter.
   integrations: [sitemap()],
 });

@@ -4,7 +4,7 @@
  *
  * This page is the one most likely to be misread as an offer, so it says what
  * it is three times: in the intro, in the count line, and on every planned
- * area. Nine of the ten areas have no code behind them.
+ * area. Nine of the ten areas are planned; none is available to use.
  */
 
 import Base from "../layouts/Base.astro";
@@ -30,7 +30,7 @@ const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
   <PageHero
     eyebrow="What we would build"
     title="Every service line, in one place."
-    intro="The work each health area is meant to cover, gathered from all ten. This is scope, not a menu: one area is in development and nine have no implementation at all."
+    intro="The work each health area is meant to cover, gathered from all ten. This is scope, not a menu: one area is in development and nine are planned. None is available to use."
   />
 
   <Section space="tight" width="default">
@@ -105,7 +105,8 @@ const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
 
   <Section tone="mint" width="default" id="waitlist">
     <div class="mb-10 max-w-2xl">
-      <p class="eyebrow mb-5">Early access</p>
+      {/* needs-counsel: WEB-005 */}
+      <p class="eyebrow mb-5">Waitlist</p>
       <h2 class="text-3xl sm:text-4xl">Which of these matters to you?</h2>
       <p class="mt-5 leading-relaxed text-teal-mid">
         Tell us the area. It genuinely affects what we build after the first

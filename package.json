@@ -24,6 +24,7 @@
     "test:ui": "npm run test:ui --workspace project",
     "test:e2e": "npm run test:e2e --workspace project",
     "test:performance": "npm run test:performance --workspace project",
+    "check:lockfile-libc": "node scripts/check-lockfile-libc.mjs",
     "deploy": "bash scripts/deploy.sh"
   },
   "engines": {

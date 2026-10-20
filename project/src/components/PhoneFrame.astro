@@ -40,6 +40,8 @@ const image = artworkFor(screen);
 const bezel = Math.max(6, Math.round(width * 0.035));
 const outerRadius = Math.round(width * 0.135);
 const innerRadius = outerRadius - bezel;
+/* The frame is border-box, so the screenshot is shown inside the bezel. */
+const screenWidth = width - 2 * bezel;
 ---
 
 <figure class={`flex flex-col items-center ${className}`}>
@@ -50,8 +52,8 @@ const innerRadius = outerRadius - bezel;
     <Image
       src={image}
       alt={`BreatheFree screen ${spec.number}: ${spec.title}. ${spec.description}`}
-      width={width * 2}
-      densities={[1, 2]}
+      width={screenWidth}
+      densities={[1, 2, 3]}
       loading={priority ? "eager" : "lazy"}
       fetchpriority={priority ? "high" : "auto"}
       class="block h-auto w-full bg-cream"
