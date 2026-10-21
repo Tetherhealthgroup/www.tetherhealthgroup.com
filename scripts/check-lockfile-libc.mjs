@@ -17,7 +17,7 @@
 // Not baselined, on purpose (WEB-019, checked 2026-10-14): the 13 Linux binary
 // entries with no `libc` in the lockfile, namely @esbuild/linux-{arm,arm64,
 // ia32,loong64,mips64el,ppc64,riscv64,s390x,x64} 0.28.2,
-// @rolldown/binding-linux-arm-gnueabihf 1.2.6,
+// @rolldown/binding-linux-arm-gnueabihf 1.2.14,
 // @tailwindcss/oxide-linux-arm-gnueabihf 4.3.3 and
 // lightningcss-linux-arm-gnueabihf 1.32.0 and 1.33.0. The registry publishes
 // no `libc` for any of those exact versions (`npm view <name>@<version> libc
