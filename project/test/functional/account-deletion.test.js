@@ -19,13 +19,33 @@ const SOURCE = join(projectRoot, "src/pages/_delete-account.astro");
 const PUBLISHED_SOURCE = join(projectRoot, "src/pages/delete-account.astro");
 const source = () => readFileSync(SOURCE, "utf8");
 
-/** Visible text of the source: expressions, tags and comments removed. */
-const textOf = (src) =>
-  src
-    .replace(/^---[\s\S]*?\n---\n/, " ")
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ");
+/**
+ * The wording of the source, one piece per paragraph: element text, every
+ * attribute string value except class (quoted, or a template literal in
+ * braces, such as PageHero's intro), every string literal in the
+ * frontmatter (its comments skipped), and every expression comment ({/* ... *\/}).
+ */
+function textOf(src) {
+  const frontmatter = src.match(/^---\n([\s\S]*?)\n---\n/);
+  const fm = (frontmatter?.[1] ?? "")
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/^\s*\/\/.*$/gm, " ");
+  const body = frontmatter ? src.slice(frontmatter[0].length) : src;
+  const pieces = [];
+  for (const m of fm.matchAll(
+    /"((?:[^"\\\n]|\\.)*)"|'((?:[^'\\\n]|\\.)*)'|`((?:[^`\\]|\\.)*)`/g,
+  ))
+    pieces.push(m[1] ?? m[2] ?? m[3]);
+  for (const m of body.matchAll(/\{\/\*([\s\S]*?)\*\/\}/g)) pieces.push(m[1]);
+  for (const m of body.matchAll(
+    /\s([A-Za-z][\w:-]*)=(?:"([^"]*)"|'([^']*)'|\{`([^`]*)`\})/g,
+  ))
+    if (m[1] !== "class") pieces.push(m[2] ?? m[3] ?? m[4]);
+  pieces.push(
+    body.replace(/\{\/\*[\s\S]*?\*\/\}/g, " ").replace(/<[^>]+>/g, " "),
+  );
+  return pieces.map((p) => p.replace(/\s+/g, " ").trim()).join("\n\n");
+}
 
 /**
  * Wording that says a capability is missing or unchecked, whatever its
@@ -40,7 +60,7 @@ const GAP_WORDING = [
 
 const sentencesOf = (text) =>
   text
-    .split(/(?<=[.!?])\s+/)
+    .split(/(?<=[.!?])\s+|\n{2,}/)
     .map((s) => s.trim())
     .filter(Boolean);
 

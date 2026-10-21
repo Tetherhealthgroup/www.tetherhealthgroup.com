@@ -141,6 +141,23 @@ const OVERCLAIMS = [
     "store link",
   ],
   [/Google Play/i, "store presence beyond the one allowed intent sentence"],
+  [/\bplay\s?store\b/i, "store presence"],
+  [
+    /(?<!\b(?:not|none|no|nothing)\b[^.<]{0,60})(?:\bnow\s+available\b|\bout\s+now\b|\b(?:breathefree|app|application|it)\s+(?:is\s+)?available\s+(?:today|now)\b)/i,
+    "availability claim",
+  ],
+  [
+    /\bready\s+to\s+(?:use|download)\b|\b(?:start|begin)\s+using\s+(?:it|breathefree|the\s+app)\b|(?<!\b(?:can|could)\s+(?:i|you)\s+)\buse\s+(?:it|breathefree|the\s+app)\s+(?:today|now)\b/i,
+    "availability claim",
+  ],
+  [
+    /\b(?:app|breathefree)\s+is\s+(?:now\s+)?(?:live|out)\b/i,
+    "availability claim",
+  ],
+  [
+    /\btesting\s+(?:has\s+)?(?:begun|started|is\s+underway)\b|\b(?:now\s+)?accepting\s+testers\b|\bjoin\s+(?:the\s+)?(?:test(?:ing)?|pilot)\s+(?:now|today)\b|\bopen\s+(?:beta|testing|pilot)\b/i,
+    "testing is open",
+  ],
   [
     /"@type":"(SoftwareApplication|MobileApplication)"|downloadUrl|installUrl/,
     "app structured data",
@@ -167,6 +184,18 @@ const SAMPLE_CLAIMS = [
   "Testing is now open",
   "Join our beta",
   "ios app soon",
+  "Now available for Android",
+  "BreatheFree is available today",
+  "Out now",
+  "Ready to use",
+  "Start using BreatheFree this week",
+  "Use the app today",
+  "The app is now live",
+  "Testing has begun",
+  "Now accepting testers",
+  "Join the pilot now",
+  "Open testing for everyone",
+  "Find us on the Play Store",
 ];
 
 /**

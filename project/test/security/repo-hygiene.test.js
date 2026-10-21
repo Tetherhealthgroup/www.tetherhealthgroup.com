@@ -19,12 +19,10 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { projectRoot, dist, htmlFiles } from "../helpers/dist.js";
-
-const repoRoot = join(projectRoot, "..");
+import { dist, htmlFiles } from "../helpers/dist.js";
+import { repoFiles, repoTextOf as textOf } from "../helpers/repo.js";
 
 const ROLE_PREFIX = "t" + "h";
 const ROLE_SUFFIXES = [
@@ -104,49 +102,6 @@ const allowed = (path, line) =>
       a.path === path &&
       (a.lineContains ? line.includes(a.lineContains) : true),
   );
-
-const SKIPPED_DIRS = new Set([".git", "node_modules", "dist", ".astro"]);
-const SKIPPED_FILES = new Set(["package-lock.json"]);
-
-/** Tracked plus untracked-but-not-ignored files, relative to the repo root. */
-function repoFiles() {
-  try {
-    const out = execFileSync(
-      "git",
-      ["ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-      { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
-    );
-    const files = [...new Set(out.split("\0").filter(Boolean))].sort();
-    if (files.length > 0) return files;
-  } catch {
-    // git unavailable: fall back to walking the tree.
-  }
-  const found = [];
-  const visit = (dir, prefix) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (entry.isDirectory()) {
-        if (!SKIPPED_DIRS.has(entry.name))
-          visit(join(dir, entry.name), `${prefix}${entry.name}/`);
-      } else found.push(`${prefix}${entry.name}`);
-    }
-  };
-  visit(repoRoot, "");
-  return found.sort();
-}
-
-/** Text of a tracked file, or null for binaries, lockfiles and env files. */
-function textOf(path) {
-  const name = path.split("/").pop();
-  if (SKIPPED_FILES.has(name) || name.startsWith(".env")) return null;
-  let buf;
-  try {
-    buf = readFileSync(join(repoRoot, path));
-  } catch {
-    return null; // listed by git but deleted in the working tree
-  }
-  if (buf.includes(0)) return null;
-  return buf.toString("utf8");
-}
 
 /** Every forbidden-term hit in one text, as "path:line: reason". */
 function treeHits(path, text) {

@@ -1,12 +1,14 @@
 // Security — published contact addresses. The site may publish the seven
 // role mailboxes and nothing else: in site data, in any mailto: URL in the
-// built markup, and in the address the waitlist form sends to.
+// built markup, in the address the waitlist form sends to, and in any address
+// at the company domain written in a tracked text file.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { dist, htmlFiles, decodeEntities } from "../helpers/dist.js";
+import { repoFiles, repoTextOf } from "../helpers/repo.js";
 
 /** The seven role mailboxes, the only addresses the site may publish. */
 const ROLE_MAILBOXES = [
@@ -21,6 +23,12 @@ const ROLE_MAILBOXES = [
 
 const SUPPORT = "support@tetherhealthgroup.com";
 
+/**
+ * Removes ASCII tab and newline, as the URL parser does before reading a
+ * URL, so "mai&#10;lto:" is read as the mailto: a browser would follow.
+ */
+const urlInput = (text) => text.replace(/[\t\n\r]/g, "");
+
 /** Markup with script and style bodies removed; their tags stay. */
 const markupOf = (html) =>
   html
@@ -32,7 +40,7 @@ function attributesOf(html) {
   const found = [];
   const tagRe = /<[A-Za-z][^\s/>]*((?:"[^"]*"|'[^']*'|[^'">])*)>/g;
   const attrRe =
-    /([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
+    /([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'<>`]+)))?/g;
   for (const [, rest] of markupOf(html).matchAll(tagRe))
     for (const [, name, dq, sq, bare] of rest.matchAll(attrRe))
       found.push({
@@ -43,7 +51,8 @@ function attributesOf(html) {
 }
 
 /** Each mailto: URL in an attribute value, as the text after "mailto:". */
-function mailtoUrlsIn(value) {
+function mailtoUrlsIn(attributeValue) {
+  const value = urlInput(attributeValue);
   const lead = /^\s*mailto:/i.exec(value);
   if (lead) return [value.slice(lead[0].length)];
   return [...value.matchAll(/mailto:([^\s"'<>()`]*)/gi)].map((m) => m[1]);
@@ -125,8 +134,9 @@ test("every mailto: URL on every built page names only role mailboxes", () => {
       }
     }
     // Every mailto: in the markup must be one the loop above examined.
-    const inMarkup = (decodeEntities(markupOf(html)).match(/mailto:/gi) ?? [])
-      .length;
+    const inMarkup = (
+      urlInput(decodeEntities(markupOf(html))).match(/mailto:/gi) ?? []
+    ).length;
     if (inMarkup !== inAttributes)
       offenders.push(
         `${page}: ${inMarkup} mailto: in the markup, ${inAttributes} in attributes`,
@@ -152,5 +162,66 @@ test("every waitlist form in the build sends to the support mailbox", () => {
     }
   }
   assert.ok(seen > 0, "no waitlist form found in the build");
+  assert.deepEqual(offenders, []);
+});
+
+// ---------------------------------------------------------------------------
+// Tracked text. Scope: addresses at the company domain, or a subdomain of it,
+// written out in any tracked or untracked-but-not-ignored text file, read
+// as written, with character references decoded and with %40 read as "@".
+// ---------------------------------------------------------------------------
+
+const COMPANY_DOMAIN = "tetherhealthgroup" + ".com";
+
+/** Every address at the company domain in one text, lower-cased. */
+function companyAddressesIn(text) {
+  const domain = COMPANY_DOMAIN.replace(".", "\\.");
+  const re = new RegExp(
+    `([A-Za-z0-9._%+-]+)@((?:[A-Za-z0-9-]+\\.)*${domain})(?![A-Za-z0-9-])`,
+    "gi",
+  );
+  const found = new Set();
+  for (const form of [text, decodeEntities(text), text.replace(/%40/gi, "@")])
+    for (const [, local, host] of form.matchAll(re))
+      found.add(`${local}@${host}`.toLowerCase());
+  return [...found];
+}
+
+/** Addresses in a text that are not one of the seven role mailboxes. */
+const unpublishable = (text) =>
+  companyAddressesIn(text).filter((a) => !ROLE_MAILBOXES.includes(a));
+
+test("the tracked-text address check catches a non-role address", () => {
+  // Made-up local parts, assembled so this file never contains them whole.
+  const at = "@";
+  for (const sample of [
+    `write to jordan.sample${at}${COMPANY_DOMAIN}`,
+    `Jordan.Sample${at}${COMPANY_DOMAIN.toUpperCase()}`,
+    `jordan${at}mail.${COMPANY_DOMAIN}`,
+    `jordan&#64;${COMPANY_DOMAIN}`,
+    `mailto:jordan%40${COMPANY_DOMAIN}`,
+  ])
+    assert.equal(unpublishable(sample).length, 1, `not caught: ${sample}`);
+  for (const sample of [
+    `support${at}${COMPANY_DOMAIN}`,
+    `Privacy${at}${COMPANY_DOMAIN}`,
+    `jordan${at}example.com`,
+  ])
+    assert.deepEqual(unpublishable(sample), [], sample);
+});
+
+test("no tracked text file holds a company address other than a role mailbox", () => {
+  const files = repoFiles();
+  assert.ok(files.length > 50, `only ${files.length} files listed`);
+  const offenders = [];
+  let seen = 0;
+  for (const path of files) {
+    const text = repoTextOf(path);
+    if (text === null) continue;
+    seen += companyAddressesIn(text).length;
+    for (const address of unpublishable(text))
+      offenders.push(`${path}: ${address}`);
+  }
+  assert.ok(seen > 0, "no company address found in any tracked file");
   assert.deepEqual(offenders, []);
 });

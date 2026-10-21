@@ -101,7 +101,11 @@ const NAMED_ENTITIES = {
   num: "#",
 };
 
-/** Text with HTML character references decoded once, as a browser does. */
+/**
+ * Text with character references decoded once: every numeric reference, and
+ * the named references in NAMED_ENTITIES. A named reference outside that
+ * table is left as written, so this is not a full HTML decoder.
+ */
 export function decodeEntities(text) {
   return text.replace(
     /&(?:#(\d+)|#[xX]([0-9A-Fa-f]+)|([A-Za-z][A-Za-z0-9]*));?/g,
