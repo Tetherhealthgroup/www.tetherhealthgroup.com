@@ -4,13 +4,16 @@
 // design includes (screen-reader labels, larger text, a Spanish option,
 // audio lessons) are described as designed or planned, not as things the app
 // does; the BreatheFree screens on this site are design artwork; there is no
-// review process the site can point to as a gate; and no claim is made about
-// the strength of the evidence behind the content.
+// review process the site can point to as a gate; no claim is made about
+// the strength of the evidence behind the content; and the site says nothing
+// about using the app offline or without a connection.
 //
 // Scope: the whole built HTML of every page (text, attributes and meta tags),
-// on one line, against the phrase families below. A claim counts as hedged
-// when "designed", "planned", "intend", "must", "will" or "not" comes earlier
-// in the same sentence, within 80 characters.
+// on one line, against the phrase families below. Offline wording fails
+// however it is phrased, hedged or not. For the other families a claim counts
+// as hedged when "designed", "planned", "intend" or "must" comes earlier in
+// the same sentence, within 80 characters, or when "not" (or "not yet")
+// directly precedes it.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -22,7 +25,9 @@ const pageText = (rel) =>
     .replace(/\/_astro\/[^"'\s)]+/g, "")
     .replace(/\s+/g, " ");
 
-const HEDGE = String.raw`(?<!\b(?:designed|planned|intend(?:ed|s)?|must|will|not)\b[^.<]{0,80})`;
+const HEDGE =
+  String.raw`(?<!\b(?:designed|planned|intend(?:ed|s)?|must)\b[^.<]{0,80})` +
+  String.raw`(?<!\bnot\s+(?:yet\s+)?)`;
 const unhedged = (source) => new RegExp(`${HEDGE}(?:${source})`, "i");
 
 /** [pattern, reason]. */
@@ -42,18 +47,18 @@ const CLAIMS = [
     ),
     "screens presented as screenshots",
   ],
-  // Offline use.
+  // Offline use, with no hedge.
+  [/\boff[- ]?line\b/i, "offline wording"],
   [
-    unhedged(
-      String.raw`\b(?:works?|available|usable|runs?)\s+(?:anywhere|offline|without\s+(?:a\s+)?(?:signal|connection|network|internet))\b`,
+    new RegExp(
+      String.raw`\b(?:no|without|even\s+with(?:out)?)\s+(?:a\s+|an\s+|any\s+)?(?:mobile\s+|cell(?:ular)?\s+|phone\s+)?` +
+        String.raw`(?:signal|reception|coverage|internet|wi-?fi|connectivity|connection|(?:network|data)\s+connection)\b` +
+        String.raw`|\b(?:wait|waiting)\s+for\s+(?:a\s+)?(?:signal|connection)\b` +
+        String.raw`|\b(?:airplane|aeroplane|flight)\s+mode\b` +
+        String.raw`|\b(?:works?|working|available|usable|runs?)\s+anywhere\b|\balways\s+available\b`,
+      "i",
     ),
-    "unhedged offline claim",
-  ],
-  [
-    unhedged(
-      String.raw`\boffline[- ](?:first|ready|capable)\b|\bno\s+(?:signal|connection|internet)\s+(?:needed|required)\b|\balways\s+available\b`,
-    ),
-    "unhedged offline claim",
+    "use without a connection",
   ],
   // Accessibility and language, in the present tense.
   [
@@ -109,10 +114,18 @@ const SAMPLES = [
   "Real screenshots from the app.",
   "Quick tools that work anywhere",
   "Rescue works offline.",
+  "Tether will work offline.",
+  "Core support tools are designed to work offline.",
+  "Offline use has not yet been tested.",
   "Available without a signal.",
   "Offline-first craving tools.",
   "No signal needed.",
+  "Help even with no internet.",
+  "The hardest moments do not wait for a signal.",
+  "Works in airplane mode.",
   "Always available, day or night.",
+  "The app will support VoiceOver.",
+  "It is not finished, but it supports VoiceOver.",
   "Plain language and screen-reader support.",
   "BreatheFree supports VoiceOver and TalkBack.",
   "Works with screen readers.",
@@ -133,12 +146,13 @@ const SAMPLES = [
 
 /** Hedged or unrelated wording the families must leave alone. */
 const ALLOWED = [
-  "Core support tools are designed to work offline and one-handed.",
+  "Core support tools are designed to work one-handed.",
   "Designed for plain language, screen readers, larger text, and a choice of English or Spanish.",
   "Short lessons on cravings, designed to be offered in English and Spanish, with audio and transcripts.",
   "Quitlines in English and Spanish, your named supporter, a quit coach.",
   "Before release it must support VoiceOver, TalkBack and reduced motion.",
   "They are design artwork, not screenshots of a released app.",
+  "BreatheFree does not yet support VoiceOver.",
   "Nothing is sent anywhere until you preview it and confirm.",
   "Where the evidence is settled.",
 ];
