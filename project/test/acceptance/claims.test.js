@@ -9,11 +9,11 @@
 // about using the app offline or without a connection.
 //
 // Scope: the whole built HTML of every page (text, attributes and meta tags),
-// on one line, against the phrase families below. Offline wording fails
-// however it is phrased, hedged or not. For the other families a claim counts
-// as hedged when "designed", "planned", "intend" or "must" comes earlier in
-// the same sentence, within 80 characters, or when "not" (or "not yet")
-// directly precedes it.
+// on one line, against the phrase families below. The word offline and the
+// no-connection phrasings below fail whether hedged or not. For the other
+// families a claim counts as hedged when "designed", "planned", "intend" or
+// "must" comes earlier in the same sentence, within 80 characters, or when
+// "not" (or "not yet") directly precedes it.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -52,7 +52,7 @@ const CLAIMS = [
   [
     new RegExp(
       String.raw`\b(?:no|without|even\s+with(?:out)?)\s+(?:a\s+|an\s+|any\s+)?(?:mobile\s+|cell(?:ular)?\s+|phone\s+)?` +
-        String.raw`(?:signal|reception|coverage|internet|wi-?fi|connectivity|connection|(?:network|data)\s+connection)\b` +
+        String.raw`(?:signal|reception|coverage|internet|wi-?fi|connectivity|connection|network|data\s+connection)\b` +
         String.raw`|\b(?:wait|waiting)\s+for\s+(?:a\s+)?(?:signal|connection)\b` +
         String.raw`|\b(?:airplane|aeroplane|flight)\s+mode\b` +
         String.raw`|\b(?:works?|working|available|usable|runs?)\s+anywhere\b|\balways\s+available\b`,
@@ -118,6 +118,7 @@ const SAMPLES = [
   "Core support tools are designed to work offline.",
   "Offline use has not yet been tested.",
   "Available without a signal.",
+  "Works without a network.",
   "Offline-first craving tools.",
   "No signal needed.",
   "Help even with no internet.",
