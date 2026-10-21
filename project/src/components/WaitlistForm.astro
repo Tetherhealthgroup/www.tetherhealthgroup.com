@@ -40,12 +40,21 @@ const { class: className = "" }: Props = Astro.props;
 
 const endpoint = import.meta.env.PUBLIC_WAITLIST_ENDPOINT ?? "";
 
-const roles = [
-  "Someone who wants to quit or make a change",
-  "Clinician or care-team member",
-  "Employer, health plan or public-health organisation",
-  "Researcher or academic",
-  "Something else",
+/*
+ * `value` is what the message says ("I am: ..."); `label` is what the closed
+ * select shows. A phone-width select is one line and clips longer text
+ * without a mark, so the first, default option shows a shorter label that
+ * fits on a phone. Its value is unchanged.
+ */
+const roles: { value: string; label?: string }[] = [
+  {
+    value: "Someone who wants to quit or make a change",
+    label: "Someone wanting to change",
+  },
+  { value: "Clinician or care-team member" },
+  { value: "Employer, health plan or public-health organisation" },
+  { value: "Researcher or academic" },
+  { value: "Something else" },
 ];
 
 /*
@@ -60,6 +69,13 @@ const fieldClass =
   "w-full rounded-[14px] border-2 border-teal-muted bg-paper px-4 py-3.5 text-[1.0625rem] " +
   "text-teal-deep placeholder:text-teal-mid transition-colors " +
   "focus:border-teal-deep";
+
+/*
+ * Selects end with an ellipsis rather than a hard cut when an option is wider
+ * than the field (a long choice, a narrow phone, larger text). No right
+ * padding: on iOS it moves the native arrow, not the text.
+ */
+const selectClass = `${fieldClass} truncate`;
 
 const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
 ---
@@ -111,8 +127,12 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
 
     <div class="sm:col-span-1">
       <label class={labelClass} for="wl-role">I am</label>
-      <select class={fieldClass} id="wl-role" name="role">
-        {roles.map((role) => <option value={role}>{role}</option>)}
+      <select class={selectClass} id="wl-role" name="role">
+        {
+          roles.map((role) => (
+            <option value={role.value}>{role.label ?? role.value}</option>
+          ))
+        }
       </select>
     </div>
 
@@ -120,7 +140,7 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
       <label class={labelClass} for="wl-interest">
         Health area of interest
       </label>
-      <select class={fieldClass} id="wl-interest" name="interest">
+      <select class={selectClass} id="wl-interest" name="interest">
         <option value="Any / not sure yet">Any — not sure yet</option>
         {
           programs.map((program) => (

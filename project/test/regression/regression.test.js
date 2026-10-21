@@ -542,3 +542,62 @@ test("a field marked invalid keeps a border of at least 3:1 on paper", () => {
     `invalid-state border ${effective} is ${ratio.toFixed(2)}:1 on paper`,
   );
 });
+
+test("the waitlist selects fit a phone: short default label, ellipsis on overflow", async () => {
+  // iOS Safari draws a select on one line, and it cut the default "I am" option
+  // ("Someone who wants to quit or make a change") off under the arrow with
+  // no mark. The default option shows a shorter label that fits a 390pt
+  // phone; the value the message carries is unchanged; and both selects end
+  // an over-long option with an ellipsis instead of a hard cut.
+  const css = builtCss();
+  assert.match(
+    css,
+    /\.truncate\s*\{[^}]*text-overflow:\s*ellipsis/,
+    "the truncate utility is missing from the built CSS",
+  );
+
+  let pagesWithForm = 0;
+  for (const page of await htmlFiles()) {
+    const html = readFileSync(join(dist, page), "utf8");
+    if (!html.includes('id="waitlist-form"')) continue;
+    pagesWithForm++;
+
+    for (const id of ["wl-role", "wl-interest"]) {
+      const select = html.match(new RegExp(`<select[^>]*id="${id}"[^>]*>`));
+      assert.ok(select, `${page}: no #${id}`);
+      assert.match(select[0], /\btruncate\b/, `${page}: #${id} lacks truncate`);
+    }
+
+    const first = html.match(
+      /<select[^>]*id="wl-role"[^>]*>\s*<option value="([^"]*)"[^>]*>([^<]*)<\/option>/,
+    );
+    assert.ok(first, `${page}: no default role option`);
+    assert.equal(
+      decodeEntities(first[1]),
+      "Someone who wants to quit or make a change",
+      `${page}: the default role value changed`,
+    );
+    const label = decodeEntities(first[2]).trim();
+    assert.ok(
+      label.length <= 25,
+      `${page}: default role label "${label}" is ${label.length} characters`,
+    );
+  }
+  assert.ok(pagesWithForm > 0, "no page carries the waitlist form");
+});
+
+test("the in-development pill in the status key stays on one line", () => {
+  // At phone width the key's flex row squeezed the pill until
+  // "IN DEVELOPMENT" wrapped onto two lines.
+  const html = pageHtml("programs/index.html");
+  const pill = html.match(
+    /<span class="([^"]*\bbg-lime\b[^"]*)"[^>]*>(?:(?!<\/span>\s*<p)[\s\S])*?In development/,
+  );
+  assert.ok(pill, "no in-development pill on /programs/");
+  assert.match(pill[1], /\bwhitespace-nowrap\b/, "the pill can still wrap");
+  assert.match(
+    builtCss(),
+    /\.whitespace-nowrap\s*\{[^}]*white-space:\s*nowrap/,
+    "the whitespace-nowrap utility is missing from the built CSS",
+  );
+});
