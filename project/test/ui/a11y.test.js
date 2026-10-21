@@ -1,6 +1,7 @@
 // UI — accessibility structure that can be read from the built markup.
 // Scope: document language, the viewport declaration, one h1 that opens the
-// outline, the landmark set and skip link, text alternatives on <img> and
+// outline, no heading more than one level deeper than the heading before it,
+// the landmark set and skip link, text alternatives on <img> and
 // inline <svg>, accessible names on links, buttons and form fields, and the
 // focus ring in the emitted stylesheet. Layout, contrast in context and
 // keyboard behaviour need a rendered page and are not asserted here.
@@ -95,6 +96,42 @@ test("every page has exactly one h1, and it is the first heading", () => {
     const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "";
     if (h1s === 1 && !textOf(h1)) problems.push(`${page}: empty h1`);
   }
+  assert.deepEqual(problems, []);
+});
+
+/** Headings in one page that go more than one level deeper than the last. */
+function headingSkips(html) {
+  const problems = [];
+  let previous = 0;
+  for (const [, digit] of markupOf(html).matchAll(/<h([1-6])[\s>]/g)) {
+    const level = Number(digit);
+    if (previous && level > previous + 1)
+      problems.push(`h${previous} -> h${level}`);
+    previous = level;
+  }
+  return problems;
+}
+
+test("the heading check rejects a skipped level and allows a return upward", () => {
+  assert.deepEqual(headingSkips("<h1>a</h1><h2>b</h2><h4>c</h4>"), [
+    "h2 -> h4",
+  ]);
+  assert.deepEqual(headingSkips("<h1>a</h1><h3>b</h3>"), ["h1 -> h3"]);
+  assert.deepEqual(
+    headingSkips("<h1>a</h1><h2>b</h2><h3>c</h3><h2>d</h2><h3>e</h3>"),
+    [],
+  );
+  assert.deepEqual(
+    headingSkips("<h1>a</h1><h2>b</h2><h3>c</h3><h1>d</h1>"),
+    [],
+  );
+});
+
+test("no page skips a heading level on the way down", () => {
+  const problems = [];
+  for (const page of htmlFiles())
+    for (const problem of headingSkips(readPage(page)))
+      problems.push(`${page}: ${problem}`);
   assert.deepEqual(problems, []);
 });
 

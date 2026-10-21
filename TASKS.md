@@ -557,3 +557,19 @@ deployed to `public_html`.
   string literals and expression comments.
 - Not checked here: layout at 320, 390 and 768 px, tap-target size, and
   keyboard focus in a real browser. Those need a rendered page.
+
+---
+
+## WEB-905 — no offline wording
+
+- The site no longer says the app works offline, in any form, matching the
+  app's own copy. Removed from the home, about, BreatheFree and
+  how-it-works pages and the tobacco cessation service description; the
+  home principle and the how-it-works note now use the clock and wave icons
+  instead of the no-signal icon. "One-handed" and "no typing" stay as they
+  were.
+- `test/acceptance/claims.test.js`: offline and no-connection wording fails
+  whether or not it is hedged. For the other claim families, "will" is no
+  longer a hedge, and "not" counts only directly before the claim.
+- `test/ui/a11y.test.js`: no page goes more than one heading level deeper
+  than the heading before it.
