@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.TetherHealthLLC.tetherhealth",
+      "sha256_cert_fingerprints": [
+        "97:CC:2D:32:B8:21:11:DD:0C:BA:13:A2:50:D5:AE:47:F4:F0:EB:83:33:8F:79:21:6D:7F:F5:53:8B:2D:1D:EB"
+      ]
+    }
+  }
+]

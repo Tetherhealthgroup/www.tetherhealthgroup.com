@@ -573,3 +573,25 @@ deployed to `public_html`.
   longer a hedge, and "not" counts only directly before the claim.
 - `test/ui/a11y.test.js`: no page goes more than one heading level deeper
   than the heading before it.
+
+---
+
+## WEB-907 — Android App Links statement
+
+- `public/.well-known/assetlinks.json` names the Android app
+  (`com.TetherHealthLLC.tetherhealth`) and the SHA-256 fingerprint of its Play
+  app-signing certificate, with the `handle_all_urls` relation. `.htaccess`
+  serves it as `application/json`, beside the security.txt rule.
+- It takes effect only once the app declares verified links for this domain.
+  Today the app declares only its custom-scheme sign-in callback, so nothing
+  changes for users yet.
+- Only the app-signing key is listed; Play-distributed builds are signed with
+  it. The upload key is not added.
+- Like security.txt, a later removal from `public/.well-known/` is not removed
+  from the document root by a deploy and has to be deleted on the host by hand.
+- Tests (`test/security/assetlinks.test.js`): valid JSON with exactly one
+  statement, the exact relation, package and fingerprint (32 colon-separated
+  uppercase hex bytes), the content-type rule in `.htaccess`, and the file
+  emitted in the build byte for byte.
+- After deploy, the owner checks the URL answers 200 with
+  `Content-Type: application/json`.
