@@ -229,6 +229,13 @@ ErrorDocument 404 /404.html
   <Files "security.txt">
     ForceType "text/plain; charset=utf-8"
   </Files>
+
+  # Android App Links read /.well-known/assetlinks.json and expect
+  # application/json. Same reasoning as security.txt: the path segment is not
+  # caught by the deny-list or the .git rule.
+  <Files "assetlinks.json">
+    ForceType application/json
+  </Files>
 </IfModule>
 
 # --- Do not serve what is not the site --------------------------------------
