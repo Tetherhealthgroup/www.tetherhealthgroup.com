@@ -1,0 +1,64 @@
+---
+/**
+ * The Tether Health app mark: a lime leaf outline on a dark-green circle.
+ *
+ * Prepared as an alternative to TetherLogo.astro (the site-original
+ * interlocking rings) so the owner can choose between them. It is not used
+ * anywhere yet: switching means importing it in Header.astro and Footer.astro
+ * in place of TetherLogo, and updating test/functional/logo-variant.test.js.
+ *
+ * The circle and colours are the app design's: teal #123C37 and lime #D5EF75
+ * from the app's design tokens, a 32-unit circle as in the app header. The
+ * leaf is traced from the owner's welcome-screen artwork at 32 units, because
+ * the design has no vector file for it; replace the path with the designer's
+ * vector when one exists.
+ */
+
+interface Props {
+  size?: number;
+  withWordmark?: boolean;
+  onDark?: boolean;
+  class?: string;
+}
+
+const {
+  size = 36,
+  withWordmark = true,
+  onDark = false,
+  class: className = "",
+} = Astro.props;
+
+const circle = "#123C37";
+const leaf = "#D5EF75";
+/* On a dark-teal surface the circle would vanish, so it gets a mint edge. */
+const edge = onDark ? "#DFF2E7" : "none";
+---
+
+<span class={`inline-flex items-center gap-2.5 ${className}`}>
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 32 32"
+    fill="none"
+    aria-hidden="true"
+    class="shrink-0"
+  >
+    <circle cx="16" cy="16" r="15.5" fill={circle} stroke={edge}></circle>
+    <path
+      transform="translate(16 16)"
+      d="M3.6-8L3.8 1A7.84 7.84 0 0 1-4.8 8.8L-5 2.8A11.08 11.08 0 0 1 3.6-8Z"
+      stroke={leaf}
+      stroke-width="2"
+      stroke-linejoin="miter"
+      stroke-miterlimit="10"></path>
+  </svg>
+  {
+    withWordmark && (
+      <span
+        class={`text-[1.15rem] font-extrabold leading-none tracking-[-0.035em] ${onDark ? "text-paper" : "text-teal-deep"}`}
+      >
+        Tether Health
+      </span>
+    )
+  }
+</span>

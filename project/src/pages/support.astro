@@ -6,6 +6,7 @@ import Card from "../components/Card.astro";
 import Icon from "../components/Icon.astro";
 import WaitlistForm from "../components/WaitlistForm.astro";
 import { quitlines } from "../data/site";
+import { programCount } from "../data/programs";
 import SupportEmail from "../components/SupportEmail.astro";
 
 const otherMailboxes = [
@@ -44,12 +45,12 @@ const otherMailboxes = [
 
 <Base
   title="Support"
-  description="How to reach Tether Health Group, and where to find immediate help with quitting smoking while BreatheFree is still in development."
+  description="Help with the Tether Health app: contact, account deletion, privacy and data questions, and where to find immediate help with quitting smoking."
 >
   <PageHero
     eyebrow="Support"
     title="How to reach us — and where to get help now."
-    intro="BreatheFree is not yet available, so we cannot be your support in a craving today. Here is who can be, and here is how to reach us about everything else."
+    intro="Help with the Tether Health app and its programs, including BreatheFree. In a craving or a crisis, the people below can help right now; here is how to reach us about everything else."
   />
 
   <!-- Immediate help, first. -->
@@ -187,6 +188,79 @@ const otherMailboxes = [
     </p>
   </Section>
 
+  <!-- Questions about the Tether Health app -->
+  <Section id="app-help" space="tight" width="default">
+    <h2 class="text-3xl sm:text-4xl">Questions about the Tether Health app</h2>
+    <div class="mt-8 max-w-2xl space-y-8">
+      <div>
+        <h3 class="text-xl">What is Tether Health?</h3>
+        <p class="mt-2 leading-relaxed text-teal-mid">
+          Tether Health is one app with {programCount} programs, one for each area
+          of health. BreatheFree, for tobacco and nicotine, is one of them. See
+          <a
+            href="/programs/"
+            class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+            >all {programCount} programs</a
+          > and where each one stands.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-xl">How do I get help with the app?</h3>
+        <p class="mt-2 leading-relaxed text-teal-mid">
+          Email <SupportEmail
+            class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+          />. It helps to include the app version, shown at the bottom of
+          Account. Please do not include medical details.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-xl">I forgot my password.</h3>
+        <p class="mt-2 leading-relaxed text-teal-mid">
+          On the sign-in screen, tap "Forgot password?" and enter your email
+          address. If an account exists for that address, a reset link is sent
+          to it. If you signed in with Apple or Google, tap "Continue with
+          Apple" or "Continue with Google" instead.
+        </p>
+      </div>
+      <div id="export">
+        <h3 class="text-xl">How do I get a copy of my data?</h3>
+        <p class="mt-2 leading-relaxed text-teal-mid">
+          In the app, open Account, then "Your data", and choose an export.
+        </p>
+      </div>
+      <div id="delete">
+        <h3 class="text-xl">How do I delete my account and data?</h3>
+        <p class="mt-2 leading-relaxed text-teal-mid">
+          In the app, open Account, then "Your data", then "Delete account and
+          all data". The full steps, including what to do if you cannot sign in,
+          are on the <a
+            href="/delete-account/"
+            class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+            >account deletion page</a
+          >.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-xl">How is my information handled?</h3>
+        <p class="mt-2 leading-relaxed text-teal-mid">
+          No ads, and we never sell your health data. The details are in the <a
+            href="/app-privacy/"
+            class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+            >Tether Health app privacy policy</a
+          >.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-xl">Is the app medical advice?</h3>
+        <p class="mt-2 leading-relaxed text-teal-mid">
+          No. The app does not diagnose, treat or prescribe, and it does not
+          replace your clinician. If you need help right now, use the numbers at
+          the top of this page.
+        </p>
+      </div>
+    </div>
+  </Section>
+
   <!-- Questions about BreatheFree -->
   <Section space="tight" width="default">
     {/* needs-counsel: WEB-005 */}
@@ -213,8 +287,9 @@ const otherMailboxes = [
           What about other platforms and the other health areas?
         </h3>
         <p class="mt-2 leading-relaxed text-teal-mid">
-          We are starting with Android. Our other health areas are planned, and
-          none of them is available to use.
+          We are starting with Android. The other programs in the Tether Health
+          app are prototypes, a proposal or planned, and none of them is
+          available to use.
         </p>
       </div>
     </div>

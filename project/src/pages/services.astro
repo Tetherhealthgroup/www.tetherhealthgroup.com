@@ -3,8 +3,8 @@
  * Every service line across every health area, in one place.
  *
  * This page is the one most likely to be misread as an offer, so it says what
- * it is three times: in the intro, in the count line, and on every planned
- * area. Nine of the ten areas are planned; none is available to use.
+ * it is three times: in the intro, in the count line, and on every program's
+ * status. One of the eleven programs is in build; none is available to use.
  */
 
 import Base from "../layouts/Base.astro";
@@ -15,9 +15,12 @@ import WaitlistForm from "../components/WaitlistForm.astro";
 import {
   programs,
   statusLabels,
-  buildingPrograms,
+  programsWithStatus,
   programCount,
 } from "../data/programs";
+
+const inBuild = programsWithStatus("in-build").length;
+const notInBuild = programCount - inBuild;
 
 const serviceCount = programs.reduce((n, p) => n + p.services.length, 0);
 const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
@@ -25,12 +28,12 @@ const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
 
 <Base
   title="Services"
-  description={`The ${serviceCount} service lines Tether Health Group intends to build across ${programCount} health areas. Scope, not availability — one area is in development and nine are planned.`}
+  description={`The ${serviceCount} service lines we intend to build across the ${programCount} programs of the Tether Health app. Scope, not availability: none is available to use.`}
 >
   <PageHero
     eyebrow="What we would build"
     title="Every service line, in one place."
-    intro="The work each health area is meant to cover, gathered from all ten. This is scope, not a menu: one area is in development and nine are planned. None is available to use."
+    intro={`The work each program is meant to cover, gathered from all ${programCount}. This is scope, not a menu: ${inBuild} program is in build and ${notInBuild} are prototypes, proposed or planned. None is available to use.`}
   />
 
   <Section space="tight" width="default">
@@ -46,11 +49,10 @@ const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
         <strong class="font-bold text-teal-deep"
           >{serviceCount} service lines and {projectCount} projects across {
             programCount
-          } areas.</strong
-        > None of them is available today. {buildingPrograms.length} of {
-          programCount
-        } areas has code being written; the rest are a plan. Where a line below sounds
-        like something you could use now, it is not.
+          } programs.</strong
+        > None of them is available today. {inBuild} of {programCount} programs is
+        in build; the rest are prototypes, a proposal or a plan. Where a line below
+        sounds like something you could use now, it is not.
       </p>
     </div>
   </Section>
@@ -60,27 +62,27 @@ const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
       <Section space="tight" width="wide">
         <div class="mb-8 flex flex-wrap items-center gap-4">
           <span
-            class:list={[
-              "inline-flex h-12 w-12 items-center justify-center rounded-2xl",
-              program.status === "building"
-                ? "bg-teal-deep text-lime"
-                : "bg-mint text-teal-mid",
-            ]}
+            class="inline-flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-extrabold text-paper"
+            style={`background-color: ${program.color}`}
+            aria-hidden="true"
           >
-            <Icon name={program.icon} size={22} />
+            {program.letter}
           </span>
           <h2 class="text-2xl sm:text-3xl">
             <a
               href={`/programs/${program.id}/`}
               class="underline decoration-mint-strong decoration-2 underline-offset-4 transition-colors hover:decoration-coral"
             >
-              {program.area}
+              {program.name}
             </a>
+            <span class="block text-base font-bold text-teal-mid">
+              {program.area}
+            </span>
           </h2>
           <span
             class:list={[
               "rounded-full px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em]",
-              program.status === "building"
+              program.status === "in-build"
                 ? "bg-lime text-teal-deep"
                 : "bg-mint-pale text-teal-mid ring-1 ring-hairline-soft",
             ]}
@@ -110,7 +112,7 @@ const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
       <h2 class="text-3xl sm:text-4xl">Which of these matters to you?</h2>
       <p class="mt-5 leading-relaxed text-teal-mid">
         Tell us the area. It genuinely affects what we build after the first
-        one.
+        program.
       </p>
     </div>
     <WaitlistForm />

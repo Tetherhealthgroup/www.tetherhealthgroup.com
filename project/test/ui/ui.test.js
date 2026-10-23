@@ -75,12 +75,11 @@ test("no page skips a heading level", async () => {
   }
 });
 
-test("each unbuilt store draft keeps one h1 and the shared layout", () => {
-  // WEB-009 and WEB-014: the drafts are not built (src/pages/_*.astro), but
-  // each is reached directly from a store listing once published, so its
-  // outline must stand on its own: Base supplies the one <main id="main">
-  // and PageHero the one h1.
-  for (const name of ["_delete-account.astro", "_app-privacy.astro"]) {
+test("each store page keeps one h1 and the shared layout", () => {
+  // The account-deletion and app privacy pages are reached directly from a
+  // store listing or the app, so their outline must stand on its own: Base
+  // supplies the one <main id="main"> and PageHero the one h1.
+  for (const name of ["delete-account.astro", "app-privacy.astro"]) {
     const src = readFileSync(join(projectRoot, "src/pages", name), "utf8");
     assert.equal((src.match(/<Base\b/g) ?? []).length, 1, `${name}: Base`);
     assert.equal(

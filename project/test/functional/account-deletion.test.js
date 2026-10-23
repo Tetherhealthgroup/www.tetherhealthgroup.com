@@ -1,23 +1,44 @@
-// Functional — the draft account-deletion page (WEB-009).
+// Functional — the Tether Health account-deletion page (draft for counsel
+// review).
 //
-// Play needs a public web resource that explains how to delete an account
-// without the app. The draft describes an earlier version of the app, so it
-// must not be built or deployed until it is rewritten for the final app and
-// counsel signs off. It lives at src/pages/_delete-account.astro: Astro skips
-// files whose name starts with an underscore, so the route does not exist.
-// These tests prove the route is absent from the build and keep the source
-// checks that still mean something while it waits.
+// Google Play needs a public web resource that explains how to delete an
+// account and its data, including without the app. The page is built at
+// /delete-account/ so it can be given to Play, but it is a draft: it stays
+// noindex, out of the sitemap and visibly marked as a draft, and anything the
+// sources do not settle is a visible "To be confirmed" line. Publishing it for
+// real means removing noindex and the draft notice and updating this file in
+// the same change.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { dist, projectRoot, htmlFiles, readPage } from "../helpers/dist.js";
+import { dist, projectRoot, readPage } from "../helpers/dist.js";
 
 const ROUTE = "delete-account";
-const SOURCE = join(projectRoot, "src/pages/_delete-account.astro");
-const PUBLISHED_SOURCE = join(projectRoot, "src/pages/delete-account.astro");
+const SOURCE = join(projectRoot, "src/pages/delete-account.astro");
 const source = () => readFileSync(SOURCE, "utf8");
+const built = () => readPage(`${ROUTE}/index.html`);
+const builtText = () =>
+  built()
+    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;|&#x27;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ");
+
+/** The string items of one `const name = [ ... ];` list in the source. */
+const listOf = (name) => {
+  const list = source().match(
+    new RegExp(`const ${name} = \\[([\\s\\S]*?)\\];`),
+  )?.[1];
+  assert.ok(list, `no ${name} list`);
+  return [...list.matchAll(/^\s*([`'"])(.*)\1,$/gm)].map((m) =>
+    m[2].replace(/\\'/g, "'"),
+  );
+};
 
 /**
  * The wording of the source, one piece per paragraph: element text, every
@@ -72,79 +93,113 @@ const gapSentences = (text) =>
  * user's own copies, not a gap in the app.
  */
 const SCOPE_STATEMENTS = [
-  "Deleting your account does not delete any copy you made outside the app yourself.",
+  "Deleting your account does not delete any copy you exported yourself.",
 ];
 
-test("the account-deletion draft is not built", () => {
-  assert.ok(existsSync(SOURCE), "the draft source is missing");
+test("the account-deletion page is built, noindex and out of the sitemap", () => {
+  assert.ok(existsSync(SOURCE), "the source is missing");
   assert.ok(
-    !existsSync(PUBLISHED_SOURCE),
-    "src/pages/delete-account.astro would be built and deployed",
+    !existsSync(join(projectRoot, "src/pages/_delete-account.astro")),
+    "the old unbuilt draft is still in the tree",
   );
-  assert.ok(
-    !existsSync(join(dist, ROUTE)),
-    `dist/${ROUTE}/ exists: the draft was built`,
-  );
-  assert.ok(
-    !htmlFiles().some((page) => page.startsWith(`${ROUTE}/`)),
-    "a built page sits under the draft route",
-  );
-});
-
-test("no built page, sitemap or robots.txt refers to the draft route", () => {
-  const offenders = htmlFiles().filter((page) =>
-    readPage(page).includes(`/${ROUTE}/`),
-  );
-  assert.deepEqual(offenders, [], `pages linking the draft: ${offenders}`);
-
+  assert.ok(existsSync(join(dist, ROUTE, "index.html")), "not built");
+  assert.match(built(), /<meta name="robots" content="noindex, follow">/);
   const sitemaps = readdirSync(dist).filter((f) => /^sitemap.*\.xml$/.test(f));
   assert.ok(sitemaps.length > 0, "no sitemap emitted");
-  for (const file of [...sitemaps, "robots.txt"])
+  for (const file of sitemaps)
     assert.doesNotMatch(
       readFileSync(join(dist, file), "utf8"),
-      new RegExp(ROUTE),
-      `${file} lists the draft route`,
+      new RegExp(`/${ROUTE}/`),
+      `${file} lists the draft`,
     );
 });
 
-test("the draft source stays marked noindex and draft", () => {
-  const src = source();
-  assert.match(src, /^\s*noindex\s*$/m, "the draft lost its noindex prop");
+test("the page is reachable from the support page and the app privacy policy", () => {
+  for (const page of ["support/index.html", "app-privacy/index.html"])
+    assert.ok(
+      readPage(page).includes('href="/delete-account/"'),
+      `${page} does not link /delete-account/`,
+    );
+});
+
+test("the page is marked as a draft for counsel review, visibly and in the HTML", () => {
   assert.match(
-    src,
+    source(),
     /Draft for review by \{site\.legalName\} and its counsel\./,
+  );
+  assert.ok(
+    builtText().includes(
+      "Draft for review by Tether Health LLC and its counsel.",
+    ),
+  );
+  assert.match(
+    built(),
+    /<!-- Draft for counsel review\. This page is not final legal text\. -->/,
   );
 });
 
-test("the draft source names the app and the developer", () => {
+test("the page names the app and the developer", () => {
   const src = source();
   assert.match(src, /const appName = "Tether Health";/, "app name missing");
   assert.match(src, /developed by \$\{site\.legalName\}/, "developer missing");
+  assert.ok(builtText().includes("developed by Tether Health LLC"));
 });
 
-test("the draft keeps its in-app deletion steps in order", () => {
-  // The in-app path, verbatim as drafted. WEB-903 replaces it with the final
-  // app's flow and updates this list in the same change.
-  const list = source().match(/const inAppSteps = \[([\s\S]*?)\];/)?.[1];
-  assert.ok(list, "no inAppSteps list in the draft");
-  const steps = [...list.matchAll(/^\s*[`'"](.*)[`'"],$/gm)].map((m) => m[1]);
-  assert.deepEqual(steps, [
+test("the in-app steps follow the app's Account and Your data screens, in order", () => {
+  // The labels in quotes are the app's own: Account > "Your data" >
+  // "Delete account and all data" > "Type DELETE to confirm" + password (or
+  // Apple / Google re-authentication) > "Delete everything" > receipt.
+  assert.deepEqual(listOf("inAppSteps"), [
     "Open the ${appName} app and sign in.",
-    "Go to Home.",
-    "Tap your profile avatar at the top right.",
-    'Tap "Settings & privacy".',
-    'Scroll to "Your data".',
-    'Tap "Delete account and data".',
-    "Enter your current password and type DELETE to confirm.",
+    "On Today, tap your avatar at the top to open Account.",
+    'Tap "Your data".',
+    'Under Delete, tap "Delete account and all data".',
+    "Type DELETE to confirm, then enter your password. If you signed in with Apple or Google, confirm with that same account instead.",
+    'Tap "Delete everything".',
+    "The app shows a deletion receipt and signs you out on that phone. Keep the receipt ID if you contact support.",
   ]);
 });
 
-test("the cannot-sign-in route uses only a mailbox the site already publishes", () => {
+test("the page also covers versions of the app with a Settings & privacy screen", () => {
+  assert.deepEqual(listOf("settingsSteps"), [
+    'Open "Settings & privacy".',
+    'Under "Your data", tap "Delete account and data".',
+    "Enter your password, type DELETE and confirm.",
+  ]);
+});
+
+test("the page explains deleting a single program's data", () => {
+  const steps = listOf("programSteps");
+  assert.equal(steps.length, 3);
+  assert.match(steps[0], /"Programs & sharing"/);
+  assert.match(steps[1], /"Leave BreatheFree"/);
+  assert.match(steps[2], /"Delete BreatheFree data now"/);
+});
+
+test("the cannot-sign-in route uses only the support mailbox and needs no app", () => {
   // <SupportEmail /> with no mailbox prop renders support@.
   const src = source();
   assert.match(src, /<SupportEmail subject=\{emailSubject\} \/>/);
-  assert.doesNotMatch(src, /mailbox=/, "the draft names another mailbox");
+  assert.doesNotMatch(src, /mailbox=/, "the page names another mailbox");
   assert.doesNotMatch(src, /@[a-z0-9.-]+\.[a-z]{2,}/i, "a literal address");
+  assert.ok(builtText().includes("You do not need the app to ask."));
+  assert.match(
+    built(),
+    /href="mailto:support@tetherhealthgroup\.com\?subject=/,
+  );
+});
+
+test("the page says what is deleted and what is kept", () => {
+  const text = builtText();
+  for (const item of [
+    "your profile, display name and profile photo",
+    "the programs you joined, with their plans and setup answers",
+    "your check-ins, readings, logs and other program entries",
+    "your sign-in account",
+    "Copies in backups and logs are kept until those backups and logs expire.",
+    "stays with the people who received it",
+  ])
+    assert.ok(text.includes(item), `missing: ${item}`);
 });
 
 test("unconfirmed facts stay visibly marked as to be confirmed", () => {
@@ -153,8 +208,8 @@ test("unconfirmed facts stay visibly marked as to be confirmed", () => {
   for (const placeholder of [
     /To be confirmed: who handles email requests, and how we check that a request comes from the account holder\./,
     /To be confirmed: how long it takes to complete a request\./,
-    /To be confirmed: how long backups and logs are kept\./,
-    /To be confirmed: which data made as a guest is cleared from the device when a signed-in account is deleted\./,
+    /To be confirmed: how long copies remain in backups and logs after deletion\./,
+    /To be confirmed: which data on the phone is cleared when a signed-in account is deleted\./,
   ])
     assert.match(text, placeholder);
 });
@@ -193,18 +248,18 @@ test("the gap-wording patterns catch generic samples", () => {
     assert.deepEqual(gapSentences(sample), [sample], `not caught: ${sample}`);
 });
 
-test("the draft makes none of the banned claims and ships no comment", () => {
-  const src = source();
+test("the draft makes none of the banned claims", () => {
+  const text = textOf(source());
   for (const pattern of [
     /\bsecure(ly)?\b/i,
     /\bHIPAA\b/i,
     /clinically\s+reviewed/i,
     /works?\s+offline/i,
   ])
-    assert.doesNotMatch(src, pattern);
-  assert.doesNotMatch(src, /<!--/, "an HTML comment would ship in the page");
+    assert.doesNotMatch(text, pattern);
 });
 
 test("the draft adds no inline script or style of its own", () => {
   assert.doesNotMatch(source(), /<(script|style)\b/);
+  assert.doesNotMatch(source(), /\sstyle="/, "inline style attribute");
 });

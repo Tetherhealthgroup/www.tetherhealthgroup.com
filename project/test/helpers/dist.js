@@ -26,6 +26,8 @@ export const REQUIRED_PAGES = [
   "404.html",
   "about/index.html",
   "accessibility/index.html",
+  "app-privacy/index.html",
+  "delete-account/index.html",
   "breathefree/index.html",
   "breathefree/how-it-works/index.html",
   "breathefree/tour/index.html",
@@ -36,8 +38,9 @@ export const REQUIRED_PAGES = [
   "support/index.html",
   "terms/index.html",
   "services/index.html",
-  // one page per health area, generated from programs.ts
+  // one page per app program, generated from programs.ts
   "programs/tobacco/index.html",
+  "programs/social-media/index.html",
   "programs/metabolic/index.html",
   "programs/cancer/index.html",
   "programs/cardiovascular/index.html",
@@ -147,7 +150,7 @@ export const cspLine = () =>
     /^\s*Header always set Content-Security-Policy "(.+)"$/m,
   )?.[1] ?? "";
 
-/** The ten health areas, read from source so the list cannot drift. */
+/** The program URL slugs, read from source so the list cannot drift. */
 export function programAreas() {
   const src = readFileSync(join(projectRoot, "src/data/programs.ts"), "utf8");
   return [...src.matchAll(/^\s*id:\s*"([^"]+)"/gm)].map((m) => m[1]);

@@ -586,14 +586,14 @@ test("the waitlist selects fit a phone: short default label, ellipsis on overflo
   assert.ok(pagesWithForm > 0, "no page carries the waitlist form");
 });
 
-test("the in-development pill in the status key stays on one line", () => {
+test("the in-build pill in the status key stays on one line", () => {
   // At phone width the key's flex row squeezed the pill until
-  // "IN DEVELOPMENT" wrapped onto two lines.
+  // its label wrapped onto two lines. The label is the app's status text.
   const html = pageHtml("programs/index.html");
   const pill = html.match(
-    /<span class="([^"]*\bbg-lime\b[^"]*)"[^>]*>(?:(?!<\/span>\s*<p)[\s\S])*?In development/,
+    /<span class="([^"]*\bbg-lime\b[^"]*)"[^>]*>(?:(?!<\/span>\s*<p)[\s\S])*?Approved · in build/,
   );
-  assert.ok(pill, "no in-development pill on /programs/");
+  assert.ok(pill, "no in-build pill on /programs/");
   assert.match(pill[1], /\bwhitespace-nowrap\b/, "the pill can still wrap");
   assert.match(
     builtCss(),
