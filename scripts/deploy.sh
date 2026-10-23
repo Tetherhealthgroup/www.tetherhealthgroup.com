@@ -89,15 +89,27 @@ trap cleanup EXIT
 )
 TREE="$(GIT_INDEX_FILE="$TMP_INDEX" git write-tree)"
 
-# --- Skip a commit that would change nothing -------------------------------
+# --- Pick the parent, and skip a commit that would change nothing ----------
+# The parent is the local branch when there is one. A clone that has only ever
+# fetched has refs/remotes/origin/$BRANCH but no local branch; building on that
+# keeps the new commit a fast-forward of what is live, where a parentless
+# commit would be a new root and `git push` would reject it.
 PARENT_ARGS=()
+PARENT=""
+OLD_REF=""   # what the local ref must hold now; empty means it must not exist
 if git rev-parse --verify -q "refs/heads/$BRANCH" >/dev/null; then
   PARENT="$(git rev-parse "refs/heads/$BRANCH")"
+  OLD_REF="$PARENT"
+elif git rev-parse --verify -q "refs/remotes/origin/$BRANCH" >/dev/null; then
+  PARENT="$(git rev-parse "refs/remotes/origin/$BRANCH")"
+fi
+if [ -n "$PARENT" ]; then
   PARENT_ARGS=(-p "$PARENT")
   if [ "$(git rev-parse "$PARENT^{tree}")" = "$TREE" ]; then
     echo "deploy: the built site is identical to the tip of '$BRANCH'."
     echo "        Nothing to commit."
-    if [ "$PUSH" -eq 1 ]; then
+    # With no local branch the identical tip is already on origin: no ref to push.
+    if [ "$PUSH" -eq 1 ] && [ -n "$OLD_REF" ]; then
       git push origin "$BRANCH"
     fi
     exit 0
@@ -122,8 +134,10 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 EOF
 )"
 
-COMMIT="$(git commit-tree "$TREE" "${PARENT_ARGS[@]}" -m "$MESSAGE")"
-git update-ref "refs/heads/$BRANCH" "$COMMIT" ${PARENT_ARGS[1]:+"${PARENT_ARGS[1]}"}
+# macOS ships bash 3.2, where "${arr[@]}" on an empty array is an unbound
+# variable under `set -u`; the ${arr[@]+...} form expands to nothing instead.
+COMMIT="$(git commit-tree "$TREE" ${PARENT_ARGS[@]+"${PARENT_ARGS[@]}"} -m "$MESSAGE")"
+git update-ref "refs/heads/$BRANCH" "$COMMIT" "$OLD_REF"
 
 echo "deploy: $BRANCH -> $(git rev-parse --short "$COMMIT")  ($FILES files, built from $(git rev-parse --short "$SOURCE_SHA"))"
 
