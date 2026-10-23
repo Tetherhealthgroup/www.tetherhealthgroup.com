@@ -1,0 +1,448 @@
+---
+/**
+ * Privacy policy for the Tether Health app: the privacy policy URL the app
+ * stores ask for.
+ *
+ * Draft for counsel review. The text describes the multi-program Tether
+ * Health app as its design and code stood when this draft was written: what
+ * each of the 11 programs stores, health-record import, sign-in, sharing,
+ * reminders, export and deletion. Where the design describes something the
+ * code does not yet do, or the sources say nothing, the page says "To be
+ * confirmed" instead of promising it. No source path or evidence note ships
+ * in the HTML; the open legal questions are listed in docs/legal-drafts.md.
+ *
+ * Built and reachable at /app-privacy/ so the app and the store listings can
+ * link it, but kept noindex and out of the sitemap until counsel signs off.
+ * Publishing it for real means removing noindex and the draft notice and
+ * updating test/functional/app-privacy.test.js in the same change. This page
+ * does not replace privacy.astro, which covers the website.
+ */
+
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Icon from "../components/Icon.astro";
+import SupportEmail from "../components/SupportEmail.astro";
+import { site } from "../data/site";
+import { programs } from "../data/programs";
+
+const appName = "Tether Health";
+const packageName = "com.TetherHealthLLC.tetherhealth";
+
+/* What each program stores when you use it, in the app's catalog order.
+   Keyed by the app's program id so a program can never be described under
+   another program's name. */
+const programData: Record<string, string> = {
+  bf: "your smoking or vaping answers, triggers, quit path and quit date, your reasons, the supporters you name, slips you record and the medication status you choose to record",
+  sf: "how much you use social media (a range you choose), the kinds of apps that pull you in (categories, not app names), your triggers, your minute goal and app-free windows, Pause 60 use, long scrolls you record and your buddy's name",
+  ca: "the action plan your clinician gave you (zones, daily medicines and a photo of the plan if you add one), zone checks, peak flow readings and symptoms",
+  hw: "the targets your clinician set, blood pressure and pulse readings, and cholesterol panels",
+  st: "the range and low plan your clinician gave you, glucose readings with their timing, how you felt and any note, and A1C results",
+  re: "your answers to the risk questions and kidney and liver lab results (eGFR, urine ACR and ALT)",
+  nu: "the habits you choose; weight tracking is off unless you turn it on",
+  sd: "your answers to the falls questions, movement sessions, falls you log, home-safety checks, and a caregiver's name and phone number if you invite one",
+  ea: "your answers to two short optional questionnaires (PHQ-2 and GAD-2), which you can skip, mood check-ins and the topics you choose, and check-backs",
+  ck: "your age, sex assigned at birth and conditions (including pregnancy), used to work out which screenings are due, and the screenings you mark done",
+  be: "which part of the journey you are in, family history of cancer, a fatigue diary and survivorship entries",
+};
+---
+
+<Base
+  title={`${appName} app privacy policy`}
+  description={`How the ${appName} app and its programs collect, use and keep your information, who handles it for us, and how to export or delete it.`}
+  noindex
+>
+  <PageHero
+    eyebrow="Privacy"
+    title={`${appName} app privacy policy`}
+    intro={`How the ${appName} app, developed by ${site.legalName}, handles your information across its ${programs.length} programs.`}
+    width="narrow"
+  />
+
+  <Section width="narrow">
+    <p
+      class="mb-12 flex items-start gap-3 rounded-3xl border border-mint-strong bg-mint p-6 leading-relaxed text-teal-mid"
+    >
+      <Icon name="info" size={20} class="mt-0.5 shrink-0 text-teal-deep" />
+      <span>
+        Draft for review by {site.legalName} and its counsel. Items marked "To be
+        confirmed" are not decided yet.
+      </span>
+    </p>
+
+    <div class="prose-tether">
+      <!-- Draft for counsel review. This page is not final legal text. -->
+      <h2>About this policy</h2>
+      <p>
+        This policy covers the {appName} app (Android package {packageName}),
+        developed by {site.legalName}. {appName} is one app with {
+          programs.length
+        } programs, one for each area of health. BreatheFree is one of them.
+      </p>
+      <p>
+        It does not cover www.tetherhealthgroup.com, which has its own <a
+          href="/privacy/">privacy notice</a
+        >.
+      </p>
+      <p>To be confirmed: the date this policy takes effect.</p>
+      <p>
+        To be confirmed: whether this policy also covers a version of the app
+        for Apple devices.
+      </p>
+
+      <h2>The short version</h2>
+      <ul>
+        <li>No ads. We never sell your health data.</li>
+        <li>
+          Each program keeps its own data, and optional choices start off.
+        </li>
+        <li>
+          Nothing is shared with a supporter, caregiver or care team unless you
+          choose to share it.
+        </li>
+        <li>
+          You can export your data and delete your account and data in the app.
+        </li>
+      </ul>
+
+      <h2>Using the app on this phone only</h2>
+      <p>
+        You can use the app without an account by choosing "Continue on this
+        phone only". Your plans then stay on your phone, and the app's design
+        keeps them encrypted there. If you create an account later, the app asks
+        before it uploads them.
+      </p>
+
+      <h2>Your account and sign-in</h2>
+      <p>
+        You can create an account with your email address and a password, or
+        sign in with Apple or Google.
+      </p>
+      <ul>
+        <li>
+          With email, we keep your email address and use it to confirm your
+          account, sign you in and send password-reset links.
+        </li>
+        <li>
+          With Apple or Google, we receive the email address and account
+          identifier that Apple or Google shares with us. Sign in with Apple can
+          hide your email: we then use Apple's private relay address.
+        </li>
+        <li>
+          We never see your Apple or Google password. You can link more than one
+          sign-in method; removing a method never deletes your data.
+        </li>
+      </ul>
+      <p>
+        You must be 18 or older to use the app. The app asks you to confirm this
+        before you create an account or use it on this phone only.
+      </p>
+
+      <h2>Information shared by all your programs</h2>
+      <p>If you create an account, the app keeps:</p>
+      <ul>
+        <li>your display name, and a profile photo if you add one</li>
+        <li>
+          your age range, sleep and stress answers, which your programs share so
+          you are never asked twice; your age range sets which lessons and
+          screenings apply
+        </li>
+        <li>
+          which programs you have joined, paused or left, and the consent
+          choices you made for each, with the wording you agreed to
+        </li>
+        <li>
+          daily check-ins (how you feel and your stress), when you use Rescue
+          and whether it helped, and the lessons you complete
+        </li>
+        <li>your reminder times and notification settings</li>
+      </ul>
+
+      <h2>Information each program keeps</h2>
+      <p>
+        A program keeps information only if you join it. Anything you type into
+        a note is saved with that entry.
+      </p>
+      <ul>
+        {
+          programs.map((program) => (
+            <li>
+              <strong>
+                {program.name} ({program.area})
+              </strong>
+              : {programData[program.appId]}.
+            </li>
+          ))
+        }
+      </ul>
+      <p>
+        Two things stay on your phone and are never sent to us: the Ease safety
+        plan, which the app's design keeps encrypted on your phone, and the apps
+        and limits you choose in ScrollFree's optional Unplug feature.
+      </p>
+      <p>
+        ScrollFree with Screen Time on an Apple device: Apple shares no app
+        names or minutes with us. On Android, ScrollFree measures use on your
+        phone with usage access, and only daily totals by category are saved to
+        your account.
+      </p>
+      <p>
+        To be confirmed: which of the programs above can save information to an
+        account on the date this policy takes effect.
+      </p>
+
+      <h2>Health records</h2>
+      <p>
+        You can choose to connect your health records. Sources are Epic MyChart,
+        Oracle Health (Cerner), Medicare Blue Button 2.0, any other SMART on
+        FHIR server, Apple Health Records on Apple devices and Health Connect on
+        Android. You can also enter values by hand; those are labelled "Entered
+        by you".
+      </p>
+      <ul>
+        <li>
+          Access is read-only. Tether never writes to your health record. You
+          sign in with your provider, and Tether never sees that password.
+        </li>
+        <li>
+          Before you connect, the app shows exactly what it will read:
+          conditions, vital signs (blood pressure, weight), lab results (A1C,
+          lipids, eGFR), medications, immunizations and smoking status. Clinical
+          notes are not requested. From Apple Health Records or Health Connect
+          it asks for blood pressure, blood glucose and clinical records; steps
+          and sleep are not requested.
+        </li>
+        <li>Nothing reaches your programs until you review and confirm it.</li>
+        <li>
+          Only the programs you joined get data: Heartwise gets blood pressure
+          and lipids, Steady gets A1C and glucose, Renew gets eGFR, Checkup gets
+          immunizations and BreatheFree gets smoking status. Ease and ScrollFree
+          get nothing. Medications and conditions are shown for reference only.
+        </li>
+        <li>
+          While connected, records refresh daily. You can disconnect at any time
+          and choose to keep or delete the data imported from that source.
+        </li>
+        <li>
+          The app's design keeps the access tokens from your provider encrypted
+          on our servers, never on your phone.
+        </li>
+      </ul>
+      <p>
+        To be confirmed: the date health-record import is offered in the app,
+        and that token encryption on our servers is in place on that date.
+      </p>
+
+      <h2>Sharing, only when you choose</h2>
+      <ul>
+        <li>
+          <strong>Supporters.</strong> You can add a supporter for BreatheFree or
+          ScrollFree. Messages to them are sent from your phone's own Messages app
+          after you preview them; Tether never sends on its own and never contacts
+          them.
+        </li>
+        <li>
+          <strong>ScrollFree buddy.</strong> Your buddy only sees what you choose
+          to send.
+        </li>
+        <li>
+          <strong>Stride caregiver.</strong> If you invite a caregiver, they can see
+          only what you allow: when you finish a session and if you log a fall. Your
+          other programs are never available to caregivers.
+        </li>
+        <li>
+          <strong>Care team.</strong> You can connect a clinic with an invite code.
+          Connecting shares nothing until you approve a summary, and you preview every
+          share. A Heartwise visit summary contains only Heartwise data. Copies you
+          send stay with the care team.
+        </li>
+        <li>
+          <strong>Quitline call-back.</strong> If you ask a quitline to call you,
+          the app sends your first name, phone number and preferred time to that quitline,
+          and nothing about your plan, check-ins or health. That consent expires after
+          30 days.
+        </li>
+        <li>
+          <strong>Cross-program insights.</strong> A setting under Privacy & consent
+          controls whether the app shows connections between your programs.
+        </li>
+      </ul>
+      <p>
+        To be confirmed: when care-team connections, caregiver invites and
+        quitline call-backs are offered, and how a caregiver invite is
+        delivered.
+      </p>
+      <p>
+        To be confirmed: what the optional "De-identified research" and
+        "Anonymous app diagnostics" choices collect, who receives it and how it
+        is de-identified. Both are off unless you turn them on.
+      </p>
+
+      <h2>Reminders and notifications</h2>
+      <p>
+        Reminders are off until you turn them on. The app sends at most two a
+        day, only for your focus programs, and the lock screen shows "You have a
+        Tether reminder." Program names and health details stay hidden unless
+        you turn on "Show sensitive details". Quiet hours are on by default;
+        safety alerts still come through.
+      </p>
+      <p>
+        To be confirmed: which service, if any, delivers notifications to your
+        phone.
+      </p>
+
+      <h2>Permissions the app asks for</h2>
+      <p>
+        The app asks for these permissions, each for the feature that needs it:
+        notifications for reminders; Screen Time on Apple devices, or usage
+        access and display over other apps on Android, for ScrollFree's optional
+        Unplug; health-record access for Apple Health Records or Health Connect;
+        and your photos or camera if you add a profile photo or a photo of your
+        ClearAir plan. The app does not ask for your location, contacts or
+        microphone.
+      </p>
+
+      <h2>How we use your information</h2>
+      <p>
+        We use your information to run the app for you: to create your account
+        and sign you in, to save your plans and entries in each program you
+        join, to show you your own progress, to send the reminders you turned
+        on, and to share what you choose to share.
+      </p>
+      <p>No ads. We never sell your health data.</p>
+      <p>
+        We do not share your information with third parties for their own use.
+      </p>
+
+      <h2>Who handles your information for us</h2>
+      <ul>
+        <li>Supabase, for sign-in accounts, the database and photo storage.</li>
+        <li>
+          Render, which hosts our application server: the service that handles
+          your profile, programs, plans, entries, export and deletion.
+        </li>
+        <li>Apple and Google, if you sign in with them.</li>
+        <li>The health-record providers you choose to connect.</li>
+      </ul>
+      <p>
+        To be confirmed: that our production application server is hosted by
+        Render, and the regions where it and our Supabase project run.
+      </p>
+      <p>
+        To be confirmed: which service sends the sign-up confirmation and
+        password-reset emails.
+      </p>
+      <p>
+        To be confirmed: the contract terms we have with our service providers,
+        and what they record when the app connects to them, such as your IP
+        address, and for how long.
+      </p>
+
+      <h2>Protection</h2>
+      <p>
+        The app's consent screen describes essential app data (your account,
+        plans and progress) as encrypted.
+      </p>
+      <p>
+        To be confirmed: how your data is protected on your phone, in transit
+        and at our service providers.
+      </p>
+
+      <h2>Exporting your data</h2>
+      <p>
+        In the app, go to Account, then Your data, then Export. You can export
+        your data, or export a care summary for the dates you choose and preview
+        every detail first.
+      </p>
+      <p>
+        To be confirmed: the format of the full export and which data it
+        includes.
+      </p>
+      <p>
+        A copy you export is outside the app and is not deleted when you delete
+        your account.
+      </p>
+
+      <h2>Keeping and deleting your information</h2>
+      <p>
+        You can delete your account and all data in the app, or leave a single
+        program and delete only that program's data. The steps, and what to do
+        if you cannot sign in, are on the <a href="/delete-account/"
+          >account deletion page</a
+        >.
+      </p>
+      <p>
+        If you leave a program and keep its data, it is kept until you delete it
+        or delete your account.
+      </p>
+      <p>
+        To be confirmed: how long we keep your account data if you stop using
+        the app without deleting your account.
+      </p>
+      <p>
+        To be confirmed: how long copies remain in backups and logs after you
+        delete your account.
+      </p>
+
+      <h2>Your rights</h2>
+      <p>
+        In the app you can view and export your data, change your name and
+        photo, change your consent choices, leave a program, and delete your
+        account.
+      </p>
+      <p>
+        Depending on where you live, you may also have the right to ask for
+        access to, correction of or deletion of your personal data, to object to
+        or restrict how we use it, and to complain to a data protection
+        authority.
+      </p>
+      <p>
+        To be confirmed: which privacy and health-data laws apply to the app and
+        which rights they give you.
+      </p>
+      <p>
+        To use these rights, write to <SupportEmail mailbox="privacy" />.
+      </p>
+      <p>
+        To be confirmed: who answers these emails, how we check who you are, and
+        how quickly we reply.
+      </p>
+
+      <h2>Contact us</h2>
+      <p>
+        For questions about this policy, email <SupportEmail
+          mailbox="privacy"
+        />.
+      </p>
+      <p>
+        For help with the app, email <SupportEmail /> or see the <a
+          href="/support/">support page</a
+        >.
+      </p>
+
+      <h2>Children</h2>
+      <p>
+        The app is for adults 18 and over, and it asks you to confirm your age
+        before you start.
+      </p>
+      <p>
+        To be confirmed: what we do if we learn that a child has an account.
+      </p>
+      <p>
+        If you believe a child has created an account, email <SupportEmail
+          mailbox="privacy"
+        />.
+      </p>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        When this policy changes, we will update the effective date on this
+        page.
+      </p>
+      <p>
+        To be confirmed: how people who already have an account will be told
+        about a material change, for example inside the app.
+      </p>
+    </div>
+  </Section>
+</Base>

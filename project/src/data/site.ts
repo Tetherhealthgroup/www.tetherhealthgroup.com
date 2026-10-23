@@ -106,6 +106,8 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
     title: "Trust",
     links: [
       { label: "Privacy notice", href: "/privacy/" },
+      { label: "App privacy policy", href: "/app-privacy/" },
+      { label: "Delete your account", href: "/delete-account/" },
       { label: "Security", href: "/security/" },
       { label: "Accessibility", href: "/accessibility/" },
       { label: "Terms of use", href: "/terms/" },

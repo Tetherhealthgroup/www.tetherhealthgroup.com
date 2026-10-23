@@ -26,6 +26,8 @@ export const REQUIRED_PAGES = [
   "404.html",
   "about/index.html",
   "accessibility/index.html",
+  "app-privacy/index.html",
+  "delete-account/index.html",
   "breathefree/index.html",
   "breathefree/how-it-works/index.html",
   "breathefree/tour/index.html",
