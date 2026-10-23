@@ -1,9 +1,10 @@
 ---
 /**
- * One health area from the programme plan, with an honest status badge.
+ * One program of the Tether Health app, with an honest status badge.
  *
- * The badge is the point of this component. Ten areas are listed, one is being
- * built, and the card must never let those read the same.
+ * The badge is the point of this component. Eleven programs are listed, one
+ * is in build, and the card must never let those read the same. The name,
+ * area, tagline, colour and letter are the app's own (see data/programs.ts).
  */
 
 import Icon from "./Icon.astro";
@@ -16,7 +17,7 @@ interface Props {
 }
 
 const { program, compact = false } = Astro.props;
-const isBuilding = program.status === "building";
+const isBuilding = program.status === "in-build";
 ---
 
 <article
@@ -29,17 +30,16 @@ const isBuilding = program.status === "building";
 >
   <div class="mb-5 flex items-start justify-between gap-3">
     <span
-      class:list={[
-        "inline-flex h-12 w-12 items-center justify-center rounded-2xl",
-        isBuilding ? "bg-teal-deep text-lime" : "bg-mint text-teal-mid",
-      ]}
+      class="inline-flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-extrabold text-paper"
+      style={`background-color: ${program.color}`}
+      aria-hidden="true"
     >
-      <Icon name={program.icon} size={22} />
+      {program.letter}
     </span>
 
     <span
       class:list={[
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em]",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em]",
         isBuilding
           ? "bg-lime text-teal-deep"
           : "bg-mint-pale text-teal-mid ring-1 ring-hairline-soft",
@@ -58,8 +58,14 @@ const isBuilding = program.status === "building";
   </div>
 
   <h3 class:list={["text-xl", isBuilding ? "" : "text-teal-deep/80"]}>
-    {program.area}
+    {program.name}
   </h3>
+  <p class="mt-1 text-[0.85rem] font-bold text-teal-mid">
+    {program.area} · {program.archetype}
+  </p>
+  <p class="mt-3 font-bold leading-relaxed text-teal-deep">
+    {program.tagline}
+  </p>
   <p class="mt-2 text-[0.95rem] leading-relaxed text-teal-mid">
     {program.examples}
   </p>
@@ -81,7 +87,7 @@ const isBuilding = program.status === "building";
       href={`/programs/${program.id}/`}
       class="-mb-2 mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl py-3 text-[0.95rem] font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4 transition-colors hover:decoration-coral"
     >
-      <span class="sr-only">{program.area}: </span>Services and what is next
+      <span class="sr-only">{program.name}: </span>Services and what is next
       <Icon name="arrow-right" size={17} />
     </a>
 

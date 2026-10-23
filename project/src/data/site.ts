@@ -74,7 +74,7 @@ export interface NavLink {
 }
 
 export const primaryNav: NavLink[] = [
-  { label: "Health areas", href: "/programs/" },
+  { label: "Programs", href: "/programs/" },
   { label: "Services", href: "/services/" },
   { label: "BreatheFree", href: "/breathefree/" },
   { label: "How it works", href: "/breathefree/how-it-works/" },
@@ -86,7 +86,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
   {
     title: "Product",
     links: [
-      { label: "All health areas", href: "/programs/" },
+      { label: "All programs", href: "/programs/" },
       { label: "All services", href: "/services/" },
       { label: "BreatheFree overview", href: "/breathefree/" },
       { label: "How it works", href: "/breathefree/how-it-works/" },

@@ -37,8 +37,8 @@ test("no page claims the product is available to download", async () => {
 });
 
 test("every health area has a page, and it is honest about status", async () => {
-  // Nine of the ten areas have no implementation. The page for each must not
-  // read like the one area that does, so the status label is asserted per page
+  // Ten of the eleven programs are not in build. The page for each must not
+  // read like the one that is, so the app's status label is asserted per page
   // rather than assumed from the template.
   const { programs, statusLabels } = await import("../../src/data/programs.ts");
   for (const program of programs) {
@@ -103,7 +103,8 @@ test("the services page lists every service and does not read as an offer", asyn
 // WEB-005 — app status and waitlist wording.
 //
 // Owner-stated truth: BreatheFree is in development, Android first, intended
-// for Google Play. The other nine areas are planned. Nothing is available to
+// for Google Play. The other ten programs carry the app's own status words
+// (prototype, proposed or planned). Nothing is available to
 // download or use, no testing programme has opened, and no date is promised.
 // These cases scan the built HTML so a regression in any template, data file
 // or inline script fails the build. The wording itself is needs-counsel.
@@ -374,24 +375,33 @@ test("the support FAQ explains how to join the testing list, without saying test
   );
 });
 
-test("the nine non-BreatheFree areas are described as planned and not available to use", async () => {
+test("every program other than BreatheFree states its app status and that nothing is available to use", async () => {
+  // The status words are the app's own (programs.json). Whatever the status,
+  // no program is available to use, and each page says so in its summary.
   const { programs } = await import("../../src/data/programs.ts");
-  const planned = programs.filter((p) => p.status === "planned");
-  assert.equal(planned.length, 9, "expected nine planned areas");
-  for (const program of planned) {
+  const phrase = {
+    prototype: "is a prototype in development. Nothing is available to use.",
+    proposed: "is proposed. Nothing is available to use.",
+    planned: "is planned. Nothing is available to use.",
+  };
+  const others = programs.filter((p) => p.status !== "in-build");
+  assert.equal(others.length, 10, "expected ten programs not in build");
+  for (const program of others) {
+    assert.ok(phrase[program.status], `${program.id}: unknown status`);
     assert.ok(
       pageText(`programs/${program.id}/index.html`).includes(
-        "is planned. Nothing is available to use.",
-      ),
-      `programs/${program.id}/ lacks the planned / not available wording`,
+        `${program.name}, the program for `,
+      ) &&
+        pageText(`programs/${program.id}/index.html`).includes(
+          phrase[program.status],
+        ),
+      `programs/${program.id}/ lacks the status / not available wording`,
     );
   }
   assert.ok(
     pageText("programs/index.html").includes("Planned. Not available to use."),
   );
   assert.ok(
-    pageText("services/index.html").includes(
-      "nine are planned. None is available to use.",
-    ),
+    pageText("services/index.html").includes("None is available to use."),
   );
 });
