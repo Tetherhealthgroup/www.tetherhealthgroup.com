@@ -205,10 +205,26 @@ const SAMPLE_CLAIMS = [
  */
 const PRIVACY_RETENTION = /until the relevant product has launched/g;
 
+/**
+ * The Unplug section names iPhone only to say what it cannot do there (the
+ * permission Apple has not granted). That is a limitation, not a platform
+ * promise, so these exact phrases are exempt from the Apple filter.
+ */
+const UNPLUG_IPHONE_LIMITS = new RegExp(
+  [
+    "On iPhone, an app cannot be told which apps you are using\\.",
+    "rather than showing an iPhone user less and calling it the same product\\.",
+    "and on iPhone it cannot until Apple grants us the permission",
+    "the iPhone version cannot do the thing it is for\\.",
+  ].join("|"),
+  "g",
+);
+
 /** Text a page may contain even though a filter would otherwise match. */
 function scrub(text) {
   return text
     .replace(ALLOWED_PLAY, "")
+    .replace(UNPLUG_IPHONE_LIMITS, "")
     .replace(QUITLINE_NOW, "")
     .replace(PRIVACY_RETENTION, "");
 }
