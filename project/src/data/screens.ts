@@ -2,7 +2,7 @@
  * The approved 28-screen BreatheFree catalog.
  *
  * Ported verbatim from the mobile application's canonical catalog at
- * Tether-Smoking-cessation-breath-free/lib/models/screen_spec.dart — same
+ * Tether-Health/lib/models/screen_spec.dart — same
  * numbers, same titles, same descriptions, same phase grouping. Keeping the
  * numbering identical means a screen can be discussed once and found in both
  * the app and the site.
@@ -99,17 +99,17 @@ export const screens: Screen[] = [
     number: 1,
     title: "Welcome",
     description:
-      "Introduces BreatheFree, language choice and the private, judgment-free promise.",
+      "Introduces Tether Health, language choice and the private, judgment-free promise.",
     phase: "welcome",
     slug: "welcome",
   },
   {
     number: 2,
-    title: "Why BreatheFree",
+    title: "Why Tether Health",
     description:
       "Explains how the app supports cravings, planning and progress.",
     phase: "onboarding",
-    slug: "why-breathefree",
+    slug: "why-tether-health",
   },
   {
     number: 3,

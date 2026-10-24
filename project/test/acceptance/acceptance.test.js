@@ -405,3 +405,64 @@ test("every program other than BreatheFree states its app status and that nothin
     pageText("services/index.html").includes("None is available to use."),
   );
 });
+
+test("the Unplug section says what is not built, next to what is", async () => {
+  // The intercept now exists in code, which makes the section more tempting to
+  // overstate, not less: what is missing has moved from "unwritten" to "Apple
+  // has not granted the permission, and nobody has run it on a real phone".
+  // Both caveats are asserted rather than trusted to survive a copy edit.
+  const html = readFileSync(join(dist, "breathefree/index.html"), "utf8");
+  assert.match(html, /Unplug/, "the BreatheFree page does not mention Unplug");
+  assert.match(
+    html,
+    /What is still missing/,
+    "the Unplug section does not name what is missing",
+  );
+  assert.match(
+    html,
+    /has never run on anyone/,
+    "the Unplug section does not say it is untested on a real device",
+  );
+  assert.match(
+    html,
+    /Apple requires a specific permission/,
+    "the Unplug section does not say the iPhone permission is ungranted",
+  );
+});
+
+test("Unplug is on a roadmap, and not sold as a health area of its own", async () => {
+  // The code lives inside the BreatheFree application, so the work belongs to
+  // tobacco. Mental & behavioural health carries the open question instead —
+  // whether screen time is an area at all — and stays "planned".
+  const { programs, statusLabels } = await import("../../src/data/programs.ts");
+  const tobacco = readFileSync(
+    join(dist, "programs/tobacco/index.html"),
+    "utf8",
+  );
+  assert.match(
+    tobacco,
+    /digital-wellbeing module/,
+    "the tobacco roadmap does not list the Unplug module",
+  );
+
+  const behavioral = programs.find((program) => program.id === "behavioral");
+  assert.equal(
+    behavioral.status,
+    "planned",
+    "mental & behavioural health has been promoted without code to point at",
+  );
+  const behavioralHtml = readFileSync(
+    join(dist, "programs/behavioral/index.html"),
+    "utf8",
+  );
+  assert.match(
+    behavioralHtml,
+    new RegExp(statusLabels.planned),
+    "the behavioural health page does not state its status",
+  );
+  assert.match(
+    behavioralHtml,
+    /Screen time as a health area/,
+    "the behavioural health roadmap does not carry the open question",
+  );
+});

@@ -136,7 +136,7 @@ re-adding it is a content decision, not a revert.
 
 Colours are **ported verbatim** from the BreatheFree mobile application so the
 site and the app read as one product. The source of truth is
-`Tether-Smoking-cessation-breath-free/lib/theme/app_colors.dart`; the values
+`Tether-Health/lib/theme/app_colors.dart`; the values
 live in the `@theme` block of `project/src/styles/global.css` with the
 originating constant named in a comment beside each one.
 

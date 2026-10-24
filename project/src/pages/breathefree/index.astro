@@ -35,6 +35,44 @@ const features = [
   },
 ];
 
+/**
+ * Unplug is a second module inside the BreatheFree application, covering the
+ * phone habits that sit next to a quit attempt.
+ *
+ * The screens and the platform layer beneath them are both built now. What is
+ * not done is the part nobody can write: Apple has to grant the permission that
+ * lets one app pause another, and the thing has to be used by a real person on a
+ * real phone. The card at the end of the section says both, and an acceptance
+ * test asserts it still does.
+ *
+ * Every claim here is a constraint we have accepted rather than a capability we
+ * are advertising — which is the honest way to describe work at this stage, and
+ * the only way to describe a module whose defining feature is how little the
+ * platform will tell it.
+ */
+const unplug = [
+  {
+    icon: "phone" as const,
+    title: "Designed around what a phone will admit",
+    body: "On iPhone, an app cannot be told which apps you are using. It can pause them, and that is all. So the reports are built to that limit on both platforms, rather than showing an iPhone user less and calling it the same product.",
+  },
+  {
+    icon: "shield" as const,
+    title: "An intercept that asks, not scolds",
+    body: "When you open something you asked us to slow down, you get a pause, your own reason back in your own words, and a way through it. A breath, a sentence typed out, or a short puzzle — enough friction to interrupt a reflex.",
+  },
+  {
+    icon: "clock" as const,
+    title: "Quick to tighten, slow to loosen",
+    body: "Raising a limit takes one tap. Lowering one costs something every time: a wait of a day if you are on your own, or a conversation with your clinician or coach if you are not.",
+  },
+  {
+    icon: "users" as const,
+    title: "Distress reaches a qualified person",
+    body: "If the same difficult feeling keeps coming up, that never comes to rest with a non-clinical coach. Where it goes instead is written down per programme by clinicians, not decided by the app.",
+  },
+];
+
 const safeguards = [
   {
     icon: "eye-off" as const,
@@ -215,6 +253,47 @@ const safeguards = [
         ))
       }
     </ul>
+  </Section>
+
+  <!-- Unplug: the digital-wellbeing module -->
+  <Section id="unplug" tone="paper" width="wide">
+    <div class="mb-14 max-w-3xl">
+      <p class="eyebrow mb-5">In design · Unplug</p>
+      <h2 class="text-4xl sm:text-5xl">
+        The phone is often the thing standing next to the habit.
+      </h2>
+      <p class="mt-6 text-lg leading-relaxed">
+        Unplug is a second module inside BreatheFree, for the screen habits that
+        sit alongside a quit attempt — the scroll at 11pm, the app opened before
+        the thought finishes. Twelve screens are built, and so is the layer
+        underneath them that does the pausing. It is not available: it has never
+        run on anyone's real phone, and on iPhone it cannot until Apple grants
+        us the permission that makes it possible.
+      </p>
+    </div>
+
+    <ul class="grid gap-6 md:grid-cols-2">
+      {
+        unplug.map((item) => (
+          <li>
+            <Card icon={item.icon} title={item.title}>
+              {item.body}
+            </Card>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="mt-10">
+      <Card icon="alert" accent="coral" title="What is still missing">
+        Two things, and neither is code. Apple requires a specific permission
+        before any app may pause another one, and we have not been granted it
+        yet — until we are, the iPhone version cannot do the thing it is for.
+        And nothing here has run on a real phone in anyone's hands. Both have to
+        be true before this is something we would offer to a person, and we
+        would rather say that plainly than let a screenshot imply otherwise.
+      </Card>
+    </div>
   </Section>
 
   <!-- Tour CTA -->

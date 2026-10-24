@@ -49,7 +49,8 @@ who sees it.
 
 | Date | Decision | Reason |
 |---|---|---|
-| | | |
+| 2026-09-11 | Unplug is described on `/breathefree/` as a module in design, and appears in `upcoming` under Tobacco & nicotine — not as its own health area or its own page. | The code lives inside the BreatheFree application repository, so that is where the site should point. Giving it a page of its own would imply a product line that does not exist. Mental & behavioural health gets two `upcoming` entries instead, because whether screen time belongs to that area is genuinely undecided. |
+| 2026-09-11 | The `/breathefree/` Unplug section names what is **not** built, in a coral card, in the same breath as what is. | The module's blocking layer is unwritten. A section describing an intercept without saying the intercept does not exist yet would be the exact overstatement `src/data/programs.ts` was written to prevent. |
 
 ---
 
