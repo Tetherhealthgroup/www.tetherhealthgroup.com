@@ -5,7 +5,7 @@ import Section from "../components/Section.astro";
 import Button from "../components/Button.astro";
 import Card from "../components/Card.astro";
 import Icon from "../components/Icon.astro";
-import { site } from "../data/site";
+import { site, leadership } from "../data/site";
 import { programCount } from "../data/programs";
 
 const beliefs = [
@@ -34,7 +34,7 @@ const beliefs = [
 
 <Base
   title="About"
-  description={`${site.legalName} builds calm, private, evidence-informed digital health tools. Why we exist, what we believe, and how we work.`}
+  description={`${site.legalName} builds calm, private digital health tools. Why we exist, what we believe, and how we work.`}
 >
   <PageHero
     eyebrow="About us"
@@ -63,7 +63,7 @@ const beliefs = [
           ones.
         </p>
         <p>
-          We build for the hard ones. That means tools that work offline and
+          We build for the hard ones. That means tools designed to work
           one-handed, records that survive a bad week, and a route to a real
           person when software is not enough.
         </p>
@@ -129,12 +129,12 @@ const beliefs = [
           {
             step: "03",
             title: "Say what is true about our own status",
-            body: `We describe ${programCount} health areas on this site, and exactly one of them is in development. We would rather be unimpressive than misleading.`,
+            body: `We describe the ${programCount} programs of the Tether Health app on this site. One is in build, some are prototypes, and none is available to use. We would rather be unimpressive than misleading.`,
           },
           {
             step: "04",
             title: "Review before release, not after",
-            body: "Clinical, privacy, security and accessibility review are release gates. No product ships to people because a deadline arrived.",
+            body: "We intend clinical, privacy, security and accessibility review to come before any release, not after it. Not all of that review has happened yet.",
           },
         ].map((item) => (
           <li class="flex flex-col gap-5 rounded-3xl border border-hairline-soft bg-paper p-7 sm:flex-row sm:items-start">
@@ -153,6 +153,34 @@ const beliefs = [
         ))
       }
     </ol>
+  </Section>
+
+  <!-- Leadership -->
+  <Section width="default">
+    <div class="mb-12 max-w-2xl">
+      <p class="eyebrow mb-5">Leadership</p>
+      <h2 id="leadership-heading" class="text-3xl sm:text-4xl">
+        Who leads Tether Health.
+      </h2>
+    </div>
+
+    <ul aria-labelledby="leadership-heading" class="grid gap-5 md:grid-cols-3">
+      {
+        leadership.map((person) => (
+          <li class="rounded-3xl border border-hairline-soft bg-paper p-7">
+            <strong class="block text-xl font-extrabold tracking-[-0.03em] text-teal-deep">
+              {person.name}
+            </strong>
+            <span class="mt-2 block leading-relaxed text-teal-mid">
+              <abbr title={person.fullTitle} aria-hidden="true">
+                {person.title}
+              </abbr>
+              <span class="sr-only">{person.fullTitle}</span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
   </Section>
 
   <!-- Company facts -->

@@ -110,7 +110,7 @@ ErrorDocument 404 /404.html
   # connect-src is 'self' because the form has no endpoint by default. Setting
   # PUBLIC_WAITLIST_ENDPOINT means adding that origin here, or the browser
   # blocks the POST — see README.
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-ZvHI7dAQf+RvTh3JR4SKvDIB2OD5V8b4f3ytqXhQVZQ=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-4daKGa3Y2Vbk8v2Ug+z6rdJ/5ObNaArcWP53uY/D+zk='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-M78ZcBA9xxIDr6hdFKg8pA2HhAvXI9S8JjzFKeT0GIg=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-SRIauFt3ncH+nyOx5iqeDPulb5Jl+iLxfYdqhU0qnkU='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
 
   # HSTS — one year, and the ramp is finished.
   #
@@ -221,6 +221,21 @@ ErrorDocument 404 /404.html
   AddType image/webp .webp
   AddType image/svg+xml .svg
   AddType application/manifest+json .webmanifest
+
+  # RFC 9116 requires security.txt to be text/plain with charset=utf-8. Served
+  # at /.well-known/security.txt. The directory is a path SEGMENT, not a
+  # filename, so the dotfile deny-list at the foot of this file does not match
+  # it, and the .git rule above does not either.
+  <Files "security.txt">
+    ForceType "text/plain; charset=utf-8"
+  </Files>
+
+  # Android App Links read /.well-known/assetlinks.json and expect
+  # application/json. Same reasoning as security.txt: the path segment is not
+  # caught by the deny-list or the .git rule.
+  <Files "assetlinks.json">
+    ForceType application/json
+  </Files>
 </IfModule>
 
 # --- Do not serve what is not the site --------------------------------------

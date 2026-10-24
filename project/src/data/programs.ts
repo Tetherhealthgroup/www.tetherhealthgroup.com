@@ -1,29 +1,36 @@
 /**
- * The health areas Tether Health Group intends to support.
+ * The programs of the Tether Health app, one per health area.
  *
- * Content is the health-area plan supplied by the project owner, kept in that
- * wording. `status` is deliberately conservative and reflects what this
- * repository actually evidences:
+ * The app's own program list (tether_ui/spec/programs.json in the
+ * Tether-Health repository) is the source for each program's app id, name,
+ * area, archetype, tagline and status, and the app's design tokens
+ * (tether_ui/design/tokens.json, "program") for its colour and letter. Those
+ * fields are copied verbatim and must not be reworded here: the pinned copy in
+ * test/fixtures/app-programs.json and test/functional/programs-match-app.test.js
+ * fail the build if they drift. The order is the app's catalog order.
  *
- *   "building"  — code exists and is under active development. Only tobacco
- *                 and nicotine qualifies: the BreatheFree application repo has
- *                 28 approved screens and an in-progress `develop` branch
- *                 converting them to native responsive screens.
- *   "planned"   — described in the programme plan, no implementation exists.
+ * `id` is the website URL slug (/programs/<id>/). It predates the app ids and
+ * stays stable so existing links keep working; `appId` is the app's id.
  *
- * Do not promote an area to "building" before there is something to point at.
- * A health company that overstates what it has built is the one thing this
- * site must never do.
+ * `status` mirrors the app's status text through `statusLabels`:
  *
- * `services` and `upcoming` elaborate the same programme plan; they are scope,
- * not availability. Every one of them is intent until an area reaches
- * "building" and there is code to point at. Phrase them that way — no dates,
- * no promises, and nothing that reads as a service a visitor can use today.
+ *   "in-build"   — "Approved · in build" (BreatheFree).
+ *   "prototype"  — "Prototype on develop": a prototype exists in development.
+ *   "proposed"   — "Proposed".
+ *   "planned"    — "Planned".
+ *
+ * None of the programs is available to use; the pages say so. WEB-005: the
+ * not-available summaries below are needs-counsel.
+ *
+ * `examples`, `addresses`, `summary`, `services` and `upcoming` are website
+ * copy elaborating the programme plan; they are scope, not availability. Phrase
+ * them that way — no dates, no promises, no medical claims, and nothing that
+ * reads as a service a visitor can use today.
  */
 
 import type { IconName } from "../components/Icon.astro";
 
-export type ProgramStatus = "building" | "planned";
+export type ProgramStatus = "in-build" | "prototype" | "proposed" | "planned";
 
 /** How far out a project sits. Deliberately not dates. */
 export type Horizon = "In development" | "Next" | "Later";
@@ -42,9 +49,22 @@ export interface UpcomingProject {
 }
 
 export interface Program {
+  /** Website URL slug: /programs/<id>/. */
   id: string;
-  /** Health area. */
+  /** The app's program id (programs.json "id"). */
+  appId: string;
+  /** Program name in the app (programs.json "name"). */
+  name: string;
+  /** Health area (programs.json "area"). */
   area: string;
+  /** Program type in the app (programs.json "archetype"). */
+  archetype: string;
+  /** The app's one-line description (programs.json "tagline"). */
+  tagline: string;
+  /** Program colour (tokens.json program.<appId>.color). */
+  color: string;
+  /** Program letter (tokens.json program.<appId>.letter). */
+  letter: string;
   /** Examples within the area. */
   examples: string;
   /** What the system or programme could address. */
@@ -57,19 +77,45 @@ export interface Program {
   services: ProgramService[];
   /** Specific projects intended next. */
   upcoming: UpcomingProject[];
-  /** Set when a shipping product covers this area. */
+  /** Set when a website product page covers this program. */
   product?: { name: string; href: string };
 }
 
+/** The app's status text for each status, verbatim. */
 export const statusLabels: Record<ProgramStatus, string> = {
-  building: "In development",
+  "in-build": "Approved · in build",
+  prototype: "Prototype on develop",
+  proposed: "Proposed",
   planned: "Planned",
 };
+
+/** What each status means for a visitor. Every one says "not available". */
+export const statusMeanings: Record<ProgramStatus, string> = {
+  "in-build":
+    "Design is approved and code is being written. Not available to use yet.",
+  prototype: "A prototype exists in development. Not available to use.",
+  proposed: "Proposed and not yet decided. Not available to use.",
+  planned: "Planned. Not available to use.",
+};
+
+/** Status order for keys and counts, nearest first. */
+export const statusOrder: ProgramStatus[] = [
+  "in-build",
+  "prototype",
+  "proposed",
+  "planned",
+];
 
 export const programs: Program[] = [
   {
     id: "tobacco",
+    appId: "bf",
+    name: "BreatheFree",
     area: "Tobacco & nicotine",
+    archetype: "Quit / Reduce",
+    tagline: "Your next breath can be different.",
+    color: "#B5432A",
+    letter: "B",
     examples: "Cigarettes, vaping, smokeless tobacco",
     addresses: [
       "Prevention",
@@ -77,10 +123,10 @@ export const programs: Program[] = [
       "Relapse prevention",
       "Exposure reduction",
     ],
-    status: "building",
+    status: "in-build",
     icon: "leaf",
     summary:
-      "Tobacco and nicotine is the first area we are building, because the need is large, the evidence for behavioural support is settled, and it is the area where a calm, private tool most obviously helps. BreatheFree is the application; it is in development and not yet available.",
+      "Tobacco and nicotine is the first area we are building, because the need is large, the evidence for behavioural support is settled, and it is the area where a calm, private tool most obviously helps. BreatheFree is the Tether Health app\u2019s program for this area. Its design is approved and it is in build; it is not yet available.",
     services: [
       {
         name: "Prevention",
@@ -90,7 +136,7 @@ export const programs: Program[] = [
       {
         name: "Cessation support",
         description:
-          "Day-to-day help through a quit attempt: a plan the person owns, craving tools that work offline, and check-ins that take under two minutes.",
+          "Day-to-day help through a quit attempt: a plan the person owns, craving tools, and check-ins that take under two minutes.",
       },
       {
         name: "Relapse prevention",
@@ -105,9 +151,9 @@ export const programs: Program[] = [
     ],
     upcoming: [
       {
-        title: "Native responsive screens",
+        title: "Screens from the app design",
         description:
-          "Converting the 28 approved screens from approved artwork to native responsive Flutter views, screen by screen, keeping the artwork as golden-test references.",
+          "Building BreatheFree's 17 screens from the Tether Health app design, as one program alongside the others.",
         horizon: "In development",
       },
       {
@@ -132,244 +178,95 @@ export const programs: Program[] = [
     product: { name: "BreatheFree", href: "/breathefree/" },
   },
   {
-    id: "metabolic",
-    area: "Diabetes & metabolic health",
-    examples: "Type 2 diabetes, prediabetes, metabolic syndrome",
+    id: "social-media",
+    appId: "sf",
+    name: "ScrollFree",
+    area: "Social media use",
+    archetype: "Quit / Reduce",
+    tagline: "Your attention is yours.",
+    color: "#3B4CC0",
+    letter: "S",
+    // needs-owner: examples, addresses, summary, services and upcoming are
+    // website copy drawn from the app's ScrollFree screens; the program
+    // itself is "Proposed" in the app.
+    examples: "Social media and endless scrolling",
     addresses: [
-      "Screening",
-      "Lifestyle support",
-      "Glucose management education",
-      "Complication prevention",
+      "Noticing what pulls you in",
+      "Goals that feel doable",
+      "Pausing the urge",
+      "Recovering from a long scroll",
     ],
-    status: "planned",
-    icon: "wave",
+    status: "proposed",
+    icon: "clock",
     summary:
-      "Diabetes and metabolic health is planned. Nothing is built. The area is on the plan because the burden is large and much of the day-to-day work sits with the person rather than the clinic.",
+      "ScrollFree, the program for social media use, is proposed. Nothing is available to use. It would start from what a person says about their own use, before asking for any screen-time permission.",
     services: [
       {
-        name: "Screening",
+        name: "Self-report first",
         description:
-          "Helping people understand whether they are at risk and what a screening conversation with a clinician involves.",
+          "Starting from what a person tells it about their own use and triggers, with screen-time access optional rather than required.",
       },
       {
-        name: "Lifestyle support",
+        name: "Minute goals and app-free windows",
         description:
-          "Everyday support for the changes that sit outside appointments, built around what a person can actually sustain.",
+          "A daily minute goal and app-free windows the person chooses, set at a level that feels doable.",
       },
       {
-        name: "Glucose management education",
+        name: "Pause 60",
         description:
-          "Plain-language education about glucose management. Education and self-management support only \u2014 never dosing advice.",
+          "A 60-second pause for the moment the urge to scroll hits, with the shared Rescue one tap away.",
       },
       {
-        name: "Complication prevention",
+        name: "Buddy and weekly reflection",
         description:
-          "Material on the checks and habits that reduce the risk of complications, and when to raise something with a clinician.",
+          "An optional accountability buddy, and a weekly reflection on how the week went, without judgment after a long scroll.",
+      },
+      {
+        name: "Unplug",
+        description:
+          "Optional app limits and focus sessions that the person chooses to set up and can turn off.",
       },
     ],
     upcoming: [
       {
-        title: "Area scoping",
+        title: "Decision on the proposal",
         description:
-          "Deciding what the shared system already covers and what this area genuinely needs of its own, before any code is written.",
+          "ScrollFree is a proposal. Whether and when it is built has not been decided.",
         horizon: "Next",
       },
       {
-        title: "Clinical content review",
+        title: "Permissions review",
         description:
-          "Commissioning review of the educational content by qualified clinicians, ahead of any build.",
+          "Reviewing exactly what screen-time and usage access would let ScrollFree see, and keeping self-report as the starting point.",
         horizon: "Later",
       },
       {
-        title: "Shared education review",
+        title: "Shared Rescue and supporters",
         description:
-          "Putting the education content through clinical review once, so it can be reused across the metabolic, cardiovascular and nutrition areas rather than reviewed three times.",
-        horizon: "Later",
-      },
-    ],
-  },
-  {
-    id: "cancer",
-    area: "Cancer",
-    examples: "Lung, colorectal, breast, prostate, skin and other cancers",
-    addresses: [
-      "Risk reduction",
-      "Screening awareness",
-      "Treatment-support resources",
-      "Survivorship",
-    ],
-    status: "planned",
-    icon: "shield",
-    summary:
-      "Cancer is planned. Nothing is built. This area needs the most care of any on the list: the boundary between useful information and implied diagnosis is narrow, and we will not cross it.",
-    services: [
-      {
-        name: "Risk reduction",
-        description:
-          "Information on modifiable risk, connected to the tobacco and nutrition work rather than duplicating it.",
-      },
-      {
-        name: "Screening awareness",
-        description:
-          "What screening exists, who it is offered to, and how to raise it with a clinician. Awareness only \u2014 we do not screen.",
-      },
-      {
-        name: "Treatment-support resources",
-        description:
-          "Practical, reviewed material for people in treatment and the people supporting them.",
-      },
-      {
-        name: "Survivorship",
-        description:
-          "Support for the period after treatment, which is long, under-served, and rarely designed for.",
-      },
-    ],
-    upcoming: [
-      {
-        title: "Scope and safety boundaries",
-        description:
-          "Writing down, before anything is built, exactly what this area will and will not do \u2014 particularly around anything that could be read as diagnosis.",
-        horizon: "Next",
-      },
-      {
-        title: "Clinical partnership",
-        description:
-          "Finding clinical partners willing to own the content, because this is not an area to build from secondary sources.",
-        horizon: "Later",
-      },
-      {
-        title: "Survivorship scope",
-        description:
-          "Deciding what the survivorship period actually needs, which is the part most often left out of both care and software.",
-        horizon: "Later",
-      },
-    ],
-  },
-  {
-    id: "cardiovascular",
-    area: "Cardiovascular health",
-    examples: "High blood pressure, heart disease, stroke",
-    addresses: [
-      "Risk assessment",
-      "Diet and activity support",
-      "Monitoring and prevention",
-    ],
-    status: "planned",
-    icon: "progress",
-    summary:
-      "Cardiovascular health is planned. Nothing is built. It shares most of its machinery with the metabolic and nutrition areas, which is part of why the shared system is being built once.",
-    services: [
-      {
-        name: "Risk assessment",
-        description:
-          "Helping a person understand their own risk factors and what changes them, without presenting it as a clinical assessment.",
-      },
-      {
-        name: "Diet and activity support",
-        description:
-          "The same behaviour-change machinery as the other areas, shaped to what this one needs.",
-      },
-      {
-        name: "Monitoring and prevention",
-        description:
-          "Support for readings a person takes at home, and clear guidance on when a number means calling someone rather than logging it.",
-      },
-      {
-        name: "Care-team coordination",
-        description:
-          "Letting a person hand readings and history to a clinician when they choose to, and never by default.",
-      },
-    ],
-    upcoming: [
-      {
-        title: "Shared behaviour-change core",
-        description:
-          "Proving the shared plan, check-in and progress components on a second area once BreatheFree has shown they work on the first.",
-        horizon: "Later",
-      },
-      {
-        title: "Home-reading safety rules",
-        description:
-          "Deciding the thresholds at which the product stops logging and starts telling someone to seek help.",
-        horizon: "Later",
-      },
-      {
-        title: "Consent and sharing model",
-        description:
-          "Reusing the sharing controls from BreatheFree so nothing reaches a care team unless the person sends it.",
-        horizon: "Later",
-      },
-    ],
-  },
-  {
-    id: "nutrition",
-    area: "Obesity & nutrition",
-    examples: "Obesity, poor diet, nutritional deficiencies",
-    addresses: [
-      "Nutrition education",
-      "Healthy-weight programs",
-      "Physical activity",
-    ],
-    status: "planned",
-    icon: "spark",
-    summary:
-      "Obesity and nutrition is planned. Nothing is built. It is also the area where tone matters most: this is a subject people have usually been shamed about before they reach any software.",
-    services: [
-      {
-        name: "Nutrition education",
-        description:
-          "Practical, non-prescriptive education that does not depend on tracking every meal.",
-      },
-      {
-        name: "Healthy-weight programs",
-        description:
-          "Structured support built around what a person can sustain, with no judgment when a week goes badly.",
-      },
-      {
-        name: "Physical activity",
-        description:
-          "Activity support that starts from what the person can do now, not from a target.",
-      },
-      {
-        name: "Support between appointments",
-        description:
-          "The long stretches where nothing is scheduled and most of the difficulty actually sits.",
-      },
-    ],
-    upcoming: [
-      {
-        title: "Tone and content review",
-        description:
-          "Reviewing every line for the judgment this area attracts by default, before it is built rather than after.",
-        horizon: "Next",
-      },
-      {
-        title: "Shared progress model",
-        description:
-          "Reusing the progress model from BreatheFree, which is designed so a bad day never erases prior progress.",
-        horizon: "Later",
-      },
-      {
-        title: "Non-tracking baseline",
-        description:
-          "Establishing what the area can do for someone who will not log meals, before building anything that assumes they will.",
+          "Reusing the shared Rescue and supporter components from the other programs rather than building them again.",
         horizon: "Later",
       },
     ],
   },
   {
     id: "respiratory",
+    appId: "ca",
+    name: "ClearAir",
     area: "Respiratory health",
+    archetype: "Manage",
+    tagline: "Follow your action plan, day by day.",
+    color: "#1D6A93",
+    letter: "C",
     examples: "COPD, asthma, smoking-related lung disease",
     addresses: [
       "Trigger and risk reduction",
       "Symptom monitoring",
       "Care coordination",
     ],
-    status: "planned",
+    status: "prototype",
     icon: "wave",
     summary:
-      "Respiratory health is planned. Nothing is built. It sits closest to the tobacco work, and much of what BreatheFree learns should carry over.",
+      "ClearAir, the program for respiratory health, is a prototype in development. Nothing is available to use. It sits closest to the tobacco work, and much of what BreatheFree learns should carry over.",
     services: [
       {
         name: "Trigger and risk reduction",
@@ -414,14 +311,145 @@ export const programs: Program[] = [
     ],
   },
   {
+    id: "cardiovascular",
+    appId: "hw",
+    name: "Heartwise",
+    area: "Cardiovascular health",
+    archetype: "Manage",
+    tagline: "Know your numbers. Share them on your terms.",
+    color: "#B3263E",
+    letter: "H",
+    examples: "High blood pressure, heart disease, stroke",
+    addresses: [
+      "Risk assessment",
+      "Diet and activity support",
+      "Monitoring and prevention",
+    ],
+    status: "prototype",
+    icon: "progress",
+    summary:
+      "Heartwise, the program for cardiovascular health, is a prototype in development. Nothing is available to use. It shares most of its machinery with the metabolic and nutrition areas, which is part of why the shared system is being built once.",
+    services: [
+      {
+        name: "Risk assessment",
+        description:
+          "Helping a person understand their own risk factors and what changes them, without presenting it as a clinical assessment.",
+      },
+      {
+        name: "Diet and activity support",
+        description:
+          "The same behaviour-change machinery as the other areas, shaped to what this one needs.",
+      },
+      {
+        name: "Monitoring and prevention",
+        description:
+          "Support for readings a person takes at home, and clear guidance on when a number means calling someone rather than logging it.",
+      },
+      {
+        name: "Care-team coordination",
+        description:
+          "Letting a person hand readings and history to a clinician when they choose to, and never by default.",
+      },
+    ],
+    upcoming: [
+      {
+        title: "Shared behaviour-change core",
+        description:
+          "Proving the shared plan, check-in and progress components on a second area once BreatheFree has shown they work on the first.",
+        horizon: "Later",
+      },
+      {
+        title: "Home-reading safety rules",
+        description:
+          "Deciding the thresholds at which the product stops logging and starts telling someone to seek help.",
+        horizon: "Later",
+      },
+      {
+        title: "Consent and sharing model",
+        description:
+          "Reusing the sharing controls from BreatheFree so nothing reaches a care team unless the person sends it.",
+        horizon: "Later",
+      },
+    ],
+  },
+  {
+    id: "metabolic",
+    appId: "st",
+    name: "Steady",
+    area: "Diabetes & metabolic health",
+    archetype: "Manage",
+    tagline: "Notice glucose patterns, without judgment.",
+    color: "#8A5A00",
+    letter: "S",
+    examples: "Type 2 diabetes, prediabetes, metabolic syndrome",
+    addresses: [
+      "Screening",
+      "Lifestyle support",
+      "Glucose management education",
+      "Complication prevention",
+    ],
+    status: "prototype",
+    icon: "wave",
+    summary:
+      "Steady, the program for diabetes and metabolic health, is a prototype in development. Nothing is available to use. The area is on the plan because the burden is large and much of the day-to-day work sits with the person rather than the clinic.",
+    services: [
+      {
+        name: "Screening",
+        description:
+          "Helping people understand whether they are at risk and what a screening conversation with a clinician involves.",
+      },
+      {
+        name: "Lifestyle support",
+        description:
+          "Everyday support for the changes that sit outside appointments, built around what a person can actually sustain.",
+      },
+      {
+        name: "Glucose management education",
+        description:
+          "Plain-language education about glucose management. Education and self-management support only \u2014 never dosing advice.",
+      },
+      {
+        name: "Complication prevention",
+        description:
+          "Material on the checks and habits that reduce the risk of complications, and when to raise something with a clinician.",
+      },
+    ],
+    upcoming: [
+      {
+        title: "Area scoping",
+        description:
+          "Deciding what the shared system already covers and what this area genuinely needs of its own, before any code is written.",
+        horizon: "Next",
+      },
+      {
+        title: "Clinical content review",
+        description:
+          "Commissioning review of the educational content by qualified clinicians, ahead of any build.",
+        horizon: "Later",
+      },
+      {
+        title: "Shared education review",
+        description:
+          "Putting the education content through clinical review once, so it can be reused across the metabolic, cardiovascular and nutrition areas rather than reviewed three times.",
+        horizon: "Later",
+      },
+    ],
+  },
+  {
     id: "kidney-liver",
+    appId: "re",
+    name: "Renew",
     area: "Kidney & liver health",
+    archetype: "Manage",
+    tagline: "Look after your kidneys and liver.",
+    color: "#1E6B68",
+    letter: "R",
     examples: "Chronic kidney disease, fatty liver disease",
     addresses: ["Risk identification", "Monitoring", "Prevention education"],
     status: "planned",
     icon: "info",
     summary:
-      "Kidney and liver health is planned. Nothing is built. Both conditions are often advanced before they are noticed, which makes identification and plain explanation the useful contribution.",
+      "Renew, the program for kidney and liver health, is planned. Nothing is available to use. Both conditions are often advanced before they are noticed, which makes identification and plain explanation the useful contribution.",
     services: [
       {
         name: "Risk identification",
@@ -466,8 +494,134 @@ export const programs: Program[] = [
     ],
   },
   {
+    id: "nutrition",
+    appId: "nu",
+    name: "Nourish",
+    area: "Obesity & nutrition",
+    archetype: "Build habits",
+    tagline: "Food without judgment.",
+    color: "#3F7426",
+    letter: "N",
+    examples: "Obesity, poor diet, nutritional deficiencies",
+    addresses: [
+      "Nutrition education",
+      "Healthy-weight programs",
+      "Physical activity",
+    ],
+    status: "planned",
+    icon: "spark",
+    summary:
+      "Nourish, the program for obesity and nutrition, is planned. Nothing is available to use. It is also the area where tone matters most: this is a subject people have usually been shamed about before they reach any software.",
+    services: [
+      {
+        name: "Nutrition education",
+        description:
+          "Practical, non-prescriptive education that does not depend on tracking every meal.",
+      },
+      {
+        name: "Healthy-weight programs",
+        description:
+          "Structured support built around what a person can sustain, with no judgment when a week goes badly.",
+      },
+      {
+        name: "Physical activity",
+        description:
+          "Activity support that starts from what the person can do now, not from a target.",
+      },
+      {
+        name: "Support between appointments",
+        description:
+          "The long stretches where nothing is scheduled and most of the difficulty actually sits.",
+      },
+    ],
+    upcoming: [
+      {
+        title: "Tone and content review",
+        description:
+          "Reviewing every line for the judgment this area attracts by default, before it is built rather than after.",
+        horizon: "Next",
+      },
+      {
+        title: "Shared progress model",
+        description:
+          "Reusing the progress model from BreatheFree, which is designed so a bad day never erases prior progress.",
+        horizon: "Later",
+      },
+      {
+        title: "Non-tracking baseline",
+        description:
+          "Establishing what the area can do for someone who will not log meals, before building anything that assumes they will.",
+        horizon: "Later",
+      },
+    ],
+  },
+  {
+    id: "aging",
+    appId: "sd",
+    name: "Stride",
+    area: "Healthy aging",
+    archetype: "Build habits",
+    tagline: "Move well, stay well.",
+    color: "#94501F",
+    letter: "S",
+    examples: "Mobility, cognitive health, falls",
+    addresses: ["Prevention", "Monitoring", "Exercise and support programs"],
+    status: "planned",
+    icon: "accessibility",
+    summary:
+      "Stride, the program for healthy aging, is planned. Nothing is available to use. It is the area where accessibility stops being a compliance exercise and becomes the whole product.",
+    services: [
+      {
+        name: "Prevention",
+        description:
+          "Support for the things that keep people independent longer, particularly falls.",
+      },
+      {
+        name: "Monitoring",
+        description:
+          "Light monitoring that a person or a family member can act on, without turning a home into a ward.",
+      },
+      {
+        name: "Exercise and support programs",
+        description:
+          "Structured activity and support built for the range of ability this area actually covers.",
+      },
+      {
+        name: "Supporter involvement",
+        description:
+          "Letting a family member or carer help without taking the person's decisions away from them.",
+      },
+    ],
+    upcoming: [
+      {
+        title: "Accessibility-first design",
+        description:
+          "Starting from large type, high contrast, switch control and screen readers rather than retrofitting them.",
+        horizon: "Later",
+      },
+      {
+        title: "Supporter roles",
+        description:
+          "Extending the supporter model from BreatheFree so a family member can help without taking over.",
+        horizon: "Later",
+      },
+      {
+        title: "Falls scope",
+        description:
+          "Deciding what is genuinely useful on falls without turning a home into a monitored ward.",
+        horizon: "Later",
+      },
+    ],
+  },
+  {
     id: "behavioral",
+    appId: "ea",
+    name: "Ease",
     area: "Mental & behavioral health",
+    archetype: "Support",
+    tagline: "Support for how you feel.",
+    color: "#5B4FB8",
+    letter: "E",
     examples: "Stress, anxiety, depression, substance-use concerns",
     addresses: [
       "Screening",
@@ -477,7 +631,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "users",
     summary:
-      "Mental and behavioural health is planned. Nothing is built. Our role here is support and routing to qualified people \u2014 not therapy, and not crisis care. The safety routing on every page of this site exists because of areas like this one.",
+      "Ease, the program for mental and behavioral health, is planned. Nothing is available to use. Our role here is support and routing to qualified people \u2014 not therapy, and not crisis care. The safety routing on every page of this site exists because of areas like this one.",
     services: [
       {
         name: "Screening",
@@ -535,7 +689,13 @@ export const programs: Program[] = [
   },
   {
     id: "preventive",
+    appId: "ck",
+    name: "Checkup",
     area: "Preventive health",
+    archetype: "Prevent",
+    tagline: "What’s due for you, in one place.",
+    color: "#5A661A",
+    letter: "C",
     examples: "Vaccinations, routine screenings, checkups",
     addresses: [
       "Reminders",
@@ -545,7 +705,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "calendar",
     summary:
-      "Preventive health is planned. Nothing is built. It is the least glamorous area on the list and possibly the highest-yield: most of it is remembering things at the right time.",
+      "Checkup, the program for preventive health, is planned. Nothing is available to use. It is the least glamorous area on the list and possibly the highest-yield: most of it is remembering things at the right time.",
     services: [
       {
         name: "Reminders",
@@ -590,53 +750,64 @@ export const programs: Program[] = [
     ],
   },
   {
-    id: "aging",
-    area: "Healthy aging",
-    examples: "Mobility, cognitive health, falls",
-    addresses: ["Prevention", "Monitoring", "Exercise and support programs"],
+    id: "cancer",
+    appId: "be",
+    name: "Beacon",
+    area: "Cancer",
+    archetype: "Prevent",
+    tagline: "Lower your risk. Know your options.",
+    color: "#74428F",
+    letter: "B",
+    examples: "Lung, colorectal, breast, prostate, skin and other cancers",
+    addresses: [
+      "Risk reduction",
+      "Screening awareness",
+      "Treatment-support resources",
+      "Survivorship",
+    ],
     status: "planned",
-    icon: "accessibility",
+    icon: "shield",
     summary:
-      "Healthy aging is planned. Nothing is built. It is the area where accessibility stops being a compliance exercise and becomes the whole product.",
+      "Beacon, the program for cancer, is planned. Nothing is available to use. This area needs the most care of any on the list: the boundary between useful information and implied diagnosis is narrow, and we will not cross it.",
     services: [
       {
-        name: "Prevention",
+        name: "Risk reduction",
         description:
-          "Support for the things that keep people independent longer, particularly falls.",
+          "Information on modifiable risk, connected to the tobacco and nutrition work rather than duplicating it.",
       },
       {
-        name: "Monitoring",
+        name: "Screening awareness",
         description:
-          "Light monitoring that a person or a family member can act on, without turning a home into a ward.",
+          "What screening exists, who it is offered to, and how to raise it with a clinician. Awareness only \u2014 we do not screen.",
       },
       {
-        name: "Exercise and support programs",
+        name: "Treatment-support resources",
         description:
-          "Structured activity and support built for the range of ability this area actually covers.",
+          "Practical, reviewed material for people in treatment and the people supporting them.",
       },
       {
-        name: "Supporter involvement",
+        name: "Survivorship",
         description:
-          "Letting a family member or carer help without taking the person's decisions away from them.",
+          "Support for the period after treatment, which is long, under-served, and rarely designed for.",
       },
     ],
     upcoming: [
       {
-        title: "Accessibility-first design",
+        title: "Scope and safety boundaries",
         description:
-          "Starting from large type, high contrast, switch control and screen readers rather than retrofitting them.",
+          "Writing down, before anything is built, exactly what this area will and will not do \u2014 particularly around anything that could be read as diagnosis.",
+        horizon: "Next",
+      },
+      {
+        title: "Clinical partnership",
+        description:
+          "Finding clinical partners willing to own the content, because this is not an area to build from secondary sources.",
         horizon: "Later",
       },
       {
-        title: "Supporter roles",
+        title: "Survivorship scope",
         description:
-          "Extending the supporter model from BreatheFree so a family member can help without taking over.",
-        horizon: "Later",
-      },
-      {
-        title: "Falls scope",
-        description:
-          "Deciding what is genuinely useful on falls without turning a home into a monitored ward.",
+          "Deciding what the survivorship period actually needs, which is the part most often left out of both care and software.",
         horizon: "Later",
       },
     ],
@@ -644,5 +815,6 @@ export const programs: Program[] = [
 ];
 
 export const programCount = programs.length;
-export const buildingPrograms = programs.filter((p) => p.status === "building");
-export const plannedPrograms = programs.filter((p) => p.status === "planned");
+/** Programs with the given status, in catalog order. */
+export const programsWithStatus = (status: ProgramStatus) =>
+  programs.filter((p) => p.status === status);

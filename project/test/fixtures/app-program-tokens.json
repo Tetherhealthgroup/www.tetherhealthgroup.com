@@ -1,0 +1,70 @@
+{
+  "program": {
+    "bf": {
+      "name": "BreatheFree",
+      "color": "#B5432A",
+      "letter": "B",
+      "archetype": "Quit / Reduce"
+    },
+    "sf": {
+      "name": "ScrollFree",
+      "color": "#3B4CC0",
+      "letter": "S",
+      "archetype": "Quit / Reduce"
+    },
+    "ca": {
+      "name": "ClearAir",
+      "color": "#1D6A93",
+      "letter": "C",
+      "archetype": "Manage"
+    },
+    "hw": {
+      "name": "Heartwise",
+      "color": "#B3263E",
+      "letter": "H",
+      "archetype": "Manage"
+    },
+    "st": {
+      "name": "Steady",
+      "color": "#8A5A00",
+      "letter": "S",
+      "archetype": "Manage"
+    },
+    "re": {
+      "name": "Renew",
+      "color": "#1E6B68",
+      "letter": "R",
+      "archetype": "Manage"
+    },
+    "nu": {
+      "name": "Nourish",
+      "color": "#3F7426",
+      "letter": "N",
+      "archetype": "Build habits"
+    },
+    "sd": {
+      "name": "Stride",
+      "color": "#94501F",
+      "letter": "S",
+      "archetype": "Build habits"
+    },
+    "ea": {
+      "name": "Ease",
+      "color": "#5B4FB8",
+      "letter": "E",
+      "archetype": "Support"
+    },
+    "ck": {
+      "name": "Checkup",
+      "color": "#5A661A",
+      "letter": "C",
+      "archetype": "Prevent"
+    },
+    "be": {
+      "name": "Beacon",
+      "color": "#74428F",
+      "letter": "B",
+      "archetype": "Prevent"
+    }
+  }
+}

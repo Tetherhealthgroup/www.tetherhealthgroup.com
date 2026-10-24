@@ -26,6 +26,8 @@ export const REQUIRED_PAGES = [
   "404.html",
   "about/index.html",
   "accessibility/index.html",
+  "app-privacy/index.html",
+  "delete-account/index.html",
   "breathefree/index.html",
   "breathefree/how-it-works/index.html",
   "breathefree/tour/index.html",
@@ -36,8 +38,9 @@ export const REQUIRED_PAGES = [
   "support/index.html",
   "terms/index.html",
   "services/index.html",
-  // one page per health area, generated from programs.ts
+  // one page per app program, generated from programs.ts
   "programs/tobacco/index.html",
+  "programs/social-media/index.html",
   "programs/metabolic/index.html",
   "programs/cancer/index.html",
   "programs/cardiovascular/index.html",
@@ -78,6 +81,46 @@ export const htmlFilesAbsolute = (dir = dist) =>
 
 export const readPage = (rel) => readFileSync(join(dist, rel), "utf8");
 
+const NAMED_ENTITIES = {
+  amp: "&",
+  AMP: "&",
+  lt: "<",
+  LT: "<",
+  gt: ">",
+  GT: ">",
+  quot: '"',
+  QUOT: '"',
+  apos: "'",
+  nbsp: " ",
+  commat: "@",
+  period: ".",
+  colon: ":",
+  comma: ",",
+  semi: ";",
+  quest: "?",
+  equals: "=",
+  percnt: "%",
+  sol: "/",
+  num: "#",
+};
+
+/**
+ * Text with character references decoded once: every numeric reference, and
+ * the named references in NAMED_ENTITIES. A named reference outside that
+ * table is left as written, so this is not a full HTML decoder.
+ */
+export function decodeEntities(text) {
+  return text.replace(
+    /&(?:#(\d+)|#[xX]([0-9A-Fa-f]+)|([A-Za-z][A-Za-z0-9]*));?/g,
+    (ref, dec, hex, name) => {
+      if (name !== undefined)
+        return Object.hasOwn(NAMED_ENTITIES, name) ? NAMED_ENTITIES[name] : ref;
+      const code = dec !== undefined ? Number(dec) : parseInt(hex, 16);
+      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : ref;
+    },
+  );
+}
+
 /** Map a dist-relative HTML path to the URL path it is served at. */
 export function routeOf(rel) {
   if (rel === "404.html") return "/404.html";
@@ -107,7 +150,7 @@ export const cspLine = () =>
     /^\s*Header always set Content-Security-Policy "(.+)"$/m,
   )?.[1] ?? "";
 
-/** The ten health areas, read from source so the list cannot drift. */
+/** The program URL slugs, read from source so the list cannot drift. */
 export function programAreas() {
   const src = readFileSync(join(projectRoot, "src/data/programs.ts"), "utf8");
   return [...src.matchAll(/^\s*id:\s*"([^"]+)"/gm)].map((m) => m[1]);

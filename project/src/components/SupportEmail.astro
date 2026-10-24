@@ -1,6 +1,6 @@
 ---
 /**
- * The support address, as a mailto link that is allowed to break.
+ * A role mailbox (support by default), as a mailto link that is allowed to break.
  *
  * The address is a single unbreakable token roughly 29 characters long. In a
  * narrow container it does not wrap, it overhangs — which put /support/ into
@@ -15,9 +15,11 @@
  * Anything passed as children renders before the address — the footer uses that
  * for its icon.
  */
-import { contact } from "../data/site";
+import { contact, type Mailbox } from "../data/site";
 
 interface Props {
+  /** Which role mailbox to link; defaults to support. */
+  mailbox?: Mailbox;
   /** Optional mailto subject line. */
   subject?: string;
   /** Eyebrow rendered above the address, e.g. "Email us". */
@@ -28,17 +30,19 @@ interface Props {
 }
 
 const {
+  mailbox = "support",
   subject,
   label,
   addressClass = "",
   class: className = "",
 } = Astro.props;
 
+const address = contact[mailbox];
 const href = subject
-  ? `mailto:${contact.support}?subject=${encodeURIComponent(subject)}`
-  : `mailto:${contact.support}`;
+  ? `mailto:${address}?subject=${encodeURIComponent(subject)}`
+  : `mailto:${address}`;
 
-const [localPart, domain] = contact.support.split("@");
+const [localPart, domain] = address.split("@");
 ---
 
 <a href={href} class:list={["wrap-anywhere", className]}>

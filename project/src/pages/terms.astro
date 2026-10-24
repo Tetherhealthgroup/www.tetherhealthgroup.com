@@ -9,8 +9,8 @@ import SupportEmail from "../components/SupportEmail.astro";
   description="The terms that apply to using www.tetherhealthgroup.com, including the important limits on what this site is and is not."
   eyebrow="Trust"
   intro="These terms cover this website. They exist mainly to be clear about one thing: nothing here is medical advice."
-  updated="2026-08-29"
-  scopeNote="These terms cover this website only. BreatheFree is not yet available; when it is released it will have its own terms covering use of the application, which these do not address."
+  updated="2026-10-22"
+  scopeNote="These terms cover this website only. They do not cover use of the Tether Health app or any of its programs, including BreatheFree."
 >
   <h2>Not medical advice</h2>
   <p>
@@ -44,6 +44,18 @@ import SupportEmail from "../components/SupportEmail.astro";
     no statement here should be read as a claim that a product has been reviewed
     or cleared by any regulator.
   </p>
+
+  <h2>The Tether Health app</h2>
+  <p>
+    <!-- Draft for counsel review. This app section and the scope note are new and are not final legal text. -->
+    The Tether Health app is not covered by these terms. How the app handles your
+    information is in the <a href="/app-privacy/"
+      >Tether Health app privacy policy</a
+    >, and how to delete your app account is on the <a href="/delete-account/"
+      >account deletion page</a
+    >.
+  </p>
+  <p>To be confirmed: the terms that apply to use of the app.</p>
 
   <h2>Third-party services we mention</h2>
   <p>
@@ -119,6 +131,9 @@ import SupportEmail from "../components/SupportEmail.astro";
 
   <h2>Contact</h2>
   <p>
-    Questions about these terms can go to <SupportEmail />.
+    Questions about these terms can go to <SupportEmail />. Healthcare and
+    business partnership enquiries go to <SupportEmail
+      mailbox="partnerships"
+    />.
   </p>
 </Legal>

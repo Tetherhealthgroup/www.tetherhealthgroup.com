@@ -1,0 +1,188 @@
+---
+/**
+ * Account deletion for the Tether Health app: the public web resource Google
+ * Play asks for. It names the app and the developer, gives the in-app path,
+ * offers a route that does not need the app, and says what is deleted and
+ * kept.
+ *
+ * Draft for counsel review. The in-app steps follow the app's Account and
+ * "Your data" screens and the deletion receipt; the list of what is deleted
+ * follows the app's server-side deletion. A second, shorter path covers
+ * versions of the app that show a "Settings & privacy" screen instead.
+ * Anything the sources do not settle is a visible "To be confirmed" line;
+ * the open questions are listed in docs/legal-drafts.md.
+ *
+ * Built and reachable at /delete-account/ so it can be given to Google Play,
+ * but kept noindex and out of the sitemap until counsel signs off. Publishing
+ * it for real means removing noindex and the draft notice and updating
+ * test/functional/account-deletion.test.js in the same change.
+ */
+
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Icon from "../components/Icon.astro";
+import SupportEmail from "../components/SupportEmail.astro";
+import { site } from "../data/site";
+
+const appName = "Tether Health";
+const emailSubject = `Delete my ${appName} account`;
+
+/* The in-app path, in order, using the app's own screen and button labels.
+   Rendered with the numbered-step pattern from breathefree/how-it-works.astro
+   so the page adds no utility class the shared stylesheet does not already
+   contain. */
+const inAppSteps = [
+  `Open the ${appName} app and sign in.`,
+  "On Today, tap your avatar at the top to open Account.",
+  'Tap "Your data".',
+  'Under Delete, tap "Delete account and all data".',
+  "Type DELETE to confirm, then enter your password. If you signed in with Apple or Google, confirm with that same account instead.",
+  'Tap "Delete everything".',
+  "The app shows a deletion receipt and signs you out on that phone. Keep the receipt ID if you contact support.",
+];
+
+/* Versions of the app that show a "Settings & privacy" screen. */
+const settingsSteps = [
+  'Open "Settings & privacy".',
+  'Under "Your data", tap "Delete account and data".',
+  "Enter your password, type DELETE and confirm.",
+];
+
+const programSteps = [
+  'Open Account, then "Programs & sharing", and tap the program.',
+  'Under Data, tap "Leave" followed by the program name, for example "Leave BreatheFree".',
+  'Choose to delete that program\'s data now, for example "Delete BreatheFree data now", and confirm. Reminders for that program stop right away, and your other programs are not affected.',
+];
+---
+
+<Base
+  title={`Delete your ${appName} account`}
+  description={`How to delete your ${appName} account and data in the app, what to do if you cannot sign in, and what is deleted and kept.`}
+  noindex
+>
+  <PageHero
+    eyebrow="Account deletion"
+    title={`Delete your ${appName} account`}
+    intro={`How to delete your account and data in the ${appName} app, developed by ${site.legalName}, including if you cannot sign in.`}
+    width="narrow"
+  />
+
+  <Section width="narrow">
+    <p
+      class="mb-12 flex items-start gap-3 rounded-3xl border border-mint-strong bg-mint p-6 leading-relaxed text-teal-mid"
+    >
+      <Icon name="info" size={20} class="mt-0.5 shrink-0 text-teal-deep" />
+      <span>
+        Draft for review by {site.legalName} and its counsel. Items marked "To be
+        confirmed" are not decided yet.
+      </span>
+    </p>
+
+    <div class="prose-tether">
+      <!-- Draft for counsel review. This page is not final legal text. -->
+      <h2>Delete your account in the app</h2>
+      <p>
+        Deleting your account deletes your data in every program. It cannot be
+        undone. If you want a copy, export it first from "Your data".
+      </p>
+      <ol id="in-app-steps" class="grid gap-3">
+        {
+          inAppSteps.map((step, index) => (
+            <li class="flex items-start gap-4 rounded-3xl border border-hairline-soft bg-paper/80 p-5">
+              <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mint-pale text-[0.85rem] font-extrabold text-teal-mid">
+                {index + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))
+        }
+      </ol>
+
+      <h3>If your app shows "Settings &amp; privacy"</h3>
+      <ol id="settings-steps">
+        {settingsSteps.map((step) => <li>{step}</li>)}
+      </ol>
+
+      <h2>Delete one program's data</h2>
+      <p>
+        You can leave a single program and delete only its data, without
+        deleting your account.
+      </p>
+      <ol id="program-steps">
+        {programSteps.map((step) => <li>{step}</li>)}
+      </ol>
+      <p>
+        If you leave a program and keep its data, it is kept until you delete it
+        or delete your account.
+      </p>
+
+      <h2>If you cannot sign in</h2>
+      <p>
+        If you have forgotten your password, reset it from the sign-in screen
+        first and then follow the steps above.
+      </p>
+      <p>
+        Or email <SupportEmail subject={emailSubject} /> from the email address on
+        your account, with the subject "{emailSubject}". You do not need the app
+        to ask.
+      </p>
+      <p>
+        To be confirmed: who handles email requests, and how we check that a
+        request comes from the account holder.
+      </p>
+      <p>To be confirmed: how long it takes to complete a request.</p>
+
+      <h2>What is deleted</h2>
+      <p>Deleting your account deletes, from our servers:</p>
+      <ul>
+        <li>your profile, display name and profile photo</li>
+        <li>
+          your age range, sleep and stress answers, and your consent choices
+        </li>
+        <li>the programs you joined, with their plans and setup answers</li>
+        <li>
+          your check-ins, readings, logs and other program entries, Rescue use
+          and lesson progress
+        </li>
+        <li>your reminder and notification settings</li>
+        <li>
+          the supporters, caregiver and care-team connections you set up, and
+          the records of what you shared through them
+        </li>
+        <li>your sign-in account</li>
+      </ul>
+
+      <h2>What is kept</h2>
+      <p>
+        Copies in backups and logs are kept until those backups and logs expire.
+      </p>
+      <p>
+        To be confirmed: how long copies remain in backups and logs after
+        deletion.
+      </p>
+      <p>
+        A summary you sent to a care team, or a message you sent to a supporter
+        from your phone, stays with the people who received it.
+      </p>
+      <p>
+        Deleting your account does not delete any copy you exported yourself.
+      </p>
+
+      <h2>Data on your phone</h2>
+      <p>
+        Deleting your account signs you out on that phone. If you used the app
+        on this phone only, without an account, your data is kept on your phone.
+      </p>
+      <p>
+        To be confirmed: which data on the phone is cleared when a signed-in
+        account is deleted.
+      </p>
+      <p>
+        To remove everything the app keeps on your phone, uninstall the app, or
+        on Android go to Settings &gt; Apps &gt; {appName} &gt; Storage &gt; Clear
+        storage.
+      </p>
+    </div>
+  </Section>
+</Base>

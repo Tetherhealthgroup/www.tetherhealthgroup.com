@@ -8,62 +8,61 @@ import ProgramCard from "../components/ProgramCard.astro";
 import {
   programs,
   programCount,
-  buildingPrograms,
-  plannedPrograms,
+  programsWithStatus,
   statusLabels,
+  statusMeanings,
+  statusOrder,
 } from "../data/programs";
 ---
 
 <Base
-  title="Health areas"
-  description={`The ${programCount} areas of health Tether Health Group intends to support, and where each one stands today. Tobacco and nicotine is in development; the rest are planned.`}
+  title="Programs"
+  description={`The ${programCount} programs of the Tether Health app, one per area of health, and where each one stands today. BreatheFree is in build; none is available to use yet.`}
 >
   <PageHero
     eyebrow="Where we are headed"
-    title={`${programCount} areas of health, one at a time.`}
-    intro="Behaviour change looks different across conditions, but the machinery underneath is shared. We are building that machinery once, then shaping it to each area — starting with tobacco and nicotine."
+    title={`${programCount} programs, one app, one area at a time.`}
+    intro="Tether Health is one app with a program for each area of health. Behaviour change looks different across conditions, but the machinery underneath is shared. We are building that machinery once, then shaping it to each program — starting with BreatheFree, for tobacco and nicotine."
   />
 
-  <!-- Status key -->
+  <!-- Status key: the app's own status words -->
   <Section space="tight" width="wide">
-    <div class="grid gap-5 sm:grid-cols-2">
-      <div
-        class="flex items-start gap-4 rounded-3xl border border-teal-deep/25 bg-paper p-6 ring-1 ring-teal-deep/10"
-      >
-        <span
-          class="inline-flex items-center gap-1.5 rounded-full bg-lime px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-teal-deep"
-        >
-          <span class="relative flex h-2 w-2" aria-hidden="true">
+    <ul class="grid gap-5 sm:grid-cols-2">
+      {
+        statusOrder.map((status) => (
+          <li
+            class:list={[
+              "flex items-start gap-4 rounded-3xl border bg-paper p-6",
+              status === "in-build"
+                ? "border-teal-deep/25 ring-1 ring-teal-deep/10"
+                : "border-hairline-soft",
+            ]}
+          >
             <span
-              class="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-deep opacity-60"
-            ></span>
-            <span class="relative inline-flex h-2 w-2 rounded-full bg-teal-deep"
-            ></span>
-          </span>
-          {statusLabels.building}
-        </span>
-        <p class="text-[0.95rem] leading-relaxed text-teal-mid">
-          Design is approved and code is being written. {
-            buildingPrograms.length
-          } of {programCount} areas.
-        </p>
-      </div>
-
-      <div
-        class="flex items-start gap-4 rounded-3xl border border-hairline-soft bg-paper/70 p-6"
-      >
-        <span
-          class="rounded-full bg-mint-pale px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-teal-mid ring-1 ring-hairline-soft"
-        >
-          {statusLabels.planned}
-        </span>
-        <p class="text-[0.95rem] leading-relaxed text-teal-mid">
-          On the roadmap with no implementation yet. {plannedPrograms.length} of {
-            programCount
-          } areas.
-        </p>
-      </div>
-    </div>
+              class:list={[
+                "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em]",
+                status === "in-build"
+                  ? "bg-lime text-teal-deep"
+                  : "bg-mint-pale text-teal-mid ring-1 ring-hairline-soft",
+              ]}
+            >
+              {status === "in-build" && (
+                <span class="relative flex h-2 w-2" aria-hidden="true">
+                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-deep opacity-60" />
+                  <span class="relative inline-flex h-2 w-2 rounded-full bg-teal-deep" />
+                </span>
+              )}
+              {statusLabels[status]}
+            </span>
+            {/* needs-counsel: WEB-005 */}
+            <p class="text-[0.95rem] leading-relaxed text-teal-mid">
+              {statusMeanings[status]} {programsWithStatus(status).length} of{" "}
+              {programCount} programs.
+            </p>
+          </li>
+        ))
+      }
+    </ul>
   </Section>
 
   <!-- The areas -->
@@ -77,7 +76,7 @@ import {
       view — the outline needs the level, the page does not need the words.
     */
     }
-    <h2 class="sr-only">All {programCount} areas</h2>
+    <h2 class="sr-only">All {programCount} programs</h2>
     <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {
         programs.map((program) => (
@@ -141,8 +140,8 @@ import {
           >
             <Icon name="info" size={19} class="mt-0.5 shrink-0" />
             <span>
-              Planned areas describe intent. Nothing listed here is available
-              for clinical use today.
+              Programs that are not in build describe intent. Nothing listed
+              here is available for clinical use today.
             </span>
           </p>
         </div>

@@ -226,7 +226,7 @@ the document root.
 
 To publish, in cPanel → Git Version Control, clone this repository with
 `deploy` as the checked-out branch and `public_html` as the path. To refresh it
-after a source change:
+after a source change, do the Node security check below first, then:
 
 ```bash
 npm run build          # from the repository root
@@ -242,6 +242,20 @@ Publishing is a two-step: `npm run deploy` pushes the `deploy` branch, then
 cPanel copies it into the document root. The second step is what
 `project/public/.cpanel.yml` provides — see "The document root was the
 blocker" below for why a copy step is needed at all.
+
+**Before each publish, check Node's security releases. This is a manual
+check: nothing watches it automatically** (source: WEB-020). From the
+repository root, `git log -s -L '/node-version:/,+1:.github/workflows/ci.yml'`
+lists the commits that changed the `node-version` floor in
+`.github/workflows/ci.yml`; the first (newest) one is when it last changed.
+Read <https://nodejs.org/en/blog/vulnerability> for Node 22 security releases
+published since then. If one fixes Node's bundled undici (the copy behind
+global `fetch` and `WebSocket`; `node -p process.versions.undici` prints its
+version) or another advisory relevant to the build, raise that floor in its
+own ticket. If a post announces an upcoming Node 22 security release, check
+again once it ships, before publishing. Then confirm that `node --version` on
+the machine running `npm run build` and `npm run deploy` satisfies the
+`node-version` range in `ci.yml`, and upgrade Node there first if it does not.
 
 ### The certificate is done
 
@@ -323,10 +337,15 @@ Two details in it are load-bearing, and both are guarded by tests:
   `.cpanel.yml` examples, does not match `.htaccess` — so the deploy reports
   success and ships the site with no CSP, no HSTS and no redirects. It uses
   `rsync` (falling back to `tar`) instead.
-- **`--delete` must spare `.well-known/`.** AutoSSL writes HTTP-01 challenge
-  tokens into the document root; a deploy running during validation would
-  otherwise fail a renewal it has nothing to do with. `.git/` and `cgi-bin/`
-  are excluded too.
+- **`--delete` must spare everything under `.well-known/`.** AutoSSL and cPanel
+  write validation tokens there (`acme-challenge/`, `pki-validation/`,
+  `cpanel-dcv/`) and the host may hold other live files such as
+  `assetlinks.json`; a deploy running during validation would otherwise fail a
+  renewal it has nothing to do with. The copy uses `--filter='P /.well-known/**'`
+  (protect from deletion) rather than `--exclude`, because an exclude also
+  blocks the transfer and `/.well-known/security.txt` (RFC 9116, from
+  `public/.well-known/`) would then never reach the document root. `.git/` and
+  `cgi-bin/` are excluded too.
 
 `.git/` matters twice. The deny-list at the foot of `.htaccess` matches
 filenames, so it stops `/.git` but not `/.git/config` — `config` has no leading

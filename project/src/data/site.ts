@@ -13,23 +13,45 @@ export const site = {
   domain: "www.tetherhealthgroup.com",
   url: "https://www.tetherhealthgroup.com",
   tagline: "Care that meets people where they are.",
+  // needs-counsel: WEB-005 (feeds meta/og/twitter description and JSON-LD; changing it re-pins a CSP hash)
   description:
-    "Tether Health Group builds calm, private, evidence-informed digital health tools. Our first product, BreatheFree, supports people quitting smoking without judgment.",
+    "Tether Health Group is building calm, private health tools. BreatheFree, designed to help people quit smoking, is in development for Android first.",
 } as const;
 
 /**
- * The single confirmed contact address for Tether Health Group.
+ * Role mailboxes for Tether Health Group (owner-provided, 2026-10-12; admin and
+ * finance added 2026-10-20).
  *
- * Every contact route on the site — waitlist, support, privacy, security and
- * accessibility enquiries — points here deliberately. Role addresses
- * (privacy@, security@, ...) are conventional but none has been confirmed to
- * exist, and a published address that bounces is worse than one shared inbox.
- * To split them later, add the addresses here and update the pages that read
- * this object; nothing else hard-codes an address.
+ * This is the only place an address is written down; pages and components
+ * read it from here. Never publish a personal address, and never use
+ * safecodeg.com. Whether each mailbox actually receives mail is Unknown until
+ * the owner confirms a test message arrived.
  */
 export const contact = {
   support: "support@tetherhealthgroup.com",
+  privacy: "privacy@tetherhealthgroup.com",
+  security: "security@tetherhealthgroup.com",
+  partnerships: "partnerships@tetherhealthgroup.com",
+  careers: "careers@tetherhealthgroup.com",
+  finance: "finance@tetherhealthgroup.com",
+  admin: "admin@tetherhealthgroup.com",
 } as const;
+
+export type Mailbox = keyof typeof contact;
+
+/**
+ * Leadership, names and titles only. Nothing else about a person belongs here
+ * until the owner supplies and approves it.
+ */
+export const leadership = [
+  { name: "Srikanth", title: "CEO", fullTitle: "Chief Executive Officer" },
+  {
+    name: "Hariharan",
+    title: "COO & CTO",
+    fullTitle: "Chief Operating Officer & Chief Technology Officer",
+  },
+  { name: "Kushal", title: "CFO", fullTitle: "Chief Financial Officer" },
+] as const;
 
 /**
  * Where the waitlist form delivers.
@@ -41,7 +63,8 @@ export const contact = {
  */
 export const waitlist = {
   email: contact.support,
-  subject: "BreatheFree early access request",
+  // needs-counsel: WEB-005
+  subject: "BreatheFree waitlist",
 } as const;
 
 export interface NavLink {
@@ -51,7 +74,7 @@ export interface NavLink {
 }
 
 export const primaryNav: NavLink[] = [
-  { label: "Health areas", href: "/programs/" },
+  { label: "Programs", href: "/programs/" },
   { label: "Services", href: "/services/" },
   { label: "BreatheFree", href: "/breathefree/" },
   { label: "How it works", href: "/breathefree/how-it-works/" },
@@ -63,7 +86,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
   {
     title: "Product",
     links: [
-      { label: "All health areas", href: "/programs/" },
+      { label: "All programs", href: "/programs/" },
       { label: "All services", href: "/services/" },
       { label: "BreatheFree overview", href: "/breathefree/" },
       { label: "How it works", href: "/breathefree/how-it-works/" },
@@ -83,6 +106,8 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
     title: "Trust",
     links: [
       { label: "Privacy notice", href: "/privacy/" },
+      { label: "App privacy policy", href: "/app-privacy/" },
+      { label: "Delete your account", href: "/delete-account/" },
       { label: "Security", href: "/security/" },
       { label: "Accessibility", href: "/accessibility/" },
       { label: "Terms of use", href: "/terms/" },

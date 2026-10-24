@@ -46,7 +46,7 @@ per directory, delegated from the repository root so the gate finds them all.
 | 4 | Smoke | `test/smoke/` | Routes emitted, sitemap generated, share card and `robots.txt` present. Runs first. |
 | 5 | Regression | `test/regression/` | One case per defect fixed: the 404 canonical that pointed at `/404/`, the waitlist form shown while unable to submit, and the removed updates page. |
 | 6 | Acceptance | `test/acceptance/` | Safety routing on every page, the pre-launch posture, and every health area honest about its own status. |
-| 7 | Security | `test/security/` | No third-party resource on any page, the CSP forbidding what it exists to forbid, HSTS, and the ACME challenge not redirected into https. |
+| 7 | Security | `test/security/` | No third-party resource on any page, the CSP forbidding what it exists to forbid, HSTS, the ACME challenge not redirected into https, and public-repository hygiene: no internal process vocabulary in tracked files and no source-citing HTML comment in the build. |
 | 8 | UI | `test/ui/` | Document metadata, heading order, and text that must reflow rather than overflow a narrow viewport. |
 | 9 | E2E | `test/e2e/` | The built site served over real HTTP by `astro preview`: directory URLs resolving, an unknown path not answering 200, and every link followed rather than merely present. |
 | 10 | Performance | `test/performance/` | Budgets on what is downloaded — page weight, inline script, one render-blocking stylesheet, modern image formats, declared image sizes, total payload. Each budget records the measurement it was set from. |

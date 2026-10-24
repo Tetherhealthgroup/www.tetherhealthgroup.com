@@ -489,3 +489,110 @@ unit 8/8 PASS · smoke 25/25 PASS.
 certificate is still wrong — the fix above removes an obstacle to running it,
 it does not run it. No mail has been sent or received end to end. Nothing is
 deployed to `public_html`.
+
+---
+
+## WEB-003 — team and role contacts, security.txt
+
+- About page: Leadership section (names and titles only) from `leadership` in
+  `src/data/site.ts`.
+- Role mailboxes (support, privacy, security, partnerships, careers) live in
+  `contact` in `src/data/site.ts` and render through `SupportEmail`
+  (`mailbox` prop). Support, privacy, security and terms use the one that fits.
+- `public/.well-known/security.txt` (RFC 9116), served as
+  `text/plain; charset=utf-8`. **Expires 2027-10-12: renew before then.**
+- `.cpanel.yml` no longer excludes all of `.well-known/` (that also blocked
+  copying security.txt). Instead everything under `.well-known/` is protected
+  from `--delete` (`--filter='P /.well-known/**'`), so the host's own files
+  there survive a deploy. The flip side: a file removed from
+  `public/.well-known/` is not removed from the document root by the next
+  deploy, and has to be deleted on the host by hand.
+- Unknown until the owner confirms a test message: whether any role mailbox
+  receives mail.
+- Legal-page contact changes (privacy, security, terms; "Last updated" bumped to
+  2026-10-12) are **needs-counsel**: they need counsel's review and the owner's
+  sign-off before publishing.
+
+---
+
+## WEB-902 — admin and finance mailboxes
+
+- `contact` in `src/data/site.ts` now holds seven role mailboxes: support,
+  privacy, security, partnerships, careers, finance and admin. No personal
+  address is published anywhere on the site.
+- `/support/` lists finance (invoices and other financial matters) and admin
+  (general company and administrative matters) with the other addresses.
+  The footer still shows support only, and the legal pages are unchanged: no
+  page offers anything for sale or mentions billing, so there is no text for
+  finance to sit beside, and changing legal-page contacts needs counsel.
+- `security.txt` Contact stays security@.
+- Tests: every address and every `mailto:` on every built page must be one of
+  the seven; `/support/` must link finance@ and admin@.
+- Unknown until the owner confirms a test message: whether admin@ and finance@
+  receive mail.
+
+---
+
+## WEB-903a — app claims, metadata, links and accessibility checks
+
+- Copy now matches the app as it exists today. The screen tour says its
+  screens are design artwork, not screenshots of a released app. Craving help
+  is described as "One tap, no typing" rather than tools that "work
+  anywhere". Screen-reader, larger-text, Spanish and audio features are
+  described as designed, not as things the app does. "Release gates" and
+  "evidence-informed" are gone from the home, about and clinician pages.
+  The security page is legal text and is unchanged; it needs counsel.
+- New checks, all against the build: the claim families above, with
+  paraphrases (`test/acceptance/claims.test.js`); more availability and
+  testing paraphrases in the existing overclaim filter; title, description,
+  canonical and share tags on every page, the sitemap listing exactly the
+  indexed pages, and robots.txt (`test/ui/seo.test.js`); every internal
+  link, image, script and fragment resolving to something built
+  (`test/functional/links.test.js`); language, viewport, one h1, landmarks,
+  skip link, image and SVG text alternatives, accessible names, field labels
+  and the focus ring (`test/ui/a11y.test.js`).
+- Published addresses: tracked text files may name only the seven role
+  mailboxes at the company domain; the mailto check reads URLs as a browser
+  does (tab and newline removed, `=` allowed in unquoted attribute values).
+- The draft-page wording check also reads attribute strings, frontmatter
+  string literals and expression comments.
+- Not checked here: layout at 320, 390 and 768 px, tap-target size, and
+  keyboard focus in a real browser. Those need a rendered page.
+
+---
+
+## WEB-905 — no offline wording
+
+- The site no longer says the app works offline, in any form, matching the
+  app's own copy. Removed from the home, about, BreatheFree and
+  how-it-works pages and the tobacco cessation service description; the
+  home principle and the how-it-works note now use the clock and wave icons
+  instead of the no-signal icon. "One-handed" and "no typing" stay as they
+  were.
+- `test/acceptance/claims.test.js`: offline and no-connection wording fails
+  whether or not it is hedged. For the other claim families, "will" is no
+  longer a hedge, and "not" counts only directly before the claim.
+- `test/ui/a11y.test.js`: no page goes more than one heading level deeper
+  than the heading before it.
+
+---
+
+## WEB-907 — Android App Links statement
+
+- `public/.well-known/assetlinks.json` names the Android app
+  (`com.TetherHealthLLC.tetherhealth`) and the SHA-256 fingerprint of its Play
+  app-signing certificate, with the `handle_all_urls` relation. `.htaccess`
+  serves it as `application/json`, beside the security.txt rule.
+- It takes effect only once the app declares verified links for this domain.
+  Today the app declares only its custom-scheme sign-in callback, so nothing
+  changes for users yet.
+- Only the app-signing key is listed; Play-distributed builds are signed with
+  it. The upload key is not added.
+- Like security.txt, a later removal from `public/.well-known/` is not removed
+  from the document root by a deploy and has to be deleted on the host by hand.
+- Tests (`test/security/assetlinks.test.js`): valid JSON with exactly one
+  statement, the exact relation, package and fingerprint (32 colon-separated
+  uppercase hex bytes), the content-type rule in `.htaccess`, and the file
+  emitted in the build byte for byte.
+- After deploy, the owner checks the URL answers 200 with
+  `Content-Type: application/json`.

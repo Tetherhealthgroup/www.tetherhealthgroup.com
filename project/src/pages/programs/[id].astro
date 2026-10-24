@@ -1,11 +1,12 @@
 ---
 /**
- * One page per health area.
+ * One page per program of the Tether Health app, one program per health area.
  *
- * Everything here is scope, not availability. Nine of the ten areas have no
- * code behind them at all, and the page says so in the status line, the
- * summary and the project horizons. Only tobacco and nicotine links to a
- * product, and that product is itself still in development.
+ * Everything here is scope, not availability. No program is available to
+ * use, and the page says so in the status line, the summary and the project
+ * horizons. The name, area, archetype, tagline, colour and status are the
+ * app's own (data/programs.ts). Only BreatheFree links to a product page,
+ * and that program is itself still in build.
  */
 
 import Base from "../../layouts/Base.astro";
@@ -29,7 +30,7 @@ interface Props {
 }
 
 const { program } = Astro.props;
-const building = program.status === "building";
+const building = program.status === "in-build";
 
 const horizonTone: Record<string, string> = {
   "In development": "bg-lime text-teal-deep",
@@ -39,16 +40,28 @@ const horizonTone: Record<string, string> = {
 ---
 
 <Base
-  title={program.area}
-  description={`${program.area} at Tether Health Group: ${program.examples}. ${
-    building ? "In development." : "Planned — no implementation exists yet."
+  title={`${program.name} · ${program.area}`}
+  description={`${program.name}, the Tether Health app program for ${program.area.toLowerCase()}: ${program.tagline} ${
+    // needs-counsel: WEB-005
+    building ? "In build — not available to use yet." : "Not available to use."
   }`}
 >
   <PageHero
-    eyebrow="Health area"
-    title={program.area}
-    intro={program.examples}
-  />
+    eyebrow={`${program.area} · ${program.archetype}`}
+    title={program.name}
+    intro={program.tagline}
+  >
+    <p
+      class="mt-7 flex items-center gap-3 text-[0.95rem] font-bold text-teal-mid"
+    >
+      <span
+        class="inline-flex h-9 w-9 items-center justify-center rounded-xl text-base font-extrabold text-paper"
+        style={`background-color: ${program.color}`}
+        aria-hidden="true">{program.letter}</span
+      >
+      {program.examples}
+    </p>
+  </PageHero>
 
   <!-- Status, stated before anything else on the page -->
   <Section space="tight" width="default">
@@ -90,7 +103,7 @@ const horizonTone: Record<string, string> = {
       <p class="mt-5 leading-relaxed text-teal-mid">
         {
           building
-            ? "These are the lines of work BreatheFree is being built to support."
+            ? `These are the lines of work ${program.name} is being built to support.`
             : "Scope, not an offer. None of this exists yet, and nothing on this page is a service you can use today."
         }
       </p>
@@ -160,9 +173,11 @@ const horizonTone: Record<string, string> = {
         <div class="rounded-3xl border-2 border-teal-deep bg-paper p-8">
           <p class="eyebrow mb-4">Our first program</p>
           <h2 class="text-3xl">{program.product.name}</h2>
+          {/* needs-counsel: WEB-005 */}
           <p class="mt-4 max-w-2xl leading-relaxed text-teal-mid">
-            This is the area {program.product.name} covers. It is in active
-            development and is not yet available to download.
+            This is the area {program.product.name} covers.{" "}
+            {program.product.name} is in development for Android first. It is
+            not available to download yet.
           </p>
           <div class="mt-7">
             <Button href={program.product.href} arrow>
@@ -180,16 +195,21 @@ const horizonTone: Record<string, string> = {
       <a
         href="/programs/"
         class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
-        >See all health areas</a
+        >See all programs</a
       > and where each one stands.
     </p>
   </Section>
 
   <Section tone="mint" width="default" id="waitlist">
     <div class="mb-10 max-w-2xl">
-      <p class="eyebrow mb-5">Early access</p>
+      {/* needs-counsel: WEB-005 */}
+      <p class="eyebrow mb-5">Waitlist</p>
       <h2 class="text-3xl sm:text-4xl">
-        Want to know when we start on {program.area.toLowerCase()}?
+        {
+          program.product
+            ? `Want to hear about ${program.product.name} for Android?`
+            : `Want to know when there is news about ${program.name}?`
+        }
       </h2>
       <p class="mt-5 leading-relaxed text-teal-mid">
         Tell us which area matters to you and we will write once, when there is

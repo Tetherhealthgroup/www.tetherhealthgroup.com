@@ -18,5 +18,12 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
 
-  integrations: [sitemap()],
+  // The app privacy policy and account-deletion pages are built so the app
+  // and the store listings can link them, but they are drafts for counsel
+  // review: noindex, and kept out of the sitemap until they are final.
+  integrations: [
+    sitemap({
+      filter: (page) => !/\/(app-privacy|delete-account)\/$/.test(page),
+    }),
+  ],
 });
