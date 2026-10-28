@@ -97,9 +97,9 @@ ErrorDocument 404 /404.html
   # 'self' — which is also what makes this policy worth having: any injected
   # script, pixel or font is a policy violation rather than a silent success.
   #
-  # The three hashes are the site's own inline scripts: the JSON-LD block in
-  # Base.astro, the mobile-menu script in Header.astro, and the waitlist form's
-  # script. THEY CHANGE WHENEVER THOSE SCRIPTS CHANGE. `npm run test:smoke`
+  # The four hashes are the site's own inline scripts: the JSON-LD block in
+  # Base.astro, the mobile-menu script in Header.astro, the waitlist form's
+  # script, and the beta form's fill-time script in BetaForm.astro. THEY CHANGE WHENEVER THOSE SCRIPTS CHANGE. `npm run test:smoke`
   # recomputes them from the build and fails if this list has drifted, so a
   # stale hash is caught before it silently breaks the menu or the form.
   #
@@ -110,7 +110,7 @@ ErrorDocument 404 /404.html
   # connect-src is 'self' because the form has no endpoint by default. Setting
   # PUBLIC_WAITLIST_ENDPOINT means adding that origin here, or the browser
   # blocks the POST — see README.
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-M78ZcBA9xxIDr6hdFKg8pA2HhAvXI9S8JjzFKeT0GIg=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-SRIauFt3ncH+nyOx5iqeDPulb5Jl+iLxfYdqhU0qnkU='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-M78ZcBA9xxIDr6hdFKg8pA2HhAvXI9S8JjzFKeT0GIg=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-SRIauFt3ncH+nyOx5iqeDPulb5Jl+iLxfYdqhU0qnkU=' 'sha256-gdu2/aNZoTP1rDFzeFxVkgaCrN/Z0wHcN+2IXgIu9Nk='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
 
   # HSTS — one year, and the ramp is finished.
   #

@@ -220,13 +220,34 @@ const UNPLUG_IPHONE_LIMITS = new RegExp(
   "g",
 );
 
+/**
+ * P-108 (owner decision): a beta waitlist for the mobile app, at /beta/. The
+ * beta pages, the privacy notice's beta section and the security page's note
+ * on the form's handler may name the beta, iPhone and TestFlight, because the
+ * form asks which phone someone uses. Every other page may carry only the
+ * call to action into it. All other filters still apply to these pages: no
+ * dates, no availability, no store presence.
+ */
+const BETA_WORDING_PAGES = new Set([
+  "beta/index.html",
+  "beta/thanks/index.html",
+  "privacy/index.html",
+  "security/index.html",
+]);
+const BETA_CTA = /Join the beta waitlist|href="\/beta\/"/g;
+const BETA_WORDS = /\bbeta\b|\biPhone\b|\bTestFlight\b/gi;
+
 /** Text a page may contain even though a filter would otherwise match. */
-function scrub(text) {
-  return text
+function scrub(text, page = "") {
+  const scrubbed = text
     .replace(ALLOWED_PLAY, "")
     .replace(UNPLUG_IPHONE_LIMITS, "")
     .replace(QUITLINE_NOW, "")
-    .replace(PRIVACY_RETENTION, "");
+    .replace(PRIVACY_RETENTION, "")
+    .replace(BETA_CTA, "");
+  return BETA_WORDING_PAGES.has(page)
+    ? scrubbed.replace(BETA_WORDS, "")
+    : scrubbed;
 }
 
 test("the overclaim filters catch every sample claim", () => {
@@ -241,11 +262,30 @@ test("the overclaim filters catch every sample claim", () => {
 
 test("no page overclaims availability, timing, platforms or a store presence", () => {
   for (const page of htmlFiles()) {
-    const text = scrub(pageText(page));
+    const text = scrub(pageText(page), page);
     for (const [pattern, why] of OVERCLAIMS) {
       assert.ok(!pattern.test(text), `${page} matches ${pattern} (${why})`);
     }
   }
+});
+
+test("beta wording outside the beta pages is still caught", () => {
+  // The exemption is scoped: the same words on any other page still fail.
+  for (const claim of ["Join our beta", "Test it on iPhone", "Via TestFlight"])
+    assert.ok(
+      OVERCLAIMS.some(([pattern]) =>
+        pattern.test(scrub(`<p>${claim}</p>`, "index.html")),
+      ),
+      `not caught outside the beta pages: ${claim}`,
+    );
+  // On the beta pages the other filters still apply.
+  for (const claim of ["The beta is now open", "Beta launch in spring"])
+    assert.ok(
+      OVERCLAIMS.some(([pattern]) =>
+        pattern.test(scrub(`<p>${claim}</p>`, "beta/index.html")),
+      ),
+      `not caught on the beta page: ${claim}`,
+    );
 });
 
 test("store badges and store assets are not present", () => {

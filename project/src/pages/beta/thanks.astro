@@ -1,0 +1,41 @@
+---
+// needs-counsel: P-108 — page copy.
+import Base from "../../layouts/Base.astro";
+import Section from "../../components/Section.astro";
+import Button from "../../components/Button.astro";
+import Icon from "../../components/Icon.astro";
+import SupportEmail from "../../components/SupportEmail.astro";
+---
+
+<Base
+  title="You're on the beta waitlist"
+  description="You're on the Tether Health beta waitlist. We will email you an invite when there is a spot."
+  noindex
+>
+  <Section width="default" space="loose">
+    <div class="mx-auto max-w-2xl text-center">
+      <span
+        class="mb-8 inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-mint text-teal-deep"
+      >
+        <Icon name="check" size={36} />
+      </span>
+      <p class="eyebrow mb-5">Beta waitlist</p>
+      <h1 class="text-[2.5rem] sm:text-[3.5rem]">You're on the list.</h1>
+      <p class="mt-6 text-xl leading-relaxed">
+        We'll email you an invite when there's a spot. We cannot promise a date.
+      </p>
+      <p class="mt-5 text-lg leading-relaxed text-teal-mid">
+        We are sending a confirmation to the address you gave. If it does not
+        arrive, check your spam folder. To leave the list, reply to that email
+        with "unsubscribe". To have your details deleted, email <SupportEmail
+          mailbox="privacy"
+          class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+        />.
+      </p>
+      <div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+        <Button href="/" arrow>Back to the home page</Button>
+        <Button href="/programs/" variant="secondary">See the programs</Button>
+      </div>
+    </div>
+  </Section>
+</Base>

@@ -1,0 +1,65 @@
+---
+// needs-counsel: P-108 — page copy.
+import Base from "../../layouts/Base.astro";
+import PageHero from "../../components/PageHero.astro";
+import Section from "../../components/Section.astro";
+import Icon from "../../components/Icon.astro";
+import BetaForm from "../../components/BetaForm.astro";
+
+const points = [
+  {
+    icon: "check" as const,
+    text: "Tell us which phone you use. iPhone testers are invited through Apple's TestFlight app; Android testers are invited to Android testing.",
+  },
+  {
+    icon: "clock" as const,
+    text: "We will email you an invite when there is a spot. We cannot promise a date, and joining does not guarantee a place.",
+  },
+  {
+    icon: "info" as const,
+    text: "Test versions are unfinished and will change. You need to be 18 or over to take part.",
+  },
+  {
+    icon: "lock" as const,
+    text: "We ask for your first name, email and phone type, nothing about your health. Reply to any of our emails to leave the list.",
+  },
+];
+---
+
+<Base
+  title="Join the Tether Health beta"
+  description="Join the waitlist to help test the Tether Health app on iPhone or Android. We will email you an invite when there is a spot; we cannot promise a date."
+>
+  <PageHero
+    eyebrow="Beta waitlist"
+    title="Join the Tether Health beta"
+    intro="We are looking for people to try test versions of the Tether Health app and tell us what works and what does not. Join the waitlist and we will email you an invite when there is a spot."
+  />
+
+  <Section tone="mint" width="default" id="join">
+    <div class="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+      <div>
+        <h2 class="text-3xl">How it works</h2>
+        <ul class="mt-8 space-y-6">
+          {
+            points.map((point) => (
+              <li class="flex items-start gap-4">
+                <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-deep text-lime">
+                  <Icon name={point.icon} size={20} />
+                </span>
+                <span class="text-lg leading-relaxed">{point.text}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div
+        class="rounded-3xl border border-hairline-soft bg-paper p-7 shadow-[var(--shadow-card)] sm:p-10"
+      >
+        <h2 class="mb-6 text-2xl">Your details</h2>
+        <BetaForm />
+      </div>
+    </div>
+  </Section>
+</Base>

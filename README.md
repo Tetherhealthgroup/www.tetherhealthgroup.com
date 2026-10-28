@@ -360,8 +360,9 @@ Remote**, then **Deploy HEAD Commit**.
 
 ### The CSP pins hashes, and they move
 
-`script-src` allows exactly three `sha256-` hashes: the JSON-LD block, the
-mobile-menu script, and the waitlist form's script. Edit any of those and the
+`script-src` allows exactly four `sha256-` hashes: the JSON-LD block, the
+mobile-menu script, the waitlist form's script, and the beta form's fill-time
+script. Edit any of those and the
 browser silently refuses to run it — the menu stops opening, the form starts
 reloading the page. `npm run test:smoke` recomputes the hashes from the build
 and fails in both directions: a script the policy does not allow, and a hash
