@@ -185,3 +185,19 @@ test("home and programs carry a clear call to action into /beta/", () => {
     );
   }
 });
+
+test('every "Get early access" call to action links to /beta/', async () => {
+  const { htmlFiles } = await import("../helpers/dist.js");
+  const offenders = [];
+  let seen = 0;
+  for (const rel of htmlFiles()) {
+    for (const [a, href] of readPage(rel).matchAll(
+      /<a\b[^>]*href="([^"]*)"[^>]*>(?:(?!<\/a>)[\s\S])*?Get early access(?:(?!<\/a>)[\s\S])*?<\/a>/g,
+    )) {
+      seen += 1;
+      if (href !== "/beta/") offenders.push(`${rel}: ${href}`);
+    }
+  }
+  assert.ok(seen > 0, "no Get early access link found");
+  assert.deepEqual(offenders, []);
+});
