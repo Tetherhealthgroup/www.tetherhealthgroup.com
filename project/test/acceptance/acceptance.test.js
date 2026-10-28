@@ -343,11 +343,7 @@ test("early access is the call to action in the header and on the pages with the
       `${page}: header lacks "Get early access"`,
     );
   }
-  for (const page of [
-    "index.html",
-    "breathefree/index.html",
-    "support/index.html",
-  ]) {
+  for (const page of ["index.html", "support/index.html"]) {
     assert.ok(
       visibleText(page).includes("Request early access"),
       `${page} lacks "Request early access"`,
@@ -385,12 +381,6 @@ test("the support FAQ explains early access and testing, without saying testing 
   );
   assert.ok(html.includes('id="testing-list"'), "the FAQ answer has no anchor");
   assert.ok(html.includes('id="waitlist"'), "support has no form anchor");
-  assert.ok(
-    pageText("breathefree/index.html").includes(
-      'href="/support/#testing-list"',
-    ),
-    "the BreatheFree page does not link to the testing-list FAQ",
-  );
 });
 
 test("no page still says testing has not opened, and home invites testers to /beta/", () => {
@@ -426,8 +416,6 @@ test("Unplug is described as part of BreatheFree, not as a health area of its ow
   // The code lives inside the BreatheFree application, so the module belongs
   // to tobacco.
   const { programs } = await import("../../src/data/programs.ts");
-  const html = readFileSync(join(dist, "breathefree/index.html"), "utf8");
-  assert.match(html, /Unplug is a module inside BreatheFree/);
   assert.ok(
     !programs.some((p) => /unplug/i.test(p.name)),
     "Unplug has been listed as a program",

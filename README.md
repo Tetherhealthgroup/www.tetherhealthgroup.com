@@ -3,8 +3,7 @@
 Marketing and company website for **Tether Health LLC** (Tether Health Group).
 
 The site presents the company, the eleven programs of the Tether Health app,
-its featured program — **BreatheFree**, for quitting smoking — and the
-health-record integrations it is building (FHIR, SMART on FHIR, the CMS Blue
+presented alike, and the health-record integrations it is building (FHIR, SMART on FHIR, the CMS Blue
 Button API and Epic's FHIR APIs).
 
 Since 2026-10-27 the site is presented as a finished product, at the owner's
@@ -99,9 +98,8 @@ project/
       site.ts          Identity, navigation, mailboxes, quitlines
       programs.ts       The 11 programs (app-pinned fields + website copy)
       integrations.ts   FHIR / Blue Button / Epic / HIPAA / FDA wording rules
-      screens.ts        The 28-screen BreatheFree catalog + artwork resolver
     components/         Logo, TetherLogo, Button, Card, Icon, Section,
-                        PageHero, PhoneFrame, ProgramCard, SupportEmail,
+                        PageHero, ProgramCard, SupportEmail,
                         WaitlistForm, ContactForm, BetaForm, BetaCta,
                         Header, Footer
     layouts/
@@ -115,7 +113,6 @@ project/
 ### Routes
 
 `/` · `/programs/` · `/programs/<area>/` (eleven, generated) · `/services/` ·
-`/breathefree/` · `/breathefree/how-it-works/` · `/breathefree/tour/` ·
 `/integrations/` · `/for-clinicians/` · `/about/` · `/careers/` ·
 `/contact/` · `/support/` · `/privacy/` · `/app-privacy/` ·
 `/delete-account/` · `/terms/` · `/security/` · `/accessibility/` ·
@@ -166,8 +163,9 @@ with `2.2/12 = 0.183em` tracking, and a 14px control radius, all taken from
 
 **Do not change a colour here without changing it in the app first.**
 
-The 28 screenshots are the application's own approved artwork, copied from
-`assets/screens/`. The site never redraws an app screen.
+The site publishes no app screens or screen walkthroughs. `/breathefree/`,
+`/breathefree/how-it-works/` and `/breathefree/tour/` were removed (WEB-914)
+and 301 to `/programs/tobacco/`.
 
 ## The waitlist form
 

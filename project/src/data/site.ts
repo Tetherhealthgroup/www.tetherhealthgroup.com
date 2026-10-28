@@ -117,7 +117,6 @@ export interface NavLink {
 
 export const primaryNav: NavLink[] = [
   { label: "Programs", href: "/programs/" },
-  { label: "BreatheFree", href: "/breathefree/" },
   { label: "Integrations", href: "/integrations/" },
   { label: "For clinicians", href: "/for-clinicians/" },
   { label: "About", href: "/about/" },
@@ -130,9 +129,6 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
     links: [
       { label: "All programs", href: "/programs/" },
       { label: "All services", href: "/services/" },
-      { label: "BreatheFree overview", href: "/breathefree/" },
-      { label: "How it works", href: "/breathefree/how-it-works/" },
-      { label: "Screen tour", href: "/breathefree/tour/" },
       { label: "Integrations and standards", href: "/integrations/" },
       { label: "For clinicians and care teams", href: "/for-clinicians/" },
     ],
@@ -163,7 +159,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
  * Crisis and quitline routing shown in the site footer and support page.
  *
  * These numbers are reproduced from the approved application artwork
- * (design/approved/screen-27-support-hub-iphone.svg). They are United States
+ * (the approved support-hub design). They are United States
  * services; the app itself notes "Services and hours may vary" and routes by
  * state. Verify jurisdiction coverage before serving non-US traffic.
  */

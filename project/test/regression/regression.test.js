@@ -372,10 +372,6 @@ test("repeated links and controls are at least 44px tall", () => {
     }
   }
 
-  const tour = pageHtml("breathefree/tour/index.html");
-  for (const tag of tour.match(/<a [^>]*href="#tour-[^"]*"[^>]*>/g) ?? [])
-    if (!hasMin(tag)) missing.push(`tour ${tag.slice(0, 60)}`);
-
   assert.deepEqual(
     missing,
     [],
@@ -490,33 +486,6 @@ test("leadership titles are announced in full, once, without relying on title=",
     const count = accessible.split(escape(full)).length - 1;
     assert.equal(count, 1, `leader ${i}: full title announced ${count} times`);
   });
-});
-
-test("phone screenshots are encoded for the size they are displayed at", () => {
-  // The device frame is `width` px wide with border-box padding, so the
-  // screenshot is shown at width - 2*padding. It was encoded at 2*width, i.e.
-  // the 1x candidate was already ~2.1x the display size and the 2x candidate
-  // ~4.3x; Lighthouse image-delivery flagged ~60 KB wasted per image on six
-  // pages. The 1x width must equal the displayed width, with 2x and 3x
-  // candidates for high-density screens.
-  let frames = 0;
-  for (const page of htmlFiles()) {
-    const html = pageHtml(page);
-    for (const m of html.matchAll(
-      /<div class="relative bg-teal-deep[^"]*" style="width:(\d+)px;padding:(\d+)px;[^"]*">\s*(<img[^>]*>)/g,
-    )) {
-      frames += 1;
-      const displayed = Number(m[1]) - 2 * Number(m[2]);
-      const width = Number(m[3].match(/\swidth="(\d+)"/)?.[1]);
-      assert.equal(
-        width,
-        displayed,
-        `${page}: image declares ${width}px for a ${displayed}px slot`,
-      );
-      assert.match(m[3], /\s3x"?[ >]|\s3x,|\s3x"/, `${page}: no 3x candidate`);
-    }
-  }
-  assert.ok(frames > 0, "no phone frame found to check");
 });
 
 test("a field marked invalid keeps a border of at least 3:1 on paper", () => {

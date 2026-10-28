@@ -4,8 +4,6 @@ import Section from "../components/Section.astro";
 import Button from "../components/Button.astro";
 import Card from "../components/Card.astro";
 import Icon from "../components/Icon.astro";
-import Logo from "../components/Logo.astro";
-import PhoneFrame from "../components/PhoneFrame.astro";
 import ProgramCard from "../components/ProgramCard.astro";
 import WaitlistForm from "../components/WaitlistForm.astro";
 import BetaCta from "../components/BetaCta.astro";
@@ -155,7 +153,21 @@ const principles = [
       </div>
 
       <div class="flex justify-center lg:justify-end">
-        <PhoneFrame screen={1} width={296} priority />
+        {
+          /* The eleven programs as their app letters and colours; decorative. */
+        }
+        <ul class="grid grid-cols-4 gap-3 sm:gap-4" aria-hidden="true">
+          {
+            programs.map((program) => (
+              <li
+                class="inline-flex h-16 w-16 items-center justify-center rounded-3xl text-2xl font-extrabold text-paper shadow-[var(--shadow-card)] sm:h-20 sm:w-20"
+                style={`background-color: ${program.color}`}
+              >
+                {program.letter}
+              </li>
+            ))
+          }
+        </ul>
       </div>
     </div>
   </Section>

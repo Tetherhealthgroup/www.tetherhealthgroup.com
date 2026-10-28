@@ -64,6 +64,12 @@
   # exempted above and stays reachable.
   RewriteRule (^|/)\.git(/|$) - [F,L]
 
+  # Retired pages (WEB-914). /breathefree/, its walkthrough and its screen
+  # tour showed the app's full screen sequence; they are gone, and old links
+  # and search results land on the program's own page instead of a 404. With
+  # or without the trailing slash; straight to the canonical https host.
+  RewriteRule ^breathefree(?:/(?:how-it-works|tour))?/?$ https://www.tetherhealthgroup.com/programs/tobacco/ [R=301,L]
+
   # Force HTTPS. Both conditions are needed: %{HTTPS} is what a server that
   # terminates TLS itself sets, X-Forwarded-Proto is what one behind a proxy
   # sets, and a redirect that reads only the first loops forever behind the
