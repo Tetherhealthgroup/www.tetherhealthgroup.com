@@ -213,6 +213,7 @@ const otherMailboxes = mailboxDirectory.filter(
       </div>
       <div>
         <h3 class="text-xl">How is my information handled?</h3>
+        {/* Revisit when ads ship (P-107). */}
         <p class="mt-2 leading-relaxed text-teal-mid">
           No ads, and we never sell your health data. The details are in the <a
             href="/app-privacy/"
@@ -247,10 +248,14 @@ const otherMailboxes = mailboxDirectory.filter(
       <div id="testing-list">
         <h3 class="text-xl">How do I join the testing list?</h3>
         <p class="mt-2 leading-relaxed text-teal-mid">
-          Use the early-access form below and say in the message box that you
-          would like to help test BreatheFree on Android. We will write to the
-          address you give us when there is a testing place for you. Joining
-          does not guarantee a place.
+          {/* needs-counsel: P-108 */}
+          <a
+            href="/beta/"
+            class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+            >Get early access</a
+          >. Tell us which phone you use and we will email you an invite when
+          there is a spot. We cannot promise a date, and joining does not
+          guarantee a place.
         </p>
       </div>
       <div>
@@ -274,7 +279,11 @@ const otherMailboxes = mailboxDirectory.filter(
       </h2>
       <p class="mt-5 text-lg leading-relaxed">
         Request early access and we will write to you as places open up on
-        Android.
+        Android. Want to help test the app? <a
+          href="/beta/"
+          class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+          >Get early access</a
+        > instead.
       </p>
     </div>
 

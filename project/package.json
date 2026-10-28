@@ -28,12 +28,9 @@
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
     "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.2.9",
+    "astro": "^7.3.3",
     "sharp": "^0.35.4",
     "tailwindcss": "^4.3.3"
-  },
-  "allowScripts": {
-    "esbuild": true
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

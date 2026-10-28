@@ -44,6 +44,9 @@ export const REQUIRED_PAGES = [
   "support/index.html",
   "terms/index.html",
   "services/index.html",
+  "beta/index.html",
+  "beta/thanks/index.html",
+  "beta/confirmed/index.html",
   // one page per app program, generated from programs.ts
   "programs/tobacco/index.html",
   "programs/social-media/index.html",

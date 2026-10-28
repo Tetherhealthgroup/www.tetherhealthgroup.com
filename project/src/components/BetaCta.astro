@@ -1,0 +1,25 @@
+---
+// needs-counsel: P-108 — call-to-action copy.
+/**
+ * The call to action that sends visitors to /beta/, used on the home and
+ * programs pages. Pages other than /beta/, the privacy notice and the security
+ * page may name the beta only through a link to /beta/.
+ */
+import Section from "./Section.astro";
+import Button from "./Button.astro";
+---
+
+<Section width="default" space="tight">
+  <div
+    class="grid items-center gap-6 rounded-3xl border border-mint-strong bg-mint p-8 sm:p-10 md:grid-cols-[1fr_auto]"
+  >
+    <div>
+      <h2 class="text-3xl">Help us test the Tether Health app</h2>
+      <p class="mt-3 text-lg leading-relaxed">
+        Try test versions of the app and tell us what works. Ask for early
+        access and we will email you an invite when there is a spot.
+      </p>
+    </div>
+    <Button href="/beta/" arrow>Get early access</Button>
+  </div>
+</Section>

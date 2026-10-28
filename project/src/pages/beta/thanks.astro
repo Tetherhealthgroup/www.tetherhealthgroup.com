@@ -1,0 +1,42 @@
+---
+// needs-counsel: P-108 — page copy.
+import Base from "../../layouts/Base.astro";
+import Section from "../../components/Section.astro";
+import Button from "../../components/Button.astro";
+import Icon from "../../components/Icon.astro";
+import SupportEmail from "../../components/SupportEmail.astro";
+---
+
+<Base
+  title="Check your email"
+  description="Confirm your spot on the Tether Health early access list with the link we emailed you."
+  noindex
+>
+  <Section width="default" space="loose">
+    <div class="mx-auto max-w-2xl text-center">
+      <span
+        class="mb-8 inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-mint text-teal-deep"
+      >
+        <Icon name="check" size={36} />
+      </span>
+      <p class="eyebrow mb-5">Early access</p>
+      <h1 class="text-[2.5rem] sm:text-[3.5rem]">Check your email.</h1>
+      <p class="mt-6 text-xl leading-relaxed">
+        To confirm your spot, open the link we emailed you. It works once and
+        expires in 7 days. You are not on the list until you confirm.
+      </p>
+      <p class="mt-5 text-lg leading-relaxed text-teal-mid">
+        If it does not arrive, check your spam folder. We send at most one
+        confirmation email a day to the same address. If you did not confirm
+        within 7 days, your details are deleted. Questions or deletion: <SupportEmail
+          mailbox="privacy"
+          class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+        />.
+      </p>
+      <div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+        <Button href="/" arrow>Back to the home page</Button>
+        <Button href="/programs/" variant="secondary">See the programs</Button>
+      </div>
+    </div>
+  </Section>
+</Base>

@@ -24,7 +24,7 @@ requirements"), never certifications. Tests enforce both
 | Images             | `astro:assets` + sharp (AVIF/WebP, responsive `densities`) |
 | Sitemap            | `@astrojs/sitemap`                                         |
 | Fonts              | System stacks only — no webfont is downloaded              |
-| JavaScript shipped | Small scripts: mobile menu, two forms, FHIR callback      |
+| JavaScript shipped | Small scripts: mobile menu, two forms, FHIR callback       |
 
 The site is fully static. There is no server, no database, no analytics, no
 cookies and no third-party request of any kind.
@@ -118,7 +118,8 @@ project/
 `/breathefree/` · `/breathefree/how-it-works/` · `/breathefree/tour/` ·
 `/integrations/` · `/for-clinicians/` · `/about/` · `/careers/` ·
 `/contact/` · `/support/` · `/privacy/` · `/app-privacy/` ·
-`/delete-account/` · `/terms/` · `/security/` · `/accessibility/` · `404`
+`/delete-account/` · `/terms/` · `/security/` · `/accessibility/` ·
+`/beta/` · `/beta/thanks/` · `/beta/confirmed/` · `404`
 
 FHIR OAuth redirect URIs, noindex, outside the sitemap and never cached:
 `/fhir/callback/bluebutton/` and `/fhir/callback/epic/`. Register exactly
@@ -198,6 +199,25 @@ the field's declared type and the form's check agree. The form promises a
 reply, so an address that cannot receive one is refused rather than waved
 through.
 
+## Beta waitlist runbook
+
+`/beta/` is the one form that is sent to the server. It POSTs to
+`project/public/api/beta-signup.php` (works with JavaScript off), which
+validates every field, stores a `pending` row in a CSV file **outside** the
+web root and emails the member a single-use confirmation link
+(`api/beta-confirm.php`, 7 days). The notify list is emailed only once the
+member confirms. Its private
+config, `beta-config.php`, lives in a `tether-private` folder next to
+`public_html` and is not in this repository; without it the form stores and
+sends nothing.
+
+The owner's steps — where the config goes in cPanel File Manager and what it
+contains, how to read the CSV, SPF/DKIM in cPanel → Email Deliverability, and
+how to invite people through TestFlight, Firebase App Distribution or Play
+internal testing — are in
+[`docs/beta-waitlist-runbook.md`](docs/beta-waitlist-runbook.md). The config
+keys are in [`docs/beta-config.example.php`](docs/beta-config.example.php).
+
 ## Hosting and deployment
 
 The domain resolves to HostGator shared hosting (`NS hgns1/hgns2.hostgator.com`,
@@ -236,7 +256,7 @@ is what the host's 404 was.
 `deploy` is the compiled site. It is an **orphan** branch — no shared history
 with `master`, because its contents are build output rather than source — and
 it carries the contents of `dist/` at the branch root rather than under a
-`dist/` folder. That is what makes it directly servable: the checkout root *is*
+`dist/` folder. That is what makes it directly servable: the checkout root _is_
 the document root.
 
     git checkout deploy      ->      index.html, _astro/, .htaccess, 404.html, ...
@@ -306,7 +326,7 @@ Chromium render). HSTS cannot be walked back, so neither half was assumed.
 
 `includeSubDomains` and `preload` are deliberately absent, and the tripwire
 test now fails if either appears. The certificate covers `mail.`, `webmail.`
-and `cpanel.`, but none has been confirmed to *serve* valid HTTPS — asserting
+and `cpanel.`, but none has been confirmed to _serve_ valid HTTPS — asserting
 HSTS for a subdomain that then fails removes it for the full year, and webmail
 is what someone reaches for when the main site is broken. `preload` is a
 months-long commitment to leave.
@@ -377,10 +397,10 @@ Remote**, then **Deploy HEAD Commit**.
 
 ### The CSP pins hashes, and they move
 
-`script-src` allows exactly three `sha256-` hashes: the JSON-LD block, the
-mobile-menu script, and the FHIR callback script. The early-access and contact
-form scripts share a module, so they ship as files under `/_astro/`, which
-`'self'` covers. Edit any of those and the
+`script-src` allows exactly four `sha256-` hashes: the JSON-LD block, the
+mobile-menu script, the FHIR callback script and the beta form's fill-time
+script. The early-access and contact form scripts share a module, so they ship
+as files under `/_astro/`, which `'self'` covers. Edit any of those and the
 browser silently refuses to run it — the menu stops opening, the form starts
 reloading the page. `npm run test:smoke` recomputes the hashes from the build
 and fails in both directions: a script the policy does not allow, and a hash

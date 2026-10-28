@@ -78,3 +78,25 @@ test("security.txt is emitted at /.well-known/security.txt", () => {
   assert.ok(existsSync(file), "dist/.well-known/security.txt is missing");
   assert.match(readFileSync(file, "utf8"), /^Contact: mailto:security@/m);
 });
+
+test("app-ads.txt is emitted at /app-ads.txt with the AdMob seller line", () => {
+  // AdMob reads /app-ads.txt on the developer website listed in the store to
+  // verify which ad accounts may sell the app's inventory.
+  const file = join(dist, "app-ads.txt");
+  assert.ok(existsSync(file), "dist/app-ads.txt is missing");
+  assert.equal(
+    readFileSync(file, "utf8"),
+    "google.com, pub-6959814479889503, DIRECT, f08c47fec0942fa0\n",
+  );
+});
+
+test("the deploy output carries the handler and both verification files", () => {
+  for (const rel of [
+    "api/beta-signup.php",
+    "api/beta-confirm.php",
+    "api/beta-lib.inc",
+    ".well-known/assetlinks.json",
+    "app-ads.txt",
+  ])
+    assert.ok(existsSync(join(dist, rel)), `dist/${rel} is missing`);
+});

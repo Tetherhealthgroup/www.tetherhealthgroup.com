@@ -1,0 +1,214 @@
+---
+// needs-counsel: P-108 — field labels, the privacy line and the error messages.
+/**
+ * Beta waitlist form.
+ *
+ * An ordinary HTML form that POSTs to /api/beta-signup.php, so it submits with
+ * JavaScript off. The handler answers with a redirect: to /beta/thanks/, or
+ * back to this page with a fragment naming the error (#error-fields and so
+ * on). The confirmation link handler uses the same messages (#error-link). The matching message below is shown with CSS :target, which needs no
+ * script either.
+ *
+ * Data minimisation: first name, email, phone type, an optional source, and two
+ * confirmations. It does not ask about health conditions or which program
+ * someone is interested in.
+ *
+ * The one script records how long the form was open, for the handler's
+ * minimum-fill-time check. Editing it changes its CSP hash in
+ * public/.htaccess.
+ *
+ * The <select> values are the handler's allowlists; keep the two in step.
+ */
+
+import Button from "./Button.astro";
+import Icon from "./Icon.astro";
+
+/* Same field treatment as the waitlist form: a 3:1 border, a readable
+   placeholder, and the site's own focus ring. */
+const fieldClass =
+  "w-full rounded-[14px] border-2 border-teal-muted bg-paper px-4 py-3.5 text-[1.0625rem] " +
+  "text-teal-deep placeholder:text-teal-mid transition-colors " +
+  "focus:border-teal-deep";
+const selectClass = `${fieldClass} truncate`;
+const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
+const checkClass =
+  "mt-1 h-5 w-5 shrink-0 rounded border-2 border-teal-muted accent-teal-deep";
+
+const phones = [
+  { value: "iphone", label: "iPhone" },
+  { value: "android", label: "Android" },
+];
+
+const sources = [
+  { value: "search", label: "Search engine" },
+  { value: "social", label: "Social media" },
+  { value: "friend", label: "Friend or family" },
+  { value: "clinician", label: "Clinician or care team" },
+  { value: "event", label: "Event or talk" },
+  { value: "other", label: "Other" },
+];
+
+const errors = [
+  {
+    id: "error-fields",
+    text: "Please check the form: first name, a valid email address and your phone type are needed, and both boxes must be ticked.",
+  },
+  {
+    id: "error-retry",
+    text: "That was quicker than we expected. Please check your details and send the form again.",
+  },
+  {
+    id: "error-rate",
+    text: "We have had several attempts from your connection. Please wait an hour and try again.",
+  },
+  {
+    id: "error-link",
+    text: "That confirmation link has expired or has already been used. Fill in the form again to get a new one.",
+  },
+  {
+    id: "error-unavailable",
+    text: "Early access sign-up is not available right now and nothing was saved. Please try again later.",
+  },
+];
+---
+
+<div>
+  {
+    errors.map((error) => (
+      <p
+        id={error.id}
+        tabindex="-1"
+        class="mb-6 hidden items-start gap-2.5 rounded-2xl border-2 border-coral bg-paper p-4 font-bold text-teal-deep target:flex"
+      >
+        <Icon name="alert" size={20} class="mt-0.5 shrink-0" />
+        <span>{error.text}</span>
+      </p>
+    ))
+  }
+
+  <form
+    id="beta-form"
+    method="post"
+    action="/api/beta-signup.php"
+    class="grid gap-5 sm:grid-cols-2"
+  >
+    <div>
+      <label class={labelClass} for="beta-first-name">First name</label>
+      <input
+        class={fieldClass}
+        id="beta-first-name"
+        name="first_name"
+        type="text"
+        required
+        maxlength="80"
+        autocomplete="given-name"
+        placeholder="Your first name"
+      />
+    </div>
+
+    <div>
+      <label class={labelClass} for="beta-email">Email</label>
+      <input
+        class={fieldClass}
+        id="beta-email"
+        name="email"
+        type="email"
+        required
+        maxlength="254"
+        autocomplete="email"
+        placeholder="you@example.com"
+      />
+    </div>
+
+    <div>
+      <label class={labelClass} for="beta-phone">Your phone</label>
+      <select class={selectClass} id="beta-phone" name="phone" required>
+        <option value="" selected disabled>Choose one</option>
+        {phones.map((p) => <option value={p.value}>{p.label}</option>)}
+      </select>
+    </div>
+
+    <div>
+      <label class={labelClass} for="beta-source">
+        How did you hear about us? <span class="font-normal text-teal-mid"
+          >(optional)</span
+        >
+      </label>
+      <select class={selectClass} id="beta-source" name="source">
+        <option value="">Prefer not to say</option>
+        {sources.map((s) => <option value={s.value}>{s.label}</option>)}
+      </select>
+    </div>
+
+    <div class="flex items-start gap-3 sm:col-span-2">
+      <input
+        class={checkClass}
+        id="beta-adult"
+        name="adult"
+        type="checkbox"
+        value="yes"
+        required
+      />
+      <label class="text-[1.0625rem] text-teal-deep" for="beta-adult"
+        >I am 18 or over.</label
+      >
+    </div>
+
+    <div class="flex items-start gap-3 sm:col-span-2">
+      <input
+        class={checkClass}
+        id="beta-consent"
+        name="consent"
+        type="checkbox"
+        value="yes"
+        required
+      />
+      <label class="text-[1.0625rem] text-teal-deep" for="beta-consent"
+        >Email me about the beta.</label
+      >
+    </div>
+
+    {/* Honeypot: a field no person sees and no person fills in. */}
+    <div class="hidden" aria-hidden="true">
+      <label for="beta-contact-ref">Leave this empty</label>
+      <input
+        id="beta-contact-ref"
+        name="contact_ref"
+        type="text"
+        tabindex="-1"
+        autocomplete="off"
+      />
+    </div>
+    <input type="hidden" name="fill_ms" value="" />
+
+    <div class="sm:col-span-2">
+      <Button type="submit" arrow full class="sm:w-auto">
+        Get early access
+      </Button>
+      <p class="mt-4 text-sm leading-relaxed text-teal-mid">
+        We use these details only to run early access for the beta: to send your
+        invite, to confirm we got this, and to email you about the beta. We
+        never sell them. Please do not send us health information. Read the <a
+          href="/privacy/#beta-waitlist"
+          class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+          >privacy notice</a
+        >.
+      </p>
+    </div>
+  </form>
+</div>
+
+<script>
+  /* Record how long the form was open, measured on the visitor's own clock so
+     clock skew between browser and server cannot affect it. */
+  const started = performance.now();
+  const form = document.getElementById("beta-form");
+  if (form instanceof HTMLFormElement) {
+    form.addEventListener("submit", () => {
+      const field = form.elements.namedItem("fill_ms");
+      if (field instanceof HTMLInputElement) {
+        field.value = String(Math.round(performance.now() - started));
+      }
+    });
+  }
+</script>

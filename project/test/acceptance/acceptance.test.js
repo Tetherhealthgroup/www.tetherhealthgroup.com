@@ -192,9 +192,33 @@ const SAMPLE_CLAIMS = [
  */
 const PRIVACY_RETENTION = /until the relevant product has launched/g;
 
+/**
+ * P-108 (owner decision): a beta waitlist for the mobile app, at /beta/. The
+ * beta pages, the privacy notice's beta section and the security page's note
+ * on the form's handler may name the beta, iPhone and TestFlight, because the
+ * form asks which phone someone uses. Every other page may name it only as
+ * "beta waitlist" or a link to /beta/. All other filters still apply to these
+ * pages: no dates, no availability, no store presence.
+ */
+const BETA_WORDING_PAGES = new Set([
+  "beta/index.html",
+  "beta/thanks/index.html",
+  "beta/confirmed/index.html",
+  "privacy/index.html",
+  "security/index.html",
+]);
+const BETA_CTA = /\bbeta waitlist\b|href="\/beta\/"/gi;
+const BETA_WORDS = /\bbeta\b|\biPhone\b|\bTestFlight\b/gi;
+
 /** Text a page may contain even though a filter would otherwise match. */
-function scrub(text) {
-  return text.replace(QUITLINE_NOW, "").replace(PRIVACY_RETENTION, "");
+function scrub(text, page = "") {
+  const scrubbed = text
+    .replace(QUITLINE_NOW, "")
+    .replace(PRIVACY_RETENTION, "")
+    .replace(BETA_CTA, "");
+  return BETA_WORDING_PAGES.has(page)
+    ? scrubbed.replace(BETA_WORDS, "")
+    : scrubbed;
 }
 
 test("the overclaim filters catch every sample claim", () => {
@@ -209,11 +233,30 @@ test("the overclaim filters catch every sample claim", () => {
 
 test("no page overclaims availability, timing, platforms or a store presence", () => {
   for (const page of htmlFiles()) {
-    const text = scrub(pageText(page));
+    const text = scrub(pageText(page), page);
     for (const [pattern, why] of OVERCLAIMS) {
       assert.ok(!pattern.test(text), `${page} matches ${pattern} (${why})`);
     }
   }
+});
+
+test("beta wording outside the beta pages is still caught", () => {
+  // The exemption is scoped: the same words on any other page still fail.
+  for (const claim of ["Join our beta", "Test it on iPhone", "Via TestFlight"])
+    assert.ok(
+      OVERCLAIMS.some(([pattern]) =>
+        pattern.test(scrub(`<p>${claim}</p>`, "index.html")),
+      ),
+      `not caught outside the beta pages: ${claim}`,
+    );
+  // On the beta pages the other filters still apply.
+  for (const claim of ["The beta is now open", "Beta launch in spring"])
+    assert.ok(
+      OVERCLAIMS.some(([pattern]) =>
+        pattern.test(scrub(`<p>${claim}</p>`, "beta/index.html")),
+      ),
+      `not caught on the beta page: ${claim}`,
+    );
 });
 
 test("store badges and store assets are not present", () => {
@@ -314,12 +357,21 @@ test("the support FAQ explains early access and testing, without saying testing 
       `support FAQ must contain "${q}" exactly once`,
     );
   }
+  // P-108: testers join the beta waitlist at /beta/, not the email form.
+  const answer = html.match(/<div id="testing-list">[\s\S]*?<\/div>/)?.[0];
+  assert.ok(answer, "the testing-list answer is missing");
+  assert.match(answer, /href="\/beta\/"/, "the answer does not link to /beta/");
   for (const clause of [
-    "say in the message box that you would like to help test BreatheFree on Android",
-    "Joining does not guarantee a place.",
+    "We cannot promise a date,",
+    "joining does not guarantee a place.",
   ]) {
-    assert.ok(html.includes(clause), `testing-list answer lacks: ${clause}`);
+    assert.ok(answer.includes(clause), `testing-list answer lacks: ${clause}`);
   }
+  assert.doesNotMatch(
+    answer,
+    /message box/,
+    "the answer still sends testers to the email form",
+  );
   assert.ok(html.includes('id="testing-list"'), "the FAQ answer has no anchor");
   assert.ok(html.includes('id="waitlist"'), "support has no form anchor");
   assert.ok(
@@ -328,6 +380,24 @@ test("the support FAQ explains early access and testing, without saying testing 
     ),
     "the BreatheFree page does not link to the testing-list FAQ",
   );
+});
+
+test("no page still says testing has not opened, and home invites testers to /beta/", () => {
+  for (const page of htmlFiles())
+    assert.ok(
+      !/Testing has not opened yet/i.test(pageText(page)),
+      `${page} still says testing has not opened`,
+    );
+  const home = pageText("index.html");
+  const waitlist = home.match(/id="waitlist"[\s\S]*?<\/section>/)?.[0] ?? "";
+  assert.match(waitlist, /<a href="\/beta\/"[^>]*>\s*Get early access\s*<\/a>/);
+  assert.ok(
+    home.includes(
+      "Early access asks for your first name, email, phone type and, if you choose, how you heard about us.",
+    ),
+    "home does not say what the beta waitlist asks for",
+  );
+  assert.ok(!home.includes("We ask for an email address and nothing else"));
 });
 
 test("each program page opens with its own summary", async () => {

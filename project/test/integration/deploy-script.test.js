@@ -8,9 +8,11 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
   copyFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -153,5 +155,45 @@ test("a build identical to origin/deploy with no local branch commits and pushes
   assert.equal(
     tryGit(clone, "rev-parse", "--verify", "-q", "refs/heads/deploy").status,
     1,
+  );
+});
+
+test("the deploy branch built from the real dist keeps dotfiles and the beta handler", () => {
+  // The deploy commits whatever is in dist/, dot-directories included: the
+  // build's .well-known/ must reach the branch, or the live site keeps
+  // answering /.well-known/ from a document root that does not have it.
+  const builtDist = join(projectRoot, "dist");
+  assert.ok(
+    existsSync(join(builtDist, "index.html")),
+    "run npm run build first",
+  );
+  const site = makeSite("real-dist", "unused");
+  const target = join(site, "project", "dist");
+  rmSync(target, { recursive: true, force: true });
+  cpSync(builtDist, target, { recursive: true });
+
+  const r = deploy(site, "--local");
+  assert.equal(r.status, 0, r.stderr);
+  const tree = git(site, "ls-tree", "-r", "--name-only", "deploy").split("\n");
+  for (const path of [
+    ".htaccess",
+    ".cpanel.yml",
+    ".well-known/assetlinks.json",
+    ".well-known/security.txt",
+    "app-ads.txt",
+    "api/beta-signup.php",
+    "api/beta-confirm.php",
+    "api/beta-lib.inc",
+    "beta/index.html",
+    "beta/thanks/index.html",
+    "beta/confirmed/index.html",
+  ])
+    assert.ok(tree.includes(path), `the deploy branch lacks ${path}`);
+  assert.equal(
+    git(site, "show", "deploy:.well-known/assetlinks.json"),
+    readFileSync(
+      join(builtDist, ".well-known", "assetlinks.json"),
+      "utf8",
+    ).trim(),
   );
 });
