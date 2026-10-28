@@ -98,9 +98,8 @@ ErrorDocument 404 /404.html
   # script, pixel or font is a policy violation rather than a silent success.
   #
   # The hashes are the site's own inline scripts: the JSON-LD block in
-  # Base.astro, the mobile-menu script in Header.astro, the FHIR callback
-  # script in FhirCallback.astro, and the beta form's fill-time script in
-  # BetaForm.astro. The early-access and contact form scripts share a module,
+  # Base.astro, the mobile-menu script in Header.astro, and the beta form's
+  # fill-time script in BetaForm.astro. The early-access and contact form scripts share a module,
   # so Astro emits them as files under /_astro/ and 'self' covers them.
   # THEY CHANGE WHENEVER THOSE SCRIPTS CHANGE. `npm run test:smoke`
   # recomputes them from the build and fails if this list has drifted, so a
@@ -113,7 +112,7 @@ ErrorDocument 404 /404.html
   # connect-src is 'self' because the form has no endpoint by default. Setting
   # PUBLIC_WAITLIST_ENDPOINT means adding that origin here, or the browser
   # blocks the POST — see README.
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-Hx4KcxWxvOApu1HWaiZGf/8b1QUtoU8nzXJOBjljn7U=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-4MXucd1AWXNzwdQR1bCa50o4DgtHRJ0S2kua+1ns1lg=' 'sha256-gdu2/aNZoTP1rDFzeFxVkgaCrN/Z0wHcN+2IXgIu9Nk='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-Hx4KcxWxvOApu1HWaiZGf/8b1QUtoU8nzXJOBjljn7U=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-gdu2/aNZoTP1rDFzeFxVkgaCrN/Z0wHcN+2IXgIu9Nk='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
 
   # HSTS — one year, and the ramp is finished.
   #
@@ -184,17 +183,6 @@ ErrorDocument 404 /404.html
     Header set Cache-Control "public, max-age=86400"
   </FilesMatch>
 
-  # FHIR OAuth redirect pages (/fhir/callback/<provider>/) arrive carrying a
-  # one-time authorization code in the query string. Never store them, never
-  # index them, and send no Referer at all — not even the origin — from them.
-  # <If> is merged after <FilesMatch>, so these win over the HTML rules above;
-  # Cache-Control uses the same (onsuccess) table as those rules so it replaces
-  # rather than duplicates them. %{REQUEST_URI} is the path without the query.
-  <If "%{REQUEST_URI} =~ m#^/fhir/callback/#">
-    Header set Cache-Control "no-store"
-    Header always set Referrer-Policy "no-referrer"
-    Header always set X-Robots-Tag "noindex, nofollow"
-  </If>
 </IfModule>
 
 # --- The fingerprinted-asset exception --------------------------------------

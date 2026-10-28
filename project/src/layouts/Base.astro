@@ -28,13 +28,6 @@ interface Props {
    * with no canonical URL should assert none.
    */
   noCanonical?: boolean;
-  /**
-   * Emit a page-level referrer policy. The FHIR callback pages use
-   * "no-referrer" so the authorization code in their URL cannot leave as a
-   * Referer on the page's own asset requests, even on a host that ignores the
-   * .htaccess header of the same name.
-   */
-  referrer?: "no-referrer";
 }
 
 const {
@@ -43,7 +36,6 @@ const {
   bareTitle = false,
   noindex = false,
   noCanonical = false,
-  referrer,
 } = Astro.props;
 
 const pageTitle = bareTitle ? title : `${title} — ${site.name}`;
@@ -85,7 +77,6 @@ const structuredData = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    {referrer && <meta name="referrer" content={referrer} />}
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     {!noCanonical && <link rel="canonical" href={canonical} />}

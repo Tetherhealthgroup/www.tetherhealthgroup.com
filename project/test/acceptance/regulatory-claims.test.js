@@ -21,7 +21,7 @@ const pageText = (rel) =>
 
 const CLAIMS = [
   [
-    /\bHIPAA[- ](?:compliant|certified|approved|accredited)\b|\bcompl(?:y|ies|iant)\s+with\s+HIPAA\b|\bHIPAA\s+compliance\s+(?:achieved|certified)\b/i,
+    /\bHIPAA[- ](?:compliant|certified|approved|accredited|ready|secure)\b|\bcompl(?:y|ies|iant)\s+with\s+HIPAA\b|\bHIPAA\s+compliance\s+(?:achieved|certified)\b/i,
     "HIPAA compliance claimed",
   ],
   [
@@ -47,6 +47,7 @@ const CLAIMS = [
 const SAMPLES = [
   "Tether Health is HIPAA compliant.",
   "A HIPAA-certified platform.",
+  "A HIPAA-ready app.",
   "We comply with HIPAA.",
   "FDA-cleared digital therapeutic.",
   "Approved by the FDA.",

@@ -24,10 +24,11 @@ requirements"), never certifications. Tests enforce both
 | Images             | `astro:assets` + sharp (AVIF/WebP, responsive `densities`) |
 | Sitemap            | `@astrojs/sitemap`                                         |
 | Fonts              | System stacks only — no webfont is downloaded              |
-| JavaScript shipped | Small scripts: mobile menu, two forms, FHIR callback       |
+| JavaScript shipped | Small scripts: mobile menu, three forms                    |
 
-The site is fully static. There is no server, no database, no analytics, no
-cookies and no third-party request of any kind.
+The site is static apart from two small PHP handlers for beta early access
+(`project/public/api/`). There is no database, no analytics, no cookies and no
+third-party request of any kind.
 
 ## Getting started
 
@@ -94,15 +95,14 @@ project/
     lib/
       waitlist.ts      Address checking and mailto composition (pure, tested)
       contact.ts       Contact-form topic routing and mailto (pure, tested)
-      fhir-callback.ts FHIR OAuth redirect decision logic (pure, tested)
     data/
-      site.ts          Identity, navigation, mailboxes, Android package, quitlines
+      site.ts          Identity, navigation, mailboxes, quitlines
       programs.ts       The 11 programs (app-pinned fields + website copy)
       integrations.ts   FHIR / Blue Button / Epic / HIPAA / FDA wording rules
       screens.ts        The 28-screen BreatheFree catalog + artwork resolver
     components/         Logo, TetherLogo, Button, Card, Icon, Section,
                         PageHero, PhoneFrame, ProgramCard, SupportEmail,
-                        WaitlistForm, ContactForm, FhirCallback,
+                        WaitlistForm, ContactForm, BetaForm, BetaCta,
                         Header, Footer
     layouts/
       Base.astro        Document shell, SEO, structured data, landmarks
@@ -121,13 +121,11 @@ project/
 `/delete-account/` · `/terms/` · `/security/` · `/accessibility/` ·
 `/beta/` · `/beta/thanks/` · `/beta/confirmed/` · `404`
 
-FHIR OAuth redirect URIs, noindex, outside the sitemap and never cached:
-`/fhir/callback/bluebutton/` and `/fhir/callback/epic/`. Register exactly
-these (with the trailing slash) with CMS and Epic. On Android the app's
-verified App Link for these paths should take the redirect before the page
-renders; the page is the fallback, hands the redirect to the app through an
-`intent://` link, strips the code from the address bar, and never prints it.
-The token exchange happens in the app — this site has no backend.
+Health-record import (P-110): Epic and Blue Button return the user to the
+API at `api.tetherhealthgroup.com`, which holds the PKCE verifier and relays
+to the app. This website has no OAuth callback pages; `/integrations/`
+describes import as coming in the app, opt-in and reviewed before anything is
+added.
 
 ### Program copy
 
@@ -397,9 +395,8 @@ Remote**, then **Deploy HEAD Commit**.
 
 ### The CSP pins hashes, and they move
 
-`script-src` allows exactly four `sha256-` hashes: the JSON-LD block, the
-mobile-menu script, the FHIR callback script and the beta form's fill-time
-script. The early-access and contact form scripts share a module, so they ship
+`script-src` allows exactly three `sha256-` hashes: the JSON-LD block, the
+mobile-menu script and the beta form's fill-time script. The early-access and contact form scripts share a module, so they ship
 as files under `/_astro/`, which `'self'` covers. Edit any of those and the
 browser silently refuses to run it — the menu stops opening, the form starts
 reloading the page. `npm run test:smoke` recomputes the hashes from the build

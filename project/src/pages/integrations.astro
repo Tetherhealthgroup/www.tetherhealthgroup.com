@@ -22,16 +22,16 @@ import {
 
 const steps = [
   {
-    title: "Choose a source",
-    body: "Pick where your records live — Medicare, or a health system that uses Epic.",
+    title: "Turn it on",
+    body: "Import is off until you choose a source: a health system that uses Epic, Medicare through Blue Button, Apple Health or Health Connect.",
   },
   {
-    title: "Sign in with them",
-    body: "You sign in on their page, not ours. We never see that password.",
+    title: "Sign in or allow",
+    body: "For Epic and Medicare you sign in on their page, not ours, and we never see that password. On your phone, the phone asks your permission.",
   },
   {
-    title: "Approve what is shared",
-    body: "You see exactly what Tether Health is asking to read, and approve or decline.",
+    title: "Review before adding",
+    body: "You see what came in and choose what to add. Nothing is added to your programs until you say so.",
   },
   {
     title: "Stay in control",
@@ -42,12 +42,12 @@ const steps = [
 
 <Base
   title="Integrations and standards"
-  description="Tether Health is building on HL7 FHIR and SMART on FHIR, with consent-first connections to the CMS Blue Button API and Epic's FHIR APIs."
+  description="Health-record import is coming in the Tether Health app: opt-in and reviewed before anything is added. It is not available today."
 >
   <PageHero
     eyebrow="Integrations and standards"
     title="Connected care, built on open standards."
-    intro="Your health records belong to you. We are building Tether Health to bring them in safely — through the standards US health records already share — so every program can work from your real picture, with your consent."
+    intro="Your health records belong to you. Importing them is coming in the Tether Health app: opt-in, through the standards US health records already share, and reviewed by you before anything is added. It is not available today."
   />
 
   <Section space="tight" width="wide">
@@ -70,7 +70,7 @@ const steps = [
 
   <Section tone="deep" width="wide">
     <div class="mb-12 max-w-3xl">
-      <p class="eyebrow eyebrow-on-dark mb-5">How a connection works</p>
+      <p class="eyebrow eyebrow-on-dark mb-5">How import will work</p>
       <h2 class="text-4xl text-paper sm:text-5xl">
         Four steps, and you take every one.
       </h2>

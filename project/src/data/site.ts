@@ -19,15 +19,6 @@ export const site = {
 } as const;
 
 /**
- * The Android app, as declared in public/.well-known/assetlinks.json (a test
- * keeps the two equal). The FHIR callback pages use it to hand an OAuth
- * redirect to the app when its App Link did not fire on its own.
- */
-export const androidApp = {
-  packageName: "com.TetherHealthLLC.tetherhealth",
-} as const;
-
-/**
  * Role mailboxes for Tether Health Group (owner-provided, 2026-10-12; admin and
  * finance added 2026-10-20).
  *

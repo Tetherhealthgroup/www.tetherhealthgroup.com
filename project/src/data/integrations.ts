@@ -4,7 +4,10 @@
  * Owner-stated (2026-10-27): Tether Health is working in the CMS Blue Button
  * and Epic FHIR sandboxes and is adopting FHIR, SMART on FHIR, and HIPAA- and
  * FDA-aligned practice. Neither integration has production access, so every
- * line here describes work we are doing, never a live connection. Do not write
+ * line here describes work we are doing, never a live connection. P-110:
+ * record import is coming in the app (Epic, Medicare Blue Button, Apple
+ * Health, Health Connect); it is opt-in, and records are reviewed before
+ * anything is added. It is not available today. Do not write
  * "integrated with", "HIPAA compliant", "FDA approved", "FDA cleared" or "FDA
  * compliant": nothing in this repository evidences any of them, and
  * test/acceptance/regulatory-claims.test.js fails the build if one appears.
@@ -43,8 +46,8 @@ export const integrationHighlights: Integration[] = [
   },
   {
     icon: "lock",
-    title: "Consent you control",
-    body: "Designed so you choose what to connect, see what is shared, and can disconnect whenever you like.",
+    title: "Opt-in, reviewed first",
+    body: "Coming in the app. Import stays off until you turn it on, and you review what came in before anything is added.",
   },
 ];
 
@@ -63,12 +66,17 @@ export const integrations: Integration[] = [
   {
     icon: "shield",
     title: "CMS Blue Button API",
-    body: "Blue Button is the Centers for Medicare & Medicaid Services' API for Medicare claims data. We are building our connection in the CMS sandbox, so that people with Medicare can choose to bring their claims history into Tether Health by signing in with Medicare.",
+    body: "Blue Button is the Centers for Medicare & Medicaid Services' API for Medicare claims data. We are building our connection in the CMS sandbox, so that people with Medicare can choose to bring their claims history into Tether Health by signing in with Medicare. Coming in the app.",
   },
   {
     icon: "stethoscope",
     title: "Epic FHIR APIs",
-    body: "Many US health systems run Epic. We are building our connection to Epic's FHIR APIs in Epic's sandbox, so that patients of those health systems can choose to bring their records into Tether Health through their own patient sign-in.",
+    body: "Many US health systems run Epic. We are building our connection to Epic's FHIR APIs in Epic's sandbox, so that patients of those health systems can choose to bring their records into Tether Health through their own patient sign-in. Coming in the app.",
+  },
+  {
+    icon: "phone",
+    title: "Apple Health and Health Connect",
+    body: "On your phone, the records you already keep in Apple Health or Android's Health Connect will be importable too — only after your phone asks your permission and you agree. Coming in the app.",
   },
 ];
 
@@ -87,7 +95,7 @@ export const commitments: Integration[] = [
   {
     icon: "eye-off",
     title: "Read-only, consent-first",
-    body: "A connection reads only what you approve, only after you approve it. We do not write to your health record, we do not sell health data, and you can disconnect a source and ask us to delete what came from it.",
+    body: "When import arrives, a connection will read only what you approve, only after you approve it, and nothing is added until you have reviewed it. We will not write to your health record, we do not sell health data, and you will be able to disconnect a source and ask us to delete what came from it.",
   },
   {
     icon: "users",
@@ -98,4 +106,4 @@ export const commitments: Integration[] = [
 
 /** Shown in full wherever the names above appear in quantity. */
 export const trademarkNotice =
-  "HL7® and FHIR® are registered trademarks of Health Level Seven International, and their use does not constitute endorsement by HL7. Epic is a trademark of Epic Systems Corporation. Blue Button® is a registered mark of the U.S. Department of Health and Human Services. Naming these standards and services describes the technology we are building with; it does not imply endorsement by, or partnership with, any of their owners.";
+  "HL7® and FHIR® are registered trademarks of Health Level Seven International, and their use does not constitute endorsement by HL7. Epic is a trademark of Epic Systems Corporation. Blue Button® is a registered mark of the U.S. Department of Health and Human Services. Apple Health is a trademark of Apple Inc. Health Connect is a trademark of Google LLC. Naming these standards and services describes the technology we are building with; it does not imply endorsement by, or partnership with, any of their owners.";
