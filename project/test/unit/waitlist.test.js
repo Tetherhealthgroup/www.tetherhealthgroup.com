@@ -19,7 +19,7 @@ import {
 
 test("an address a reply can reach is accepted", () => {
   for (const address of [
-    "a@b.com",
+    "a@example.test",
     "first.last+tag@sub.example.co.uk",
     "USER@EXAMPLE.COM",
     "someone@intranet", // the browser's own type=email allows this
@@ -56,10 +56,10 @@ test("an address no reply can reach is rejected", () => {
 });
 
 test("surrounding whitespace does not make an address invalid", () => {
-  assert.equal(isReplyableEmail("  a@b.com\n"), true);
+  assert.equal(isReplyableEmail("  a@example.test\n"), true);
   assert.equal(
-    normalizeWaitlistPayload({ email: "  a@b.com " }).email,
-    "a@b.com",
+    normalizeWaitlistPayload({ email: "  a@example.test " }).email,
+    "a@example.test",
   );
 });
 
@@ -83,10 +83,10 @@ test("the free-text fields are trimmed and the selects pass through", () => {
 });
 
 test("a missing field becomes an empty string, never the text 'undefined'", () => {
-  const payload = normalizeWaitlistPayload({ email: "a@b.com" });
+  const payload = normalizeWaitlistPayload({ email: "a@example.test" });
   assert.deepEqual(payload, {
     name: "",
-    email: "a@b.com",
+    email: "a@example.test",
     role: "",
     interest: "",
     message: "",
@@ -97,7 +97,7 @@ test("a missing field becomes an empty string, never the text 'undefined'", () =
 test("the message says which optional fields were left blank", () => {
   const body = waitlistMessageBody(
     normalizeWaitlistPayload({
-      email: "a@b.com",
+      email: "a@example.test",
       role: "Researcher or academic",
       interest: "Any / not sure yet",
     }),
@@ -106,7 +106,7 @@ test("the message says which optional fields were left blank", () => {
     body,
     [
       "Name: (not given)",
-      "Email: a@b.com",
+      "Email: a@example.test",
       "I am: Researcher or academic",
       "Health area of interest: Any / not sure yet",
       "",
@@ -145,7 +145,7 @@ test("the address the message is sent to is the one it was given", () => {
   const url = waitlistMailtoUrl(
     "support@tetherhealthgroup.com",
     "s",
-    normalizeWaitlistPayload({ email: "a@b.com" }),
+    normalizeWaitlistPayload({ email: "a@example.test" }),
   );
   assert.equal(
     url.slice(0, url.indexOf("?")),
