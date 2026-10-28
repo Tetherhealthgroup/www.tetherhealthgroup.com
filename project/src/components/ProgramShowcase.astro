@@ -1,0 +1,123 @@
+---
+/**
+ * A program's intro video and three screens from the app design (WEB-915).
+ *
+ * The screens are PNG renders of the app's design kit, optimised to WebP by
+ * astro:assets. The video is built by scripts/build-program-videos.mjs into
+ * public/media/programs/<id>/. It never autoplays, starts muted, and fetches
+ * nothing but its poster until it is played (preload="none"). Visitors who ask
+ * for reduced motion get the version without pan and zoom: the browser picks
+ * the first <source> whose media query matches.
+ */
+
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import type { ProgramPage } from "../data/program-pages";
+import { mediaBase } from "../data/program-pages";
+
+interface Props {
+  page: ProgramPage;
+  name: string;
+}
+
+const { page, name } = Astro.props;
+
+const renders = import.meta.glob<{ default: ImageMetadata }>(
+  "../assets/programs/*/*.png",
+  { eager: true },
+);
+
+function renderFor(specId: string): ImageMetadata {
+  const module = renders[`../assets/programs/${page.id}/${specId}.png`];
+  if (!module)
+    throw new Error(
+      `Missing src/assets/programs/${page.id}/${specId}.png for ${name}`,
+    );
+  return module.default;
+}
+
+const media = mediaBase(page.id);
+const roleLabel = {
+  home: "Home",
+  action: "The main action",
+  recovery: "If you go off plan",
+} as const;
+const transcriptId = `transcript-${page.id}`;
+---
+
+<div
+  class="grid items-start gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
+>
+  <figure class="program-video">
+    <video
+      controls
+      preload="none"
+      playsinline
+      muted
+      poster={`${media}/intro-poster.webp`}
+      width="1280"
+      height="720"
+      aria-describedby={transcriptId}
+      class="block h-auto w-full rounded-3xl border border-hairline-soft bg-teal-deep shadow-[var(--shadow-card)]"
+    >
+      <source
+        src={`${media}/intro-still.mp4`}
+        type="video/mp4"
+        media="(prefers-reduced-motion: reduce)"
+      />
+      <source src={`${media}/intro.mp4`} type="video/mp4" />
+      <track
+        kind="captions"
+        src={`${media}/intro.vtt`}
+        srclang="en"
+        label="English captions"
+      />
+      <p>Your browser cannot play this video. Its script is below.</p>
+    </video>
+    <figcaption class="mt-4 text-sm leading-relaxed text-teal-mid">
+      A short introduction to {name}, built from the app design. It starts
+      muted, with captions on screen.
+    </figcaption>
+    <details
+      id={transcriptId}
+      class="mt-3 rounded-2xl border border-hairline-soft bg-paper p-4 text-sm leading-relaxed text-teal-mid"
+    >
+      <summary class="cursor-pointer font-bold text-teal-deep">
+        Read the video script
+      </summary>
+      <div class="mt-3 space-y-2">
+        {page.video.scenes.map((scene) => <p>{scene.join(" ")}</p>)}
+        <p>The video ends with an invitation to get early access.</p>
+      </div>
+    </details>
+  </figure>
+
+  <ul class="grid grid-cols-3 gap-3 sm:gap-5" aria-label={`${name} screens`}>
+    {
+      page.screens.map((screen) => (
+        <li class="program-screen">
+          <figure class="flex flex-col items-center">
+            <div class="w-full rounded-[22px] bg-teal-deep p-1.5 shadow-[var(--shadow-card)]">
+              <Image
+                src={renderFor(screen.specId)}
+                alt={screen.alt}
+                width={180}
+                densities={[1, 2, 3]}
+                format="webp"
+                loading="lazy"
+                decoding="async"
+                class="block h-auto w-full rounded-[17px] bg-cream"
+              />
+            </div>
+            <figcaption class="mt-3 text-center text-xs leading-snug text-teal-mid sm:text-sm">
+              <span class="block font-bold text-teal-deep">
+                {roleLabel[screen.role]}
+              </span>
+              {screen.title}
+            </figcaption>
+          </figure>
+        </li>
+      ))
+    }
+  </ul>
+</div>

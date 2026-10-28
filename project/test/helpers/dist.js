@@ -69,6 +69,25 @@ export const ALLOWED_ORIGINS = [
   "https://schema.org",
 ];
 
+/**
+ * Public-health sites the program pages link to from "Learn more" (WEB-915,
+ * P-113). Only as the href of an <a> the visitor chooses to follow, with
+ * rel="noopener noreferrer": a link is not a request the page makes. Any other
+ * use of these hosts (src=, poster=, a stylesheet) is still a third-party
+ * resource and still fails the security suite.
+ */
+export const OUTBOUND_LINK_HOSTS = [
+  "smokefree.gov",
+  "www.cancer.gov",
+  "www.nimh.nih.gov",
+  "www.nhlbi.nih.gov",
+  "www.niddk.nih.gov",
+  "www.nia.nih.gov",
+  "diabetes.org",
+  "988lifeline.org",
+  "www.uspreventiveservicestaskforce.org",
+];
+
 /** Every built HTML page, as paths relative to dist/. */
 export function htmlFiles(dir = dist, prefix = "") {
   const found = [];

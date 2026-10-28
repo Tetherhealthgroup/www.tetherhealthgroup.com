@@ -125,19 +125,33 @@ test("offscreen images are deferred and decoded off the main thread", () => {
   assert.deepEqual(bad, [], `images missing loading/decoding hints: ${bad}`);
 });
 
+const walk = (dir) =>
+  readdirSync(dir, { withFileTypes: true }).reduce((sum, entry) => {
+    const full = join(dir, entry.name);
+    return sum + (entry.isDirectory() ? walk(full) : statSync(full).size);
+  }, 0);
+
 test("the deployed payload stays inside its budget", () => {
   // Measured: 5.8 MB, almost entirely the 94 responsive screenshots.
   // 12 MB catches the whole screen catalog being duplicated or shipped
-  // un-optimised, which is the realistic regression.
-  const walk = (dir) =>
-    readdirSync(dir, { withFileTypes: true }).reduce((sum, entry) => {
-      const full = join(dir, entry.name);
-      return sum + (entry.isDirectory() ? walk(full) : statSync(full).size);
-    }, 0);
-
-  const bytes = walk(dist);
+  // un-optimised, which is the realistic regression. The program intro videos
+  // under media/ have their own budget below and are not counted here.
+  const bytes = walk(dist) - walk(join(dist, "media"));
   assert.ok(
     bytes < 12 * KB * KB,
-    `dist/ is ${(bytes / KB / KB).toFixed(1)}MB, over the 12MB budget`,
+    `dist/ without media/ is ${(bytes / KB / KB).toFixed(1)}MB, over the 12MB budget`,
+  );
+});
+
+test("the program intro media stays inside its budget", () => {
+  // WEB-915. Measured: 25.9 MB for 11 programs (two MP4s each, 0.7-1.8 MB,
+  // plus a caption track and a poster). Each MP4 is capped at 3 MB in
+  // test/acceptance/program-pages.test.js; 30 MB catches a third variant or
+  // un-capped encodes. None of it loads until a visitor presses play
+  // (preload="none"), apart from the ~25 KB poster.
+  const bytes = walk(join(dist, "media"));
+  assert.ok(
+    bytes < 30 * KB * KB,
+    `dist/media/ is ${(bytes / KB / KB).toFixed(1)}MB, over the 30MB budget`,
   );
 });

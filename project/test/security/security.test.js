@@ -9,6 +9,7 @@ import {
   dist,
   htmlFiles,
   ALLOWED_ORIGINS,
+  OUTBOUND_LINK_HOSTS,
   htaccess as readHtaccess,
   cspLine as readCspLine,
 } from "../helpers/dist.js";
@@ -16,11 +17,36 @@ import {
 const htaccess = readHtaccess();
 const cspLine = readCspLine();
 
+/**
+ * A page's HTML with the "Learn more" outbound links removed: an <a> whose
+ * href is https:// on an OUTBOUND_LINK_HOSTS host and that carries
+ * rel="noopener noreferrer". Everything else stays and is still checked.
+ */
+function withoutOutboundLinks(html) {
+  return html.replace(/<a\b[^>]*>/g, (tag) => {
+    const host = tag.match(/\shref="https:\/\/([^/"]+)\/[^"]*"/)?.[1];
+    if (!host || !OUTBOUND_LINK_HOSTS.includes(host)) return tag;
+    if (!/\srel="noopener noreferrer"/.test(tag)) return tag;
+    return "<a>";
+  });
+}
+
+test("the outbound-link exemption covers only rel=noopener links on the listed hosts", () => {
+  const ok = '<a href="https://smokefree.gov/" rel="noopener noreferrer">';
+  assert.equal(withoutOutboundLinks(ok), "<a>");
+  for (const tag of [
+    '<a href="https://smokefree.gov/">',
+    '<a href="https://example.com/" rel="noopener noreferrer">',
+    '<img src="https://www.cancer.gov/x.png">',
+  ])
+    assert.equal(withoutOutboundLinks(tag), tag, tag);
+});
+
 test("no page loads a third-party resource", async () => {
   const offenders = [];
 
   for (const page of await htmlFiles()) {
-    const html = readFileSync(join(dist, page), "utf8");
+    const html = withoutOutboundLinks(readFileSync(join(dist, page), "utf8"));
     for (const url of html.match(/https?:\/\/[a-zA-Z0-9.-]+/g) ?? []) {
       if (!ALLOWED_ORIGINS.some((origin) => url.startsWith(origin))) {
         offenders.push(`${page} -> ${url}`);

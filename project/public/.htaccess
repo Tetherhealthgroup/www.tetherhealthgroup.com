@@ -109,10 +109,14 @@ ErrorDocument 404 /404.html
   # five pages; a hash cannot cover an attribute. Script injection is the risk
   # this policy exists to stop, and script-src does not have that hole.
   #
+  # media-src is 'self' for the program intro videos and their caption tracks
+  # under /media/programs/ (WEB-915); without it `default-src 'none'` blocks
+  # both.
+  #
   # connect-src is 'self' because the form has no endpoint by default. Setting
   # PUBLIC_WAITLIST_ENDPOINT means adding that origin here, or the browser
   # blocks the POST — see README.
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-Hx4KcxWxvOApu1HWaiZGf/8b1QUtoU8nzXJOBjljn7U=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-gdu2/aNZoTP1rDFzeFxVkgaCrN/Z0wHcN+2IXgIu9Nk='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-Hx4KcxWxvOApu1HWaiZGf/8b1QUtoU8nzXJOBjljn7U=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-gdu2/aNZoTP1rDFzeFxVkgaCrN/Z0wHcN+2IXgIu9Nk='; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
 
   # HSTS — one year, and the ramp is finished.
   #
@@ -177,6 +181,13 @@ ErrorDocument 404 /404.html
     Header set Cache-Control "public, max-age=0, must-revalidate"
   </FilesMatch>
 
+  # Program intro media (/media/programs/<id>/intro*) lives at fixed URLs that
+  # change when the videos are rebuilt, so it must not inherit the immutable
+  # year above. A week, like the share card below.
+  <FilesMatch "^intro(-still|-poster)?\.(mp4|vtt|webp)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+
   # robots.txt and the sitemap change with the site; a day is long enough to
   # spare the server and short enough to stay honest.
   <FilesMatch "^(robots\.txt|sitemap.*\.xml)$">
@@ -211,7 +222,7 @@ ErrorDocument 404 /404.html
     AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
     AddOutputFilterByType DEFLATE application/javascript application/json
     AddOutputFilterByType DEFLATE application/xml application/rss+xml
-    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE image/svg+xml text/vtt
   </IfModule>
 </IfModule>
 
@@ -224,6 +235,9 @@ ErrorDocument 404 /404.html
   AddType image/webp .webp
   AddType image/svg+xml .svg
   AddType application/manifest+json .webmanifest
+  AddType video/mp4 .mp4
+  AddType text/vtt .vtt
+  AddCharset utf-8 .vtt
 
   # RFC 9116 requires security.txt to be text/plain with charset=utf-8. Served
   # at /.well-known/security.txt. The dotfile deny-list at the foot of this
