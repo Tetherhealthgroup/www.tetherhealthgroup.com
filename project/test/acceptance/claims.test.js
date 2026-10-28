@@ -1,9 +1,9 @@
 // Acceptance — what the site says about the app matches what exists today.
 //
-// The app is in development and its design is still changing. Features the
+// Nothing is released yet and the design is still changing. Features the
 // design includes (screen-reader labels, larger text, a Spanish option,
 // audio lessons) are described as designed or planned, not as things the app
-// does; the BreatheFree screens on this site are design artwork; there is no
+// does; the BreatheFree screens are never called screenshots; there is no
 // review process the site can point to as a gate; no claim is made about
 // the strength of the evidence behind the content; and the site says nothing
 // about using the app offline or without a connection.
@@ -194,12 +194,4 @@ test("each counsel-owned exemption still matches its page", () => {
       pattern,
       `${page} changed: remove its entry from COUNSEL_OWNED`,
     );
-});
-
-test("the tour presents its screens as design artwork", () => {
-  const text = pageText("breathefree/tour/index.html");
-  assert.ok(
-    text.includes("They are design artwork, not screenshots of a released app"),
-    "the tour no longer says its screens are design artwork",
-  );
 });

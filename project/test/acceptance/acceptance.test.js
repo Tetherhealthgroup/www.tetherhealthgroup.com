@@ -36,20 +36,12 @@ test("no page claims the product is available to download", async () => {
   }
 });
 
-test("every health area has a page, and it is honest about status", async () => {
-  // Ten of the eleven programs are not in build. The page for each must not
-  // read like the one that is, so the app's status label is asserted per page
-  // rather than assumed from the template.
-  const { programs, statusLabels } = await import("../../src/data/programs.ts");
+test("every health area has a page listing all of its services", async () => {
+  const { programs } = await import("../../src/data/programs.ts");
   for (const program of programs) {
     const html = readFileSync(
       join(dist, `programs/${program.id}/index.html`),
       "utf8",
-    );
-    assert.match(
-      html,
-      new RegExp(statusLabels[program.status]),
-      `programs/${program.id}/ does not state its status`,
     );
     for (const service of program.services) {
       assert.ok(
@@ -57,31 +49,23 @@ test("every health area has a page, and it is honest about status", async () => 
         `programs/${program.id}/ is missing the "${service.name}" service`,
       );
     }
-    assert.ok(
-      program.upcoming.length > 0,
-      `${program.id} has no upcoming work listed`,
-    );
   }
 });
 
 test("no health area is thinner than the others", async () => {
-  // The areas are meant to read as one programme, not as one real area and
-  // nine stubs. A floor of four service lines and three projects keeps a
-  // half-filled area from shipping unnoticed.
+  // The areas are meant to read as one product, not as one real area and
+  // ten stubs. A floor of four service lines keeps a half-filled area from
+  // shipping unnoticed.
   const { programs } = await import("../../src/data/programs.ts");
   for (const program of programs) {
     assert.ok(
       program.services.length >= 4,
       `${program.id} has ${program.services.length} services, floor is 4`,
     );
-    assert.ok(
-      program.upcoming.length >= 3,
-      `${program.id} has ${program.upcoming.length} upcoming projects, floor is 3`,
-    );
   }
 });
 
-test("the services page lists every service and does not read as an offer", async () => {
+test("the services page lists every service and keeps the medical boundary", async () => {
   const { programs } = await import("../../src/data/programs.ts");
   const html = readFileSync(join(dist, "services/index.html"), "utf8");
   for (const program of programs) {
@@ -94,20 +78,21 @@ test("the services page lists every service and does not read as an offer", asyn
   }
   assert.match(
     html,
-    /None of them is available today/,
-    "the services page does not say the services are unavailable",
+    /None diagnoses, treats\s+or prescribes/,
+    "the services page no longer states the medical boundary",
   );
 });
 
 // ---------------------------------------------------------------------------
-// WEB-005 — app status and waitlist wording.
+// Product presentation and availability wording.
 //
-// Owner-stated truth: BreatheFree is in development, Android first, intended
-// for Google Play. The other ten programs carry the app's own status words
-// (prototype, proposed or planned). Nothing is available to
-// download or use, no testing programme has opened, and no date is promised.
+// Owner direction (2026-10-27): present the site as a finished product. No
+// development-status language, no status badges, and early access as the one
+// call to action. What has NOT changed is the fact underneath: nothing is
+// released, so nothing may be presented as downloadable, installable, live or
+// available now, no store may be named or linked, and no date is promised.
 // These cases scan the built HTML so a regression in any template, data file
-// or inline script fails the build. The wording itself is needs-counsel.
+// or inline script fails the build.
 // ---------------------------------------------------------------------------
 
 /** Built page as one line, with hashed /_astro/ asset URLs removed. */
@@ -116,16 +101,22 @@ const pageText = (rel) =>
     .replace(/\/_astro\/[^"'\s)]+/g, "")
     .replace(/\s+/g, " ");
 
-/** The single sentence that may name Google Play (BreatheFree page). */
-const ALLOWED_PLAY = /We intend to release it through Google Play\./g;
+/** Visible text only: scripts, styles and tags removed. */
+const visibleText = (rel) =>
+  pageText(rel)
+    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ");
+
 /** The quitline sentence is about a third-party service, not the app. */
 const QUITLINE_NOW =
   /Trained quitline counsellors[^<]*they are available now\./g;
 
 /**
- * Overclaim filters, applied to every built page. Exported shape is
- * [pattern, reason]; the self-check test below proves each sample claim is
- * caught, so a loosened pattern fails here rather than silently.
+ * Overclaim filters, applied to every built page. Shape is [pattern, reason];
+ * the self-check test below proves each sample claim is caught, so a loosened
+ * pattern fails here rather than silently.
  */
 const OVERCLAIMS = [
   [/coming soon/i, "implies timing"],
@@ -141,7 +132,7 @@ const OVERCLAIMS = [
     /play\.google\.com|market:\/\/|apps\.apple\.com|itunes\.apple/i,
     "store link",
   ],
-  [/Google Play/i, "store presence beyond the one allowed intent sentence"],
+  [/Google Play/i, "store presence"],
   [/\bplay\s?store\b/i, "store presence"],
   [
     /(?<!\b(?:not|none|no|nothing)\b[^.<]{0,60})(?:\bnow\s+available\b|\bout\s+now\b|\b(?:breathefree|app|application|it)\s+(?:is\s+)?available\s+(?:today|now)\b)/i,
@@ -163,11 +154,7 @@ const OVERCLAIMS = [
     /"@type":"(SoftwareApplication|MobileApplication)"|downloadUrl|installUrl/,
     "app structured data",
   ],
-  [
-    /Nothing is built|no implementation/i,
-    "contradicts the planned/scaffold status",
-  ],
-  // Spec A7: no month, season or year near a status verb.
+  // No month, season or year near a status verb.
   [
     /\b(20[2-3]\d|spring|summer|autumn|fall|winter|january|february|march|april|june|july|august|september|october|november|december)\b[^.<]{0,40}\b(launch|release|available|open)|\b(launch|release|available|open)[^.<]{0,40}\b(20[2-3]\d|spring|summer|autumn|winter|january|february|march|april|june|july|august|september|october|november|december)\b/i,
     "date or season near status wording",
@@ -205,28 +192,9 @@ const SAMPLE_CLAIMS = [
  */
 const PRIVACY_RETENTION = /until the relevant product has launched/g;
 
-/**
- * The Unplug section names iPhone only to say what it cannot do there (the
- * permission Apple has not granted). That is a limitation, not a platform
- * promise, so these exact phrases are exempt from the Apple filter.
- */
-const UNPLUG_IPHONE_LIMITS = new RegExp(
-  [
-    "On iPhone, an app cannot be told which apps you are using\\.",
-    "rather than showing an iPhone user less and calling it the same product\\.",
-    "and on iPhone it cannot until Apple grants us the permission",
-    "the iPhone version cannot do the thing it is for\\.",
-  ].join("|"),
-  "g",
-);
-
 /** Text a page may contain even though a filter would otherwise match. */
 function scrub(text) {
-  return text
-    .replace(ALLOWED_PLAY, "")
-    .replace(UNPLUG_IPHONE_LIMITS, "")
-    .replace(QUITLINE_NOW, "")
-    .replace(PRIVACY_RETENTION, "");
+  return text.replace(QUITLINE_NOW, "").replace(PRIVACY_RETENTION, "");
 }
 
 test("the overclaim filters catch every sample claim", () => {
@@ -260,37 +228,11 @@ test("store badges and store assets are not present", () => {
   }
 });
 
-// "early access" implied a programme nobody has confirmed. Privacy and terms
-// are counsel-owned legal text and are deliberately not edited by WEB-005.
-const EARLY_ACCESS_EXEMPT = new Set(["privacy/index.html", "terms/index.html"]);
-
-test("'early access' is gone everywhere except counsel-owned pages", () => {
+test("'download' does not appear on any page", () => {
   for (const page of htmlFiles()) {
-    if (EARLY_ACCESS_EXEMPT.has(page)) continue;
     assert.ok(
-      !/early[\s-]access/i.test(pageText(page)),
-      `${page} still says "early access" (implies an access programme)`,
-    );
-  }
-});
-
-test("the 'early access' exemption is still needed", () => {
-  // Remove this exemption when counsel updates the page.
-  for (const page of EARLY_ACCESS_EXEMPT) {
-    assert.ok(
-      /early[\s-]access/i.test(pageText(page)),
-      `${page} no longer says "early access": remove it from EARLY_ACCESS_EXEMPT`,
-    );
-  }
-});
-
-test("'download' appears only as a negated availability statement", () => {
-  const negated = /not (yet )?available to download( yet| or use)?/gi;
-  for (const page of htmlFiles()) {
-    const leftover = pageText(page).replace(negated, "");
-    assert.ok(
-      !/download/i.test(leftover),
-      `${page} uses "download" other than to say it is not available`,
+      !/download/i.test(pageText(page)),
+      `${page} uses "download" while nothing is released`,
     );
   }
 });
@@ -304,67 +246,65 @@ test("'available now' only refers to the third-party quitlines", () => {
   }
 });
 
-test("'Google Play' appears once, as an intent, on the BreatheFree page only", () => {
+/**
+ * Development-status wording the owner asked to remove, in visible text. The
+ * app's own status labels are included verbatim, so a badge reintroduced from
+ * data/programs.ts statusLabels fails here.
+ */
+const DEV_STATUS = [
+  [/Approved · in build|Prototype on develop/, "app status label"],
+  [/\b(?:Proposed|Planned)\b(?=\s*(?:<|$|\.|·))/, "app status label"],
+  [/\bin development\b|\bin build\b|\bin design\b/i, "development status"],
+  [/\bprototypes?\b/i, "prototype wording"],
+  [/not (?:yet )?available to (?:use|download)/i, "not-available notice"],
+  [/\bnothing is available\b/i, "not-available notice"],
+  [/testing has not opened/i, "testing status notice"],
+  [/\bwaitlist\b/i, "waitlist wording (the call to action is early access)"],
+  [/\broadmap\b/i, "roadmap wording"],
+];
+
+/**
+ * Counsel-owned legal pages keep their text until counsel revises it: the
+ * terms still say "Products described here are in development".
+ */
+const DEV_STATUS_EXEMPT = new Set(["terms/index.html", "privacy/index.html"]);
+
+test("no page presents development status", () => {
+  const offenders = [];
   for (const page of htmlFiles()) {
-    const count = (pageText(page).match(/Google Play/gi) ?? []).length;
-    assert.equal(
-      count,
-      page === "breathefree/index.html" ? 1 : 0,
-      `${page} names Google Play ${count} time(s)`,
+    if (DEV_STATUS_EXEMPT.has(page)) continue;
+    const text = visibleText(page);
+    for (const [pattern, why] of DEV_STATUS)
+      if (pattern.test(text)) offenders.push(`${page}: ${why}`);
+  }
+  assert.deepEqual(offenders, []);
+});
+
+test("early access is the call to action in the header and on the pages with the form", () => {
+  for (const page of htmlFiles()) {
+    const header = pageText(page).match(/<header[\s\S]*?<\/header>/)?.[0];
+    if (!header) continue;
+    assert.ok(
+      header.includes("Get early access"),
+      `${page}: header lacks "Get early access"`,
     );
   }
-  assert.match(
-    pageText("breathefree/index.html"),
-    ALLOWED_PLAY,
-    "the Play mention must be the intent-only sentence",
-  );
-});
-
-test("one Android-first sentence is used on the BreatheFree surfaces", () => {
-  const sentence = "BreatheFree is in development for Android first.";
-  assert.ok(
-    pageText("index.html").includes("In development — Android first"),
-    "home page lacks the status line",
-  );
-  for (const page of [
-    "breathefree/index.html",
-    "support/index.html",
-    "programs/tobacco/index.html",
-  ]) {
-    assert.ok(pageText(page).includes(sentence), `${page} lacks: ${sentence}`);
-  }
-  assert.ok(
-    pageText("breathefree/index.html").includes(
-      `${sentence} It is not available to download yet.`,
-    ),
-    "BreatheFree page lacks the not-available line",
-  );
-  const description = pageText("index.html").match(
-    /<meta name="description" content="([^"]*)"/,
-  )?.[1];
-  assert.ok(
-    description?.includes("in development for Android first"),
-    "home meta description lacks the Android-first status",
-  );
-});
-
-test("the waitlist is called a waitlist on the pages that carry it", () => {
   for (const page of [
     "index.html",
     "breathefree/index.html",
     "support/index.html",
   ]) {
     assert.ok(
-      pageText(page).includes("Join the waitlist"),
-      `${page} lacks "Join the waitlist"`,
+      visibleText(page).includes("Request early access"),
+      `${page} lacks "Request early access"`,
     );
   }
 });
 
-test("the support FAQ explains how to join the testing list, without saying testing is open", () => {
+test("the support FAQ explains early access and testing, without saying testing is open", () => {
   const html = pageText("support/index.html");
   for (const q of [
-    "Can I use BreatheFree today?",
+    "How do I get BreatheFree?",
     "How do I join the testing list?",
     "What about other platforms and the other health areas?",
   ]) {
@@ -375,14 +315,13 @@ test("the support FAQ explains how to join the testing list, without saying test
     );
   }
   for (const clause of [
-    "say in the message box that you would like to test BreatheFree on Android",
-    "Testing has not opened yet.",
+    "say in the message box that you would like to help test BreatheFree on Android",
     "Joining does not guarantee a place.",
   ]) {
     assert.ok(html.includes(clause), `testing-list answer lacks: ${clause}`);
   }
   assert.ok(html.includes('id="testing-list"'), "the FAQ answer has no anchor");
-  assert.ok(html.includes('id="waitlist"'), "support has no waitlist anchor");
+  assert.ok(html.includes('id="waitlist"'), "support has no form anchor");
   assert.ok(
     pageText("breathefree/index.html").includes(
       'href="/support/#testing-list"',
@@ -391,94 +330,25 @@ test("the support FAQ explains how to join the testing list, without saying test
   );
 });
 
-test("every program other than BreatheFree states its app status and that nothing is available to use", async () => {
-  // The status words are the app's own (programs.json). Whatever the status,
-  // no program is available to use, and each page says so in its summary.
+test("each program page opens with its own summary", async () => {
   const { programs } = await import("../../src/data/programs.ts");
-  const phrase = {
-    prototype: "is a prototype in development. Nothing is available to use.",
-    proposed: "is proposed. Nothing is available to use.",
-    planned: "is planned. Nothing is available to use.",
-  };
-  const others = programs.filter((p) => p.status !== "in-build");
-  assert.equal(others.length, 10, "expected ten programs not in build");
-  for (const program of others) {
-    assert.ok(phrase[program.status], `${program.id}: unknown status`);
+  for (const program of programs) {
+    const text = visibleText(`programs/${program.id}/index.html`);
     assert.ok(
-      pageText(`programs/${program.id}/index.html`).includes(
-        `${program.name}, the program for `,
-      ) &&
-        pageText(`programs/${program.id}/index.html`).includes(
-          phrase[program.status],
-        ),
-      `programs/${program.id}/ lacks the status / not available wording`,
+      text.includes(`${program.name} is the Tether Health program for `),
+      `programs/${program.id}/ lacks its summary`,
     );
   }
-  assert.ok(
-    pageText("programs/index.html").includes("Planned. Not available to use."),
-  );
-  assert.ok(
-    pageText("services/index.html").includes("None is available to use."),
-  );
 });
 
-test("the Unplug section says what is not built, next to what is", async () => {
-  // The intercept now exists in code, which makes the section more tempting to
-  // overstate, not less: what is missing has moved from "unwritten" to "Apple
-  // has not granted the permission, and nobody has run it on a real phone".
-  // Both caveats are asserted rather than trusted to survive a copy edit.
+test("Unplug is described as part of BreatheFree, not as a health area of its own", async () => {
+  // The code lives inside the BreatheFree application, so the module belongs
+  // to tobacco.
+  const { programs } = await import("../../src/data/programs.ts");
   const html = readFileSync(join(dist, "breathefree/index.html"), "utf8");
-  assert.match(html, /Unplug/, "the BreatheFree page does not mention Unplug");
-  assert.match(
-    html,
-    /What is still missing/,
-    "the Unplug section does not name what is missing",
-  );
-  assert.match(
-    html,
-    /has never run on anyone/,
-    "the Unplug section does not say it is untested on a real device",
-  );
-  assert.match(
-    html,
-    /Apple requires a specific permission/,
-    "the Unplug section does not say the iPhone permission is ungranted",
-  );
-});
-
-test("Unplug is on a roadmap, and not sold as a health area of its own", async () => {
-  // The code lives inside the BreatheFree application, so the work belongs to
-  // tobacco. Mental & behavioural health carries the open question instead —
-  // whether screen time is an area at all — and stays "planned".
-  const { programs, statusLabels } = await import("../../src/data/programs.ts");
-  const tobacco = readFileSync(
-    join(dist, "programs/tobacco/index.html"),
-    "utf8",
-  );
-  assert.match(
-    tobacco,
-    /digital-wellbeing module/,
-    "the tobacco roadmap does not list the Unplug module",
-  );
-
-  const behavioral = programs.find((program) => program.id === "behavioral");
-  assert.equal(
-    behavioral.status,
-    "planned",
-    "mental & behavioural health has been promoted without code to point at",
-  );
-  const behavioralHtml = readFileSync(
-    join(dist, "programs/behavioral/index.html"),
-    "utf8",
-  );
-  assert.match(
-    behavioralHtml,
-    new RegExp(statusLabels.planned),
-    "the behavioural health page does not state its status",
-  );
-  assert.match(
-    behavioralHtml,
-    /Screen time as a health area/,
-    "the behavioural health roadmap does not carry the open question",
+  assert.match(html, /Unplug is a module inside BreatheFree/);
+  assert.ok(
+    !programs.some((p) => /unplug/i.test(p.name)),
+    "Unplug has been listed as a program",
   );
 });

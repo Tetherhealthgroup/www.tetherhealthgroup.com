@@ -3,67 +3,19 @@ import Base from "../layouts/Base.astro";
 import PageHero from "../components/PageHero.astro";
 import Section from "../components/Section.astro";
 import Button from "../components/Button.astro";
-import Icon from "../components/Icon.astro";
 import ProgramCard from "../components/ProgramCard.astro";
-import {
-  programs,
-  programCount,
-  programsWithStatus,
-  statusLabels,
-  statusMeanings,
-  statusOrder,
-} from "../data/programs";
+import { programs, programCount } from "../data/programs";
 ---
 
 <Base
   title="Programs"
-  description={`The ${programCount} programs of the Tether Health app, one per area of health, and where each one stands today. BreatheFree is in build; none is available to use yet.`}
+  description={`The ${programCount} programs of the Tether Health app, one per area of health — from quitting smoking with BreatheFree to heart health, diabetes, healthy aging and prevention.`}
 >
   <PageHero
-    eyebrow="Where we are headed"
-    title={`${programCount} programs, one app, one area at a time.`}
-    intro="Tether Health is one app with a program for each area of health. Behaviour change looks different across conditions, but the machinery underneath is shared. We are building that machinery once, then shaping it to each program — starting with BreatheFree, for tobacco and nicotine."
+    eyebrow="The programs"
+    title={`${programCount} programs. One app.`}
+    intro="Tether Health is one app with a program for each area of health. Behaviour change looks different across conditions, but the machinery underneath is shared: a plan you own, help in the moment, progress without punishment, and a route to a person. Each program shapes that to its own area — starting with BreatheFree, for tobacco and nicotine."
   />
-
-  <!-- Status key: the app's own status words -->
-  <Section space="tight" width="wide">
-    <ul class="grid gap-5 sm:grid-cols-2">
-      {
-        statusOrder.map((status) => (
-          <li
-            class:list={[
-              "flex items-start gap-4 rounded-3xl border bg-paper p-6",
-              status === "in-build"
-                ? "border-teal-deep/25 ring-1 ring-teal-deep/10"
-                : "border-hairline-soft",
-            ]}
-          >
-            <span
-              class:list={[
-                "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em]",
-                status === "in-build"
-                  ? "bg-lime text-teal-deep"
-                  : "bg-mint-pale text-teal-mid ring-1 ring-hairline-soft",
-              ]}
-            >
-              {status === "in-build" && (
-                <span class="relative flex h-2 w-2" aria-hidden="true">
-                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-deep opacity-60" />
-                  <span class="relative inline-flex h-2 w-2 rounded-full bg-teal-deep" />
-                </span>
-              )}
-              {statusLabels[status]}
-            </span>
-            {/* needs-counsel: WEB-005 */}
-            <p class="text-[0.95rem] leading-relaxed text-teal-mid">
-              {statusMeanings[status]} {programsWithStatus(status).length} of{" "}
-              {programCount} programs.
-            </p>
-          </li>
-        ))
-      }
-    </ul>
-  </Section>
 
   <!-- The areas -->
   <Section space="tight" width="wide">
@@ -91,7 +43,7 @@ import {
   <!-- How we choose -->
   <Section tone="deep" width="default">
     <div class="max-w-3xl">
-      <p class="eyebrow eyebrow-on-dark mb-5">How we choose what is next</p>
+      <p class="eyebrow eyebrow-on-dark mb-5">How we choose an area</p>
       <h2 class="text-4xl text-paper">
         Need, evidence, and whether we can do it honestly.
       </h2>
@@ -133,19 +85,10 @@ import {
           <h2 class="text-3xl">Is your area on this list?</h2>
           <p class="mt-4 text-lg leading-relaxed">
             If you work in one of these areas — clinically, in research, or in
-            public health — the order we build in should be informed by you.
-          </p>
-          <p
-            class="mt-5 flex items-start gap-3 text-[0.95rem] leading-relaxed text-teal-mid"
-          >
-            <Icon name="info" size={19} class="mt-0.5 shrink-0" />
-            <span>
-              Programs that are not in build describe intent. Nothing listed
-              here is available for clinical use today.
-            </span>
+            public health — we would like to work with you.
           </p>
         </div>
-        <Button href="/#waitlist" arrow>Get in touch</Button>
+        <Button href="/contact/" arrow>Get in touch</Button>
       </div>
     </div>
   </Section>

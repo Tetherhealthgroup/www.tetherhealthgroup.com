@@ -84,10 +84,12 @@ test("URL slugs are unique and stable", () => {
   for (const slug of slugs) assert.match(slug, /^[a-z]+(-[a-z]+)*$/);
 });
 
-test("the built programs index shows every program's name, area, tagline and status", () => {
+test("the built programs index shows every program's name, area, archetype and tagline", () => {
+  // The app's status text is pinned above but deliberately not rendered: the
+  // site presents every program as part of one product (owner, 2026-10-27).
   const text = pageText("programs/index.html");
   for (const app of appPrograms)
-    for (const value of [app.name, app.area, app.tagline, app.status])
+    for (const value of [app.name, app.area, app.archetype, app.tagline])
       assert.ok(text.includes(value), `/programs/ lacks "${value}"`);
   assert.ok(text.includes("11 programs"), "/programs/ does not count 11");
 });
@@ -95,7 +97,7 @@ test("the built programs index shows every program's name, area, tagline and sta
 test("the built programs index shows the programs in the app's order", () => {
   const text = pageText("programs/index.html");
   const positions = appPrograms.map((app) =>
-    text.indexOf(`${app.name} ${app.area} · ${app.archetype}`),
+    text.indexOf(`${app.name} ${app.area}`),
   );
   assert.ok(
     positions.every((p) => p >= 0),
@@ -108,14 +110,14 @@ test("the built programs index shows the programs in the app's order", () => {
   );
 });
 
-test("each built program page carries the app's name, tagline, status and colour", () => {
+test("each built program page carries the app's name, tagline, area and colour", () => {
   for (const site of programs) {
     const app = appPrograms.find((p) => p.id === site.appId);
     const rel = `programs/${site.id}/index.html`;
     const html = readFileSync(join(dist, rel), "utf8");
     const text = pageText(rel);
     assert.match(html, new RegExp(`<h1[^>]*>\\s*${app.name}\\s*</h1>`), rel);
-    for (const value of [app.tagline, app.status, app.area])
+    for (const value of [app.tagline, app.area])
       assert.ok(text.includes(value), `${rel} lacks "${value}"`);
     assert.ok(
       html

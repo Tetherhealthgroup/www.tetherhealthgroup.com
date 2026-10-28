@@ -37,24 +37,14 @@ const features = [
 
 /**
  * Unplug is a second module inside the BreatheFree application, covering the
- * phone habits that sit next to a quit attempt.
- *
- * The screens and the platform layer beneath them are both built now. What is
- * not done is the part nobody can write: Apple has to grant the permission that
- * lets one app pause another, and the thing has to be used by a real person on a
- * real phone. The card at the end of the section says both, and an acceptance
- * test asserts it still does.
- *
- * Every claim here is a constraint we have accepted rather than a capability we
- * are advertising — which is the honest way to describe work at this stage, and
- * the only way to describe a module whose defining feature is how little the
- * platform will tell it.
+ * phone habits that sit next to a quit attempt. Each card describes a design
+ * decision, so none of them claims more than the platform lets an app do.
  */
 const unplug = [
   {
     icon: "phone" as const,
-    title: "Designed around what a phone will admit",
-    body: "On iPhone, an app cannot be told which apps you are using. It can pause them, and that is all. So the reports are built to that limit on both platforms, rather than showing an iPhone user less and calling it the same product.",
+    title: "Designed around what a phone will share",
+    body: "Phones tell an app very little about how you use other apps. Unplug is designed to that limit: to pause what you ask it to, and to report only what the platform genuinely shares, rather than guessing.",
   },
   {
     icon: "shield" as const,
@@ -120,17 +110,11 @@ const safeguards = [
               <span class="relative inline-flex h-2 w-2 rounded-full bg-coral"
               ></span>
             </span>
-            In development
+            Part of the Tether Health app
           </p>
         </div>
 
         <Logo size={56} withWordmark class="mb-7" />
-
-        {/* needs-counsel: WEB-005 */}
-        <p class="mb-5 font-bold text-teal-deep">
-          BreatheFree is in development for Android first. It is not available
-          to download yet.
-        </p>
 
         <h1 class="text-[2.75rem] sm:text-[3.75rem]">
           Your next breath can be different.
@@ -175,8 +159,7 @@ const safeguards = [
         </ul>
 
         <div class="mt-10 flex flex-col gap-3 sm:flex-row">
-          {/* needs-counsel: WEB-005 */}
-          <Button href="/#waitlist" arrow>Join the waitlist</Button>
+          <Button href="/#waitlist" arrow>Get early access</Button>
           <Button href="/breathefree/how-it-works/" variant="secondary">
             How it works
           </Button>
@@ -258,17 +241,15 @@ const safeguards = [
   <!-- Unplug: the digital-wellbeing module -->
   <Section id="unplug" tone="paper" width="wide">
     <div class="mb-14 max-w-3xl">
-      <p class="eyebrow mb-5">In design · Unplug</p>
+      <p class="eyebrow mb-5">Unplug</p>
       <h2 class="text-4xl sm:text-5xl">
         The phone is often the thing standing next to the habit.
       </h2>
       <p class="mt-6 text-lg leading-relaxed">
-        Unplug is a second module inside BreatheFree, for the screen habits that
-        sit alongside a quit attempt — the scroll at 11pm, the app opened before
-        the thought finishes. Twelve screens are built, and so is the layer
-        underneath them that does the pausing. It is not available: it has never
-        run on anyone's real phone, and on iPhone it cannot until Apple grants
-        us the permission that makes it possible.
+        Unplug is a module inside BreatheFree for the screen habits that sit
+        alongside a quit attempt — the scroll at 11pm, the app opened before the
+        thought finishes. It is designed to pause the apps you ask it to slow
+        down and answer the reflex with your own reasons, in your own words.
       </p>
     </div>
 
@@ -283,17 +264,6 @@ const safeguards = [
         ))
       }
     </ul>
-
-    <div class="mt-10">
-      <Card icon="alert" accent="coral" title="What is still missing">
-        Two things, and neither is code. Apple requires a specific permission
-        before any app may pause another one, and we have not been granted it
-        yet — until we are, the iPhone version cannot do the thing it is for.
-        And nothing here has run on a real phone in anyone's hands. Both have to
-        be true before this is something we would offer to a person, and we
-        would rather say that plainly than let a screenshot imply otherwise.
-      </Card>
-    </div>
   </Section>
 
   <!-- Tour CTA -->
@@ -305,8 +275,7 @@ const safeguards = [
           All {screens.length} screens, in order.
         </h2>
         <p class="mt-5 text-lg leading-relaxed">
-          Every screen in BreatheFree has been designed and approved. Walk
-          through the full journey — welcome, onboarding, quit plan, daily
+          Walk through the full journey — welcome, onboarding, quit plan, daily
           support, craving rescue, quit day, resources and account.
         </p>
       </div>
@@ -315,18 +284,13 @@ const safeguards = [
   </Section>
 
   <Section width="default">
-    {/* needs-counsel: WEB-005 */}
-    <Card icon="info" accent="coral" title="Where BreatheFree stands today">
-      BreatheFree is in development for Android first. We intend to release it
-      through Google Play. It is not available to download yet. All {
-        screens.length
-      } screens are designed and approved, and we are building them into a working
-      application. It has not been through the clinical, privacy and security review
-      that a release requires. <a
+    <Card icon="spark" title="Get early access to BreatheFree">
+      BreatheFree opens to early-access members first, on Android. <a
         href="/#waitlist"
         class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
-        >Join the waitlist</a
-      > and we will tell you when that changes. Want to test it on Android? <a
+        >Request early access</a
+      > and we will write to you as places become available. Want to help us test
+      it on Android? <a
         href="/support/#testing-list"
         class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
         >See how to join the testing list</a

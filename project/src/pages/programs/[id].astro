@@ -2,11 +2,10 @@
 /**
  * One page per program of the Tether Health app, one program per health area.
  *
- * Everything here is scope, not availability. No program is available to
- * use, and the page says so in the status line, the summary and the project
- * horizons. The name, area, archetype, tagline, colour and status are the
- * app's own (data/programs.ts). Only BreatheFree links to a product page,
- * and that program is itself still in build.
+ * The name, area, archetype, tagline and colour are the app's own
+ * (data/programs.ts). Only BreatheFree has a product page to link to. No
+ * program is released yet, so the call to action is early access, never a
+ * download.
  */
 
 import Base from "../../layouts/Base.astro";
@@ -15,7 +14,7 @@ import Section from "../../components/Section.astro";
 import Button from "../../components/Button.astro";
 import Icon from "../../components/Icon.astro";
 import WaitlistForm from "../../components/WaitlistForm.astro";
-import { programs, statusLabels } from "../../data/programs";
+import { programs } from "../../data/programs";
 import type { Program } from "../../data/programs";
 
 export function getStaticPaths() {
@@ -30,21 +29,11 @@ interface Props {
 }
 
 const { program } = Astro.props;
-const building = program.status === "in-build";
-
-const horizonTone: Record<string, string> = {
-  "In development": "bg-lime text-teal-deep",
-  Next: "bg-mint-pale text-teal-mid ring-1 ring-hairline-soft",
-  Later: "bg-paper text-teal-mid ring-1 ring-hairline-soft",
-};
 ---
 
 <Base
   title={`${program.name} · ${program.area}`}
-  description={`${program.name}, the Tether Health app program for ${program.area.toLowerCase()}: ${program.tagline} ${
-    // needs-counsel: WEB-005
-    building ? "In build — not available to use yet." : "Not available to use."
-  }`}
+  description={`${program.name}, the Tether Health app program for ${program.area.toLowerCase()}: ${program.tagline}`}
 >
   <PageHero
     eyebrow={`${program.area} · ${program.archetype}`}
@@ -63,49 +52,21 @@ const horizonTone: Record<string, string> = {
     </p>
   </PageHero>
 
-  <!-- Status, stated before anything else on the page -->
+  <!-- Overview -->
   <Section space="tight" width="default">
-    <div
-      class="flex flex-col gap-5 rounded-3xl border border-hairline-soft bg-paper p-7 sm:flex-row sm:items-center sm:gap-7"
-    >
-      <span
-        class={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-[0.7rem] font-extrabold uppercase tracking-[0.12em] ${
-          building
-            ? "bg-lime text-teal-deep"
-            : "bg-mint-pale text-teal-mid ring-1 ring-hairline-soft"
-        }`}
-      >
-        {
-          building && (
-            <span class="relative flex h-2 w-2" aria-hidden="true">
-              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-deep opacity-60" />
-              <span class="relative inline-flex h-2 w-2 rounded-full bg-teal-deep" />
-            </span>
-          )
-        }
-        {statusLabels[program.status]}
-      </span>
-      <p class="leading-relaxed text-teal-mid">{program.summary}</p>
+    <div class="rounded-3xl border border-hairline-soft bg-paper p-7 sm:p-9">
+      <p class="text-lg leading-relaxed text-teal-mid">{program.summary}</p>
     </div>
   </Section>
 
-  <!-- Services: what the programme would cover -->
+  <!-- Services: what the program includes -->
   <Section space="tight" width="wide">
     <div class="mb-10 max-w-3xl">
-      <p class="eyebrow mb-5">What it would cover</p>
-      <h2 class="text-3xl sm:text-4xl">
-        {
-          building
-            ? "The work this area is built around."
-            : "What we would build here."
-        }
-      </h2>
+      <p class="eyebrow mb-5">What it includes</p>
+      <h2 class="text-3xl sm:text-4xl">What {program.name} helps with.</h2>
       <p class="mt-5 leading-relaxed text-teal-mid">
-        {
-          building
-            ? `These are the lines of work ${program.name} is being built to support.`
-            : "Scope, not an offer. None of this exists yet, and nothing on this page is a service you can use today."
-        }
+        Every part of {program.name} follows the same principles as the rest of Tether
+        Health: private by design, no judgment, and a route to a real person.
       </p>
     </div>
 
@@ -126,58 +87,16 @@ const horizonTone: Record<string, string> = {
     </ul>
   </Section>
 
-  <!-- Upcoming projects -->
-  <Section tone="deep" space="tight" width="default">
-    <div class="max-w-3xl">
-      <p class="eyebrow eyebrow-on-dark mb-5">Coming up</p>
-      <h2 class="text-3xl text-paper sm:text-4xl">What happens next here.</h2>
-      <p class="mt-5 leading-relaxed text-mint-strong/85">
-        Ordered by how near the work is, not by date. We do not publish dates
-        for work that has not started.
-      </p>
-    </div>
-
-    <ol class="mt-10 grid gap-5">
-      {
-        program.upcoming.map((project, index) => (
-          <li class="flex flex-col gap-4 rounded-3xl bg-teal-raised p-7 sm:flex-row sm:items-start sm:gap-6">
-            <span
-              class="font-[family-name:var(--font-quote)] text-2xl font-bold text-mint-strong"
-              aria-hidden="true"
-            >
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <div>
-              <div class="flex flex-wrap items-center gap-3">
-                <h3 class="text-xl text-paper">{project.title}</h3>
-                <span
-                  class={`rounded-full px-3 py-1 text-[0.65rem] font-extrabold uppercase tracking-[0.12em] ${horizonTone[project.horizon]}`}
-                >
-                  {project.horizon}
-                </span>
-              </div>
-              <p class="mt-2 leading-relaxed text-mint-strong/85">
-                {project.description}
-              </p>
-            </div>
-          </li>
-        ))
-      }
-    </ol>
-  </Section>
-
   <!-- Product, where one exists -->
   {
     program.product && (
       <Section space="tight" width="default">
         <div class="rounded-3xl border-2 border-teal-deep bg-paper p-8">
-          <p class="eyebrow mb-4">Our first program</p>
+          <p class="eyebrow mb-4">Featured program</p>
           <h2 class="text-3xl">{program.product.name}</h2>
-          {/* needs-counsel: WEB-005 */}
           <p class="mt-4 max-w-2xl leading-relaxed text-teal-mid">
-            This is the area {program.product.name} covers.{" "}
-            {program.product.name} is in development for Android first. It is
-            not available to download yet.
+            See how {program.product.name} works, from the first check-in to the
+            craving at 11pm — screen by screen.
           </p>
           <div class="mt-7">
             <Button href={program.product.href} arrow>
@@ -189,31 +108,26 @@ const horizonTone: Record<string, string> = {
     )
   }
 
-  <!-- Back to the full list, and the waitlist -->
+  <!-- Back to the full list, and early access -->
   <Section space="tight" width="default">
     <p class="text-teal-mid">
       <a
         href="/programs/"
         class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
         >See all programs</a
-      > and where each one stands.
+      > and what each one does.
     </p>
   </Section>
 
   <Section tone="mint" width="default" id="waitlist">
     <div class="mb-10 max-w-2xl">
-      {/* needs-counsel: WEB-005 */}
-      <p class="eyebrow mb-5">Waitlist</p>
+      <p class="eyebrow mb-5">Early access</p>
       <h2 class="text-3xl sm:text-4xl">
-        {
-          program.product
-            ? `Want to hear about ${program.product.name} for Android?`
-            : `Want to know when there is news about ${program.name}?`
-        }
+        Be among the first to use {program.name}.
       </h2>
       <p class="mt-5 leading-relaxed text-teal-mid">
-        Tell us which area matters to you and we will write once, when there is
-        something real to see.
+        Request early access and tell us which area matters to you. We will
+        write to you as places become available.
       </p>
     </div>
     <WaitlistForm />

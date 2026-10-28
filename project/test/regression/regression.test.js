@@ -586,14 +586,15 @@ test("the waitlist selects fit a phone: short default label, ellipsis on overflo
   assert.ok(pagesWithForm > 0, "no page carries the waitlist form");
 });
 
-test("the in-build pill in the status key stays on one line", () => {
-  // At phone width the key's flex row squeezed the pill until
-  // its label wrapped onto two lines. The label is the app's status text.
+test("the program card's archetype pill stays on one line", () => {
+  // At phone width a flex row squeezed the card pill until its label wrapped
+  // onto two lines. The pill once carried the app's status text; it now
+  // carries the archetype, and the same constraint applies.
   const html = pageHtml("programs/index.html");
   const pill = html.match(
-    /<span class="([^"]*\bbg-lime\b[^"]*)"[^>]*>(?:(?!<\/span>\s*<p)[\s\S])*?Approved · in build/,
+    /<span class="([^"]*\bbg-mint-pale\b[^"]*)"[^>]*>\s*Quit \/ Reduce\s*<\/span>/,
   );
-  assert.ok(pill, "no in-build pill on /programs/");
+  assert.ok(pill, "no archetype pill on /programs/");
   assert.match(pill[1], /\bwhitespace-nowrap\b/, "the pill can still wrap");
   assert.match(
     builtCss(),

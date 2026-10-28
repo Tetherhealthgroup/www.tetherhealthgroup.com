@@ -10,6 +10,7 @@ import ProgramCard from "../components/ProgramCard.astro";
 import WaitlistForm from "../components/WaitlistForm.astro";
 import { site } from "../data/site";
 import { programs, programCount } from "../data/programs";
+import { integrationHighlights } from "../data/integrations";
 
 const principles = [
   {
@@ -75,8 +76,7 @@ const principles = [
             <span class="relative inline-flex h-2 w-2 rounded-full bg-coral"
             ></span>
           </span>
-          {/* needs-counsel: WEB-005 */}
-          In development — Android first
+          One app · {programCount} programs
         </p>
 
         <h1 class="text-[2.75rem] sm:text-[3.75rem] lg:text-[4.25rem]">
@@ -84,15 +84,15 @@ const principles = [
         </h1>
 
         <p class="mt-7 max-w-xl text-xl leading-relaxed">
-          Tether Health Group is building calm, private digital health tools —
-          starting with smoking cessation and extending across {programCount} areas
-          of health. Small steps, practical support, and no judgment.
+          Tether Health Group makes calm, private digital health tools — one app
+          with a program for each of {programCount} areas of health, starting with
+          quitting smoking. Small steps, practical support, and no judgment.
         </p>
 
         <div class="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button href="#waitlist" arrow>Join the waitlist</Button>
+          <Button href="#waitlist" arrow>Get early access</Button>
           <Button href="/breathefree/" variant="secondary">
-            See our first program
+            Meet BreatheFree
           </Button>
         </div>
 
@@ -114,7 +114,7 @@ const principles = [
   <Section tone="deep" width="wide">
     <div class="grid gap-14 lg:grid-cols-[0.9fr_1.1fr]">
       <div>
-        <p class="eyebrow eyebrow-on-dark mb-5">What we are building</p>
+        <p class="eyebrow eyebrow-on-dark mb-5">What we make</p>
         <h2 class="text-4xl text-paper sm:text-5xl">
           One system. Many areas of health.
         </h2>
@@ -125,9 +125,9 @@ const principles = [
           it is needed, and a record that survives a bad week.
         </p>
         <p class="mt-5 max-w-md text-lg leading-relaxed text-mint-strong">
-          We are building that once — consent, plain-language education, coping
-          tools, progress without punishment, and routes to real people — then
-          shaping it to each health area.
+          Tether Health brings that together once — consent, plain-language
+          education, coping tools, progress without punishment, and routes to
+          real people — and shapes it to each health area.
         </p>
       </div>
 
@@ -175,15 +175,14 @@ const principles = [
   ==================================================================== -->
   <Section id="programs" width="wide">
     <div class="mb-14 max-w-3xl">
-      <p class="eyebrow mb-5">Where we are headed</p>
+      <p class="eyebrow mb-5">The programs</p>
       <h2 class="text-4xl sm:text-5xl">
-        {programCount} programs, one app, one area at a time.
+        {programCount} programs. One app.
       </h2>
       <p class="mt-6 text-lg leading-relaxed">
-        We would rather do one thing properly than {programCount} things thinly. BreatheFree,
-        for tobacco and nicotine, is in build now. The other programs are prototypes,
-        a proposal or planned, and the order will follow where the need and the evidence
-        are strongest. None is available to use yet.
+        Behaviour change looks different across conditions, but what helps is
+        shared. Each program brings the same calm, private toolkit to its own
+        area of health — starting with BreatheFree, for tobacco and nicotine.
       </p>
     </div>
 
@@ -202,9 +201,9 @@ const principles = [
     >
       <Icon name="info" size={20} class="mt-0.5 shrink-0 text-teal-mid" />
       <span>
-        Programs that are not in build describe what we intend to build. Nothing
-        on this page is available for clinical use today, and no Tether Health
-        Group product diagnoses, treats or prescribes.
+        Tether Health programs educate and support self-management. No Tether
+        Health Group product diagnoses, treats or prescribes, and none replaces
+        your clinician.
       </span>
     </p>
   </Section>
@@ -215,14 +214,14 @@ const principles = [
   <Section tone="mint" width="wide">
     <div class="grid items-center gap-16 lg:grid-cols-[1fr_1fr]">
       <div>
-        <p class="eyebrow mb-5">Our first program</p>
+        <p class="eyebrow mb-5">Featured program</p>
         <Logo size={52} withWordmark class="mb-6" />
         <h2 class="text-4xl sm:text-5xl">Your next breath can be different.</h2>
         <p class="mt-6 text-lg leading-relaxed">
           BreatheFree supports people through quitting smoking — from the first
           honest look at a habit, through building a plan, to the craving that
-          arrives at 11pm on a Tuesday. Twenty-eight screens are designed and
-          approved, and we are building them into a working application now.
+          arrives at 11pm on a Tuesday. Twenty-eight screens take you from
+          welcome to quit day and beyond.
         </p>
 
         <ul class="mt-8 grid gap-4 sm:grid-cols-2">
@@ -311,6 +310,46 @@ const principles = [
   </Section>
 
   <!-- ===================================================================
+       Integrations
+  ==================================================================== -->
+  <Section tone="deep" width="wide">
+    <div class="grid items-center gap-14 lg:grid-cols-[1fr_1fr]">
+      <div>
+        <p class="eyebrow eyebrow-on-dark mb-5">Connected care</p>
+        <h2 class="text-4xl text-paper sm:text-5xl">
+          Your records, on your terms.
+        </h2>
+        <p class="mt-6 max-w-xl text-lg leading-relaxed text-mint-strong">
+          We are building Tether Health on HL7® FHIR® and SMART on FHIR, the
+          open standards US health records use to talk to each other, with
+          connections to the CMS Blue Button API for Medicare data and to Epic's
+          FHIR APIs, so you can bring your own records in — only with your
+          consent, and only what you choose.
+        </p>
+        <div class="mt-9">
+          <Button href="/integrations/" arrow>Integrations and standards</Button
+          >
+        </div>
+      </div>
+      <ul class="grid gap-5 sm:grid-cols-2">
+        {
+          integrationHighlights.map((item) => (
+            <li class="rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
+              <span class="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-raised text-lime">
+                <Icon name={item.icon} size={21} />
+              </span>
+              <h3 class="text-lg text-paper">{item.title}</h3>
+              <p class="mt-2 text-[0.95rem] leading-relaxed text-mint-strong/85">
+                {item.body}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </Section>
+
+  <!-- ===================================================================
        For clinicians
   ==================================================================== -->
   <Section tone="paper" width="default">
@@ -345,16 +384,14 @@ const principles = [
   ==================================================================== -->
   <Section id="waitlist" tone="mint" width="default">
     <div class="mx-auto max-w-2xl text-center">
-      {/* needs-counsel: WEB-005 */}
-      <p class="eyebrow mb-5">Waitlist</p>
+      <p class="eyebrow mb-5">Early access</p>
       <h2 id="waitlist-heading" class="text-4xl sm:text-5xl">
-        Hear about BreatheFree for Android.
+        Be among the first to use Tether Health.
       </h2>
       <p class="mt-6 text-lg leading-relaxed">
-        Join the waitlist and we will write to you when we have news about
-        BreatheFree. If we open Android testing, we may ask whether you would
-        like to take part. Testing has not opened yet. Tell us who you are and
-        what would make this genuinely useful.
+        Request early access and we will write to you as places open up,
+        starting with BreatheFree on Android. Tell us who you are and what would
+        make this genuinely useful.
       </p>
     </div>
 

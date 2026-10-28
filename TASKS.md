@@ -49,8 +49,11 @@ who sees it.
 
 | Date | Decision | Reason |
 |---|---|---|
-| 2026-09-11 | Unplug is described on `/breathefree/` as a module in design, and appears in `upcoming` under Tobacco & nicotine — not as its own health area or its own page. | The code lives inside the BreatheFree application repository, so that is where the site should point. Giving it a page of its own would imply a product line that does not exist. Mental & behavioural health gets two `upcoming` entries instead, because whether screen time belongs to that area is genuinely undecided. |
-| 2026-09-11 | The `/breathefree/` Unplug section names what is **not** built, in a coral card, in the same breath as what is. | The module's blocking layer is unwritten. A section describing an intercept without saying the intercept does not exist yet would be the exact overstatement `src/data/programs.ts` was written to prevent. |
+| 2026-09-11 | _(Superseded 2026-10-27.)_ Unplug is described on `/breathefree/` as a module in design, and appears in `upcoming` under Tobacco & nicotine — not as its own health area or its own page. | The code lives inside the BreatheFree application repository, so that is where the site should point. Giving it a page of its own would imply a product line that does not exist. Mental & behavioural health gets two `upcoming` entries instead, because whether screen time belongs to that area is genuinely undecided. |
+| 2026-09-11 | _(Superseded 2026-10-27.)_ The `/breathefree/` Unplug section names what is **not** built, in a coral card, in the same breath as what is. | The module's blocking layer is unwritten. A section describing an intercept without saying the intercept does not exist yet would be the exact overstatement `src/data/programs.ts` was written to prevent. |
+| 2026-10-27 | The site is presented as a finished product: no status badges, no "in development / prototype / planned / not available" wording, no per-area roadmap, and **early access** as the only call to action. The app's status text stays in `programs.ts` (pinned to the app fixture) but is never rendered. | Owner direction, for official marketing. The underlying fact is unchanged — nothing is released — so the no-download, no-store, no-date and no-"available now" guards stay in force. |
+| 2026-10-27 | Regulatory and integration wording is limited to commitments and work in progress: "designed to meet HIPAA's requirements", "designed with FDA digital health guidance in mind", "building connections to" Blue Button and Epic. Never "HIPAA compliant", "FDA approved / cleared / compliant", "integrated with", or a partnership. No CMS, Epic or HL7 logos. | The owner asked for "HIPAA compliant / FDA compliant"; nothing in the repository evidences either, and for a health product both are claims regulators act on. Integrations are sandbox-only. Epic's developer terms forbid implying partnership. Enforced by `test/acceptance/regulatory-claims.test.js`. |
+| 2026-10-27 | The Blue Button API is named without a version. | The owner referred to a "Blue Button 3.0" gateway; it could not be verified (web access disabled in-session), and the counsel draft `/app-privacy/` says "Blue Button 2.0". |
 
 ---
 
@@ -596,3 +599,25 @@ deployed to `public_html`.
   emitted in the build byte for byte.
 - After deploy, the owner checks the URL answers 200 with
   `Content-Type: application/json`.
+
+## WEB-MKT — marketing-ready site, contact, careers, integrations, FHIR callbacks
+
+- **Status:** review (branch `feat/marketing-ready`, uncommitted)
+- **Owner:** frontend
+- **Acceptance criteria:**
+  - [x] No development-status wording or badge on any non-legal page (`no page presents development status`)
+  - [x] Early access is the call to action in the header and on the form pages
+  - [x] `/contact/` with a topic-routed form and every role mailbox; `/careers/` with the careers mailbox
+  - [x] `/integrations/` with FHIR, SMART on FHIR, CMS Blue Button API, Epic FHIR APIs, HIPAA and FDA commitments, and the trademark notice
+  - [x] `/fhir/callback/bluebutton/` and `/fhir/callback/epic/`: noindex, outside the sitemap, `no-store`, `no-referrer`, code stripped from the URL and never printed, Android hand-off to the package in assetlinks.json
+  - [x] No HIPAA / FDA certification, live-integration or partnership claim anywhere
+  - [ ] Phone number and business address on `/contact/` — **blocked on owner**
+  - [ ] Google Search Console verification files (`google6925e19023bb7f68.html`, `google90cd7aaa7b8ae113.html`) added to `project/public/` — **blocked on owner pasting their contents**
+  - [ ] Android app declares verified App Links for `https://www.tetherhealthgroup.com/fhir/callback/*` — app repository, not this one
+  - [ ] Counsel review of the revised wording (formerly WEB-005) and of `/terms/`, which still says "Products described here are in development"
+  - [ ] Counsel: `/privacy/` covers only the early-access form; the new contact form (name, organisation) and the careers mailbox (résumés) are not described in it
+  - [ ] Owner decision: the tour no longer says its screens are design artwork, and several screens are iPhone-framed while Android comes first
+  - [ ] Owner decision: the ten programs other than BreatheFree are described in the present tense (owner direction); counsel to confirm against `/terms/` "statements of intent"
+- **Independent review (2026-10-27):** a separate reviewer ran the `.htaccess` under Apache 2.4.67 and confirmed the callback block yields one `Cache-Control: no-store`, `Referrer-Policy: no-referrer` and `X-Robots-Tag`, with other pages unchanged. Fixed from its findings: home-page integration cards and Unplug copy no longer state present capabilities; careers clinical claim reworded; "early access covers the whole app" removed; callback pages carry their own no-referrer meta; the intent link has a browser fallback so it never opens a store listing; the download scan covers the whole HTML again; the honest "not screenshots" disclaimer is no longer banned; a test now catches "can connect … Medicare/Epic" claims.
+- **Verification:** `npm run build && npm test` (242 pass, 0 fail on 2026-10-27), `npm run lint`, `npx astro check` (0 errors), `gitleaks dir . --redact` (no leaks)
+- **Notes:** contact and early-access form scripts now share `isReplyableEmail`, so Astro ships both as modules under `/_astro/`; the CSP pins JSON-LD, header and FHIR-callback inline scripts only.

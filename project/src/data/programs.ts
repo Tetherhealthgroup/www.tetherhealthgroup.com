@@ -12,40 +12,26 @@
  * `id` is the website URL slug (/programs/<id>/). It predates the app ids and
  * stays stable so existing links keep working; `appId` is the app's id.
  *
- * `status` mirrors the app's status text through `statusLabels`:
+ * `status` mirrors the app's internal status text through `statusLabels`
+ * ("Approved · in build", "Prototype on develop", "Proposed", "Planned"). It is
+ * kept so the pinned app fixture can be checked, and is never rendered: the
+ * site presents every program as part of one finished product (owner
+ * direction, 2026-10-27).
  *
- *   "in-build"   — "Approved · in build" (BreatheFree).
- *   "prototype"  — "Prototype on develop": a prototype exists in development.
- *   "proposed"   — "Proposed".
- *   "planned"    — "Planned".
- *
- * None of the programs is available to use; the pages say so. WEB-005: the
- * not-available summaries below are needs-counsel.
- *
- * `examples`, `addresses`, `summary`, `services` and `upcoming` are website
- * copy elaborating the programme plan; they are scope, not availability. Phrase
- * them that way — no dates, no promises, no medical claims, and nothing that
- * reads as a service a visitor can use today.
+ * `examples`, `addresses`, `summary` and `services` are website copy
+ * describing what each program does. Present tense is fine; claims that it can
+ * be downloaded or used today are not, because no program is released yet (the
+ * site's call to action is early access). No dates, no medical claims.
  */
 
 import type { IconName } from "../components/Icon.astro";
 
 export type ProgramStatus = "in-build" | "prototype" | "proposed" | "planned";
 
-/** How far out a project sits. Deliberately not dates. */
-export type Horizon = "In development" | "Next" | "Later";
-
-/** A line of work inside a health area. Scope, not an offer. */
+/** A line of work inside a health area. */
 export interface ProgramService {
   name: string;
   description: string;
-}
-
-/** A specific piece of work intended within a health area. */
-export interface UpcomingProject {
-  title: string;
-  description: string;
-  horizon: Horizon;
 }
 
 export interface Program {
@@ -67,44 +53,25 @@ export interface Program {
   letter: string;
   /** Examples within the area. */
   examples: string;
-  /** What the system or programme could address. */
+  /** What the program addresses. */
   addresses: string[];
   status: ProgramStatus;
   icon: IconName;
   /** One-paragraph description of the area, used on its own page. */
   summary: string;
-  /** The lines of work intended within the area. */
+  /** The lines of work within the area. */
   services: ProgramService[];
-  /** Specific projects intended next. */
-  upcoming: UpcomingProject[];
   /** Set when a website product page covers this program. */
   product?: { name: string; href: string };
 }
 
-/** The app's status text for each status, verbatim. */
+/** The app's internal status text for each status, verbatim. Not rendered. */
 export const statusLabels: Record<ProgramStatus, string> = {
   "in-build": "Approved · in build",
   prototype: "Prototype on develop",
   proposed: "Proposed",
   planned: "Planned",
 };
-
-/** What each status means for a visitor. Every one says "not available". */
-export const statusMeanings: Record<ProgramStatus, string> = {
-  "in-build":
-    "Design is approved and code is being written. Not available to use yet.",
-  prototype: "A prototype exists in development. Not available to use.",
-  proposed: "Proposed and not yet decided. Not available to use.",
-  planned: "Planned. Not available to use.",
-};
-
-/** Status order for keys and counts, nearest first. */
-export const statusOrder: ProgramStatus[] = [
-  "in-build",
-  "prototype",
-  "proposed",
-  "planned",
-];
 
 export const programs: Program[] = [
   {
@@ -126,7 +93,7 @@ export const programs: Program[] = [
     status: "in-build",
     icon: "leaf",
     summary:
-      "Tobacco and nicotine is the first area we are building, because the need is large, the evidence for behavioural support is settled, and it is the area where a calm, private tool most obviously helps. BreatheFree is the Tether Health app\u2019s program for this area. Its design is approved and it is in build; it is not yet available.",
+      "BreatheFree is the Tether Health program for tobacco and nicotine: a calm, private companion for quitting cigarettes, vaping or smokeless tobacco. It pairs a quit plan you build yourself with one-tap craving rescue, progress a slip never erases, and a direct route to quitlines and the people who can help.",
     services: [
       {
         name: "Prevention",
@@ -149,32 +116,6 @@ export const programs: Program[] = [
           "Support for reducing exposure where stopping outright is not the immediate goal, without presenting reduction as a safe endpoint.",
       },
     ],
-    upcoming: [
-      {
-        title: "Screens from the app design",
-        description:
-          "Building BreatheFree's 17 screens from the Tether Health app design, as one program alongside the others.",
-        horizon: "In development",
-      },
-      {
-        title: "Quitline and safety routing",
-        description:
-          "Both approved quitlines and the emergency route wired to one source of truth, so a number can never be corrected in one place and left stale in another.",
-        horizon: "In development",
-      },
-      {
-        title: "Unplug — the digital-wellbeing module",
-        description:
-          "Screen-time support built alongside cessation: an intercept that asks rather than scolds, a tier ladder that is quick to tighten and slow to loosen, and a baseline report designed around what a phone will actually report rather than what we would like it to.",
-        horizon: "In development",
-      },
-      {
-        title: "Clinical and privacy review",
-        description:
-          "The review gates that must pass before anything reaches a person: clinical content review, privacy assessment, security review and an accessibility audit.",
-        horizon: "Next",
-      },
-    ],
     product: { name: "BreatheFree", href: "/breathefree/" },
   },
   {
@@ -186,9 +127,8 @@ export const programs: Program[] = [
     tagline: "Your attention is yours.",
     color: "#3B4CC0",
     letter: "S",
-    // needs-owner: examples, addresses, summary, services and upcoming are
-    // website copy drawn from the app's ScrollFree screens; the program
-    // itself is "Proposed" in the app.
+    // needs-owner: examples, addresses, summary and services are website
+    // copy drawn from the app's ScrollFree screens.
     examples: "Social media and endless scrolling",
     addresses: [
       "Noticing what pulls you in",
@@ -199,7 +139,7 @@ export const programs: Program[] = [
     status: "proposed",
     icon: "clock",
     summary:
-      "ScrollFree, the program for social media use, is proposed. Nothing is available to use. It would start from what a person says about their own use, before asking for any screen-time permission.",
+      "ScrollFree is the Tether Health program for social media use. It starts from what you say about your own use, before asking for any screen-time permission, then turns that into goals that feel doable, a pause when the urge hits, and an easy way back after a long scroll.",
     services: [
       {
         name: "Self-report first",
@@ -227,26 +167,6 @@ export const programs: Program[] = [
           "Optional app limits and focus sessions that the person chooses to set up and can turn off.",
       },
     ],
-    upcoming: [
-      {
-        title: "Decision on the proposal",
-        description:
-          "ScrollFree is a proposal. Whether and when it is built has not been decided.",
-        horizon: "Next",
-      },
-      {
-        title: "Permissions review",
-        description:
-          "Reviewing exactly what screen-time and usage access would let ScrollFree see, and keeping self-report as the starting point.",
-        horizon: "Later",
-      },
-      {
-        title: "Shared Rescue and supporters",
-        description:
-          "Reusing the shared Rescue and supporter components from the other programs rather than building them again.",
-        horizon: "Later",
-      },
-    ],
   },
   {
     id: "respiratory",
@@ -266,7 +186,7 @@ export const programs: Program[] = [
     status: "prototype",
     icon: "wave",
     summary:
-      "ClearAir, the program for respiratory health, is a prototype in development. Nothing is available to use. It sits closest to the tobacco work, and much of what BreatheFree learns should carry over.",
+      "ClearAir is the Tether Health program for respiratory health. It sits right next to the tobacco work and builds on what BreatheFree learns, bringing the same calm, practical support to following an action plan, noticing triggers and keeping your care team in the loop.",
     services: [
       {
         name: "Trigger and risk reduction",
@@ -289,26 +209,6 @@ export const programs: Program[] = [
           "Reviewed, plain-language material on managing a long-term respiratory condition day to day.",
       },
     ],
-    upcoming: [
-      {
-        title: "Carry-over from BreatheFree",
-        description:
-          "Assessing which BreatheFree components apply directly here, since the populations overlap heavily.",
-        horizon: "Later",
-      },
-      {
-        title: "Clinician-facing summary",
-        description:
-          "A summary a person can choose to hand to a clinician, reviewed before release.",
-        horizon: "Later",
-      },
-      {
-        title: "Symptom model",
-        description:
-          "Deciding what is worth tracking and what is noise, with clinicians, before building any tracking at all.",
-        horizon: "Later",
-      },
-    ],
   },
   {
     id: "cardiovascular",
@@ -328,7 +228,7 @@ export const programs: Program[] = [
     status: "prototype",
     icon: "progress",
     summary:
-      "Heartwise, the program for cardiovascular health, is a prototype in development. Nothing is available to use. It shares most of its machinery with the metabolic and nutrition areas, which is part of why the shared system is being built once.",
+      "Heartwise is the Tether Health program for cardiovascular health. It helps you understand your numbers, build the everyday habits that matter for your heart, and share what you choose with your care team, on your terms.",
     services: [
       {
         name: "Risk assessment",
@@ -351,26 +251,6 @@ export const programs: Program[] = [
           "Letting a person hand readings and history to a clinician when they choose to, and never by default.",
       },
     ],
-    upcoming: [
-      {
-        title: "Shared behaviour-change core",
-        description:
-          "Proving the shared plan, check-in and progress components on a second area once BreatheFree has shown they work on the first.",
-        horizon: "Later",
-      },
-      {
-        title: "Home-reading safety rules",
-        description:
-          "Deciding the thresholds at which the product stops logging and starts telling someone to seek help.",
-        horizon: "Later",
-      },
-      {
-        title: "Consent and sharing model",
-        description:
-          "Reusing the sharing controls from BreatheFree so nothing reaches a care team unless the person sends it.",
-        horizon: "Later",
-      },
-    ],
   },
   {
     id: "metabolic",
@@ -391,7 +271,7 @@ export const programs: Program[] = [
     status: "prototype",
     icon: "wave",
     summary:
-      "Steady, the program for diabetes and metabolic health, is a prototype in development. Nothing is available to use. The area is on the plan because the burden is large and much of the day-to-day work sits with the person rather than the clinic.",
+      "Steady is the Tether Health program for diabetes and metabolic health. Much of the day-to-day work sits with you rather than the clinic, so Steady keeps it calm: plain-language education, lifestyle support and a judgment-free view of your glucose patterns.",
     services: [
       {
         name: "Screening",
@@ -414,26 +294,6 @@ export const programs: Program[] = [
           "Material on the checks and habits that reduce the risk of complications, and when to raise something with a clinician.",
       },
     ],
-    upcoming: [
-      {
-        title: "Area scoping",
-        description:
-          "Deciding what the shared system already covers and what this area genuinely needs of its own, before any code is written.",
-        horizon: "Next",
-      },
-      {
-        title: "Clinical content review",
-        description:
-          "Commissioning review of the educational content by qualified clinicians, ahead of any build.",
-        horizon: "Later",
-      },
-      {
-        title: "Shared education review",
-        description:
-          "Putting the education content through clinical review once, so it can be reused across the metabolic, cardiovascular and nutrition areas rather than reviewed three times.",
-        horizon: "Later",
-      },
-    ],
   },
   {
     id: "kidney-liver",
@@ -449,7 +309,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "info",
     summary:
-      "Renew, the program for kidney and liver health, is planned. Nothing is available to use. Both conditions are often advanced before they are noticed, which makes identification and plain explanation the useful contribution.",
+      "Renew is the Tether Health program for kidney and liver health. Both conditions are often advanced before they are noticed, so Renew focuses on what helps most: understanding your risk, keeping track of what your care team asks you to monitor, and plain explanations.",
     services: [
       {
         name: "Risk identification",
@@ -472,26 +332,6 @@ export const programs: Program[] = [
           "Helping a person keep results and history in one place and share them with a clinician on their terms.",
       },
     ],
-    upcoming: [
-      {
-        title: "Area scoping",
-        description:
-          "Establishing what is genuinely useful here versus what belongs in the cardiovascular and metabolic areas.",
-        horizon: "Later",
-      },
-      {
-        title: "Results explanation",
-        description:
-          "Plain-language explanation of the common test results, reviewed clinically, as the first useful thing this area could ship.",
-        horizon: "Later",
-      },
-      {
-        title: "Overlap review",
-        description:
-          "Settling what belongs here versus in the cardiovascular and metabolic areas, so the same work is not built twice.",
-        horizon: "Later",
-      },
-    ],
   },
   {
     id: "nutrition",
@@ -511,7 +351,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "spark",
     summary:
-      "Nourish, the program for obesity and nutrition, is planned. Nothing is available to use. It is also the area where tone matters most: this is a subject people have usually been shamed about before they reach any software.",
+      "Nourish is the Tether Health program for obesity and nutrition. Tone matters most here, because this is a subject people have usually been shamed about before they reach any software. Nourish offers food education, healthy-weight support and movement without judgment.",
     services: [
       {
         name: "Nutrition education",
@@ -534,26 +374,6 @@ export const programs: Program[] = [
           "The long stretches where nothing is scheduled and most of the difficulty actually sits.",
       },
     ],
-    upcoming: [
-      {
-        title: "Tone and content review",
-        description:
-          "Reviewing every line for the judgment this area attracts by default, before it is built rather than after.",
-        horizon: "Next",
-      },
-      {
-        title: "Shared progress model",
-        description:
-          "Reusing the progress model from BreatheFree, which is designed so a bad day never erases prior progress.",
-        horizon: "Later",
-      },
-      {
-        title: "Non-tracking baseline",
-        description:
-          "Establishing what the area can do for someone who will not log meals, before building anything that assumes they will.",
-        horizon: "Later",
-      },
-    ],
   },
   {
     id: "aging",
@@ -569,7 +389,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "accessibility",
     summary:
-      "Stride, the program for healthy aging, is planned. Nothing is available to use. It is the area where accessibility stops being a compliance exercise and becomes the whole product.",
+      "Stride is the Tether Health program for healthy aging. Here accessibility stops being a compliance exercise and becomes the whole product: support for staying active, keeping steady on your feet and involving the people who look out for you.",
     services: [
       {
         name: "Prevention",
@@ -592,26 +412,6 @@ export const programs: Program[] = [
           "Letting a family member or carer help without taking the person's decisions away from them.",
       },
     ],
-    upcoming: [
-      {
-        title: "Accessibility-first design",
-        description:
-          "Starting from large type, high contrast, switch control and screen readers rather than retrofitting them.",
-        horizon: "Later",
-      },
-      {
-        title: "Supporter roles",
-        description:
-          "Extending the supporter model from BreatheFree so a family member can help without taking over.",
-        horizon: "Later",
-      },
-      {
-        title: "Falls scope",
-        description:
-          "Deciding what is genuinely useful on falls without turning a home into a monitored ward.",
-        horizon: "Later",
-      },
-    ],
   },
   {
     id: "behavioral",
@@ -631,7 +431,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "users",
     summary:
-      "Ease, the program for mental and behavioral health, is planned. Nothing is available to use. Our role here is support and routing to qualified people \u2014 not therapy, and not crisis care. The safety routing on every page of this site exists because of areas like this one.",
+      "Ease is the Tether Health program for mental and behavioral health. Its role is support and routing to qualified people — not therapy, and not crisis care. The safety routing on every page of this site exists because of areas like this one.",
     services: [
       {
         name: "Screening",
@@ -654,38 +454,6 @@ export const programs: Program[] = [
           "Unambiguous escalation to emergency services and crisis lines, designed before anything else in this area.",
       },
     ],
-    upcoming: [
-      {
-        title: "Crisis-routing design",
-        description:
-          "Designing the escalation path first, before any other part of this area, and having it reviewed by clinicians.",
-        horizon: "Next",
-      },
-      {
-        title: "Scope boundary",
-        description:
-          "Writing down what this area will never attempt, so scope cannot drift towards therapy by accident.",
-        horizon: "Next",
-      },
-      {
-        title: "Who may see what",
-        description:
-          "A written capability matrix for clinician-led, coach-led and self-guided delivery. The rule it exists to enforce: a sign of distress can never come to rest with someone who is not qualified to act on it.",
-        horizon: "Next",
-      },
-      {
-        title: "Screen time as a health area",
-        description:
-          "Deciding whether the Unplug module being built inside BreatheFree belongs to this area as well, and what would have to be true clinically before it is offered as behavioural-health support rather than a habit tool.",
-        horizon: "Later",
-      },
-      {
-        title: "Instrument selection",
-        description:
-          "Choosing which validated screening instruments are appropriate, with clinicians, and how results are worded so they prompt help rather than imply diagnosis.",
-        horizon: "Later",
-      },
-    ],
   },
   {
     id: "preventive",
@@ -705,7 +473,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "calendar",
     summary:
-      "Checkup, the program for preventive health, is planned. Nothing is available to use. It is the least glamorous area on the list and possibly the highest-yield: most of it is remembering things at the right time.",
+      "Checkup is the Tether Health program for preventive health. Most of prevention is remembering the right thing at the right time, so Checkup keeps what is due for you in one place, with plain explanations and a record you own.",
     services: [
       {
         name: "Reminders",
@@ -728,26 +496,6 @@ export const programs: Program[] = [
           "One place to see what has been done and what is due, exportable and deletable by the person it describes.",
       },
     ],
-    upcoming: [
-      {
-        title: "Private notification model",
-        description:
-          "Reusing the notification privacy model from BreatheFree, where the default copy reveals nothing about the subject.",
-        horizon: "Later",
-      },
-      {
-        title: "Guideline sourcing",
-        description:
-          "Deciding whose guidelines are followed and how updates to them reach the product.",
-        horizon: "Later",
-      },
-      {
-        title: "Reminder engine",
-        description:
-          "Reusing the notification model from BreatheFree, whose default copy reveals nothing about the subject on a lock screen.",
-        horizon: "Later",
-      },
-    ],
   },
   {
     id: "cancer",
@@ -768,7 +516,7 @@ export const programs: Program[] = [
     status: "planned",
     icon: "shield",
     summary:
-      "Beacon, the program for cancer, is planned. Nothing is available to use. This area needs the most care of any on the list: the boundary between useful information and implied diagnosis is narrow, and we will not cross it.",
+      "Beacon is the Tether Health program for cancer. It helps you lower your risk, stay on top of screening, find treatment-support resources and plan for life after treatment — while staying firmly on the right side of the line between useful information and diagnosis.",
     services: [
       {
         name: "Risk reduction",
@@ -791,30 +539,7 @@ export const programs: Program[] = [
           "Support for the period after treatment, which is long, under-served, and rarely designed for.",
       },
     ],
-    upcoming: [
-      {
-        title: "Scope and safety boundaries",
-        description:
-          "Writing down, before anything is built, exactly what this area will and will not do \u2014 particularly around anything that could be read as diagnosis.",
-        horizon: "Next",
-      },
-      {
-        title: "Clinical partnership",
-        description:
-          "Finding clinical partners willing to own the content, because this is not an area to build from secondary sources.",
-        horizon: "Later",
-      },
-      {
-        title: "Survivorship scope",
-        description:
-          "Deciding what the survivorship period actually needs, which is the part most often left out of both care and software.",
-        horizon: "Later",
-      },
-    ],
   },
 ];
 
 export const programCount = programs.length;
-/** Programs with the given status, in catalog order. */
-export const programsWithStatus = (status: ProgramStatus) =>
-  programs.filter((p) => p.status === status);

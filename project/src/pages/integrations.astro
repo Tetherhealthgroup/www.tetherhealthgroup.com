@@ -1,0 +1,141 @@
+---
+/**
+ * Integrations and standards: FHIR, SMART on FHIR, the CMS Blue Button API,
+ * Epic's FHIR APIs, and the HIPAA and FDA commitments around them.
+ *
+ * All wording comes from data/integrations.ts, whose header explains what may
+ * and may not be claimed. In short: work in progress, never a live connection,
+ * and commitments rather than certifications.
+ */
+
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Card from "../components/Card.astro";
+import Button from "../components/Button.astro";
+import SupportEmail from "../components/SupportEmail.astro";
+import {
+  commitments,
+  integrations,
+  trademarkNotice,
+} from "../data/integrations";
+
+const steps = [
+  {
+    title: "Choose a source",
+    body: "Pick where your records live — Medicare, or a health system that uses Epic.",
+  },
+  {
+    title: "Sign in with them",
+    body: "You sign in on their page, not ours. We never see that password.",
+  },
+  {
+    title: "Approve what is shared",
+    body: "You see exactly what Tether Health is asking to read, and approve or decline.",
+  },
+  {
+    title: "Stay in control",
+    body: "Disconnect a source whenever you like, and ask us to delete what came from it.",
+  },
+];
+---
+
+<Base
+  title="Integrations and standards"
+  description="Tether Health is building on HL7 FHIR and SMART on FHIR, with consent-first connections to the CMS Blue Button API and Epic's FHIR APIs."
+>
+  <PageHero
+    eyebrow="Integrations and standards"
+    title="Connected care, built on open standards."
+    intro="Your health records belong to you. We are building Tether Health to bring them in safely — through the standards US health records already share — so every program can work from your real picture, with your consent."
+  />
+
+  <Section space="tight" width="wide">
+    <div class="mb-12 max-w-3xl">
+      <p class="eyebrow mb-5">What we are building with</p>
+      <h2 class="text-4xl sm:text-5xl">Standards and connections.</h2>
+    </div>
+    <ul class="grid gap-6 md:grid-cols-2">
+      {
+        integrations.map((item) => (
+          <li>
+            <Card icon={item.icon} title={item.title}>
+              {item.body}
+            </Card>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <Section tone="deep" width="wide">
+    <div class="mb-12 max-w-3xl">
+      <p class="eyebrow eyebrow-on-dark mb-5">How a connection works</p>
+      <h2 class="text-4xl text-paper sm:text-5xl">
+        Four steps, and you take every one.
+      </h2>
+    </div>
+    <ol class="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+      {
+        steps.map((step, index) => (
+          <li class="rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
+            <span
+              class="font-[family-name:var(--font-quote)] text-2xl font-bold text-mint-strong"
+              aria-hidden="true"
+            >
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <h3 class="mt-3 text-lg text-paper">{step.title}</h3>
+            <p class="mt-2 text-[0.95rem] leading-relaxed text-mint-strong/85">
+              {step.body}
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <Section width="wide">
+    <div class="mb-12 max-w-3xl">
+      <p class="eyebrow mb-5">Privacy and regulation</p>
+      <h2 class="text-4xl sm:text-5xl">The commitments behind it.</h2>
+    </div>
+    <ul class="grid gap-6 md:grid-cols-2">
+      {
+        commitments.map((item) => (
+          <li>
+            <Card icon={item.icon} title={item.title}>
+              {item.body}
+            </Card>
+          </li>
+        ))
+      }
+    </ul>
+    <div class="mt-10">
+      <Button href="/security/" variant="secondary">
+        Our privacy and security posture
+      </Button>
+    </div>
+  </Section>
+
+  <Section tone="mint" width="default">
+    <div class="grid items-center gap-8 md:grid-cols-[1fr_auto]">
+      <div>
+        <h2 class="text-3xl sm:text-4xl">Health systems and partners</h2>
+        <p class="mt-5 text-lg leading-relaxed">
+          If you run a FHIR endpoint, a payer API or a care program and want
+          Tether Health to connect with it, write to <SupportEmail
+            mailbox="partnerships"
+            subject="Integration partnership"
+            class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+          />.
+        </p>
+      </div>
+      <Button href="/contact/" arrow>Contact us</Button>
+    </div>
+  </Section>
+
+  <Section space="tight" width="default">
+    <p class="text-sm leading-relaxed text-teal-mid">{trademarkNotice}</p>
+  </Section>
+</Base>

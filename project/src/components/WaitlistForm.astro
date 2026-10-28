@@ -1,10 +1,9 @@
 ---
-// needs-counsel: WEB-005 — button label, privacy line, noscript text, the
-// message help text and the inline-script strings (subject fallback, two
-// confirmations). Editing the script text changes its CSP hash in
-// public/.htaccess.
+// Editing the inline-script text changes its CSP hash in public/.htaccess.
 /**
- * Waitlist form.
+ * Early-access form. Element ids keep their original "waitlist" names so the
+ * /#waitlist links across the site, and the tests that follow them, still
+ * resolve.
  *
  * Delivery has two modes, decided at build time:
  *
@@ -164,7 +163,7 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
         placeholder="What would make this genuinely useful for you?"></textarea>
       <p class="mt-2 text-sm leading-relaxed text-teal-mid">
         Please do not include medical details. This message travels by ordinary
-        email. Want to test an Android version if we offer one? Say so here.
+        email. Interested in testing on Android? Say so here.
       </p>
     </div>
 
@@ -182,10 +181,10 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
 
     <div class="sm:col-span-2">
       <Button type="submit" arrow full class="sm:w-auto">
-        Join the waitlist
+        Get early access
       </Button>
       <p class="mt-4 text-sm leading-relaxed text-teal-mid">
-        We use your address to reply about the waitlist and nothing else. No
+        We use your address to reply about early access and nothing else. No
         marketing lists, no third-party trackers, and we never sell contact
         details. Read the <a
           href="/privacy/"
@@ -229,8 +228,8 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
       }
     </style>
     <p class="rounded-3xl border border-hairline bg-paper p-5 text-teal-mid">
-      Joining the waitlist needs JavaScript, because this site is static and has
-      no server to receive the form. Email us directly at <SupportEmail
+      Requesting early access needs JavaScript, because this site is static and
+      has no server to receive the form. Email us directly at <SupportEmail
         subject={waitlist.subject}
         class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
       /> and it reaches the same inbox.

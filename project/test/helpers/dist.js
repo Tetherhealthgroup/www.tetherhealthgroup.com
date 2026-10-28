@@ -26,6 +26,12 @@ export const REQUIRED_PAGES = [
   "404.html",
   "about/index.html",
   "accessibility/index.html",
+  "careers/index.html",
+  "contact/index.html",
+  "integrations/index.html",
+  // FHIR OAuth redirect URIs, noindex and outside the sitemap
+  "fhir/callback/bluebutton/index.html",
+  "fhir/callback/epic/index.html",
   "app-privacy/index.html",
   "delete-account/index.html",
   "breathefree/index.html",

@@ -5,42 +5,13 @@ import Section from "../components/Section.astro";
 import Card from "../components/Card.astro";
 import Icon from "../components/Icon.astro";
 import WaitlistForm from "../components/WaitlistForm.astro";
-import { quitlines } from "../data/site";
+import { quitlines, mailboxDirectory } from "../data/site";
 import { programCount } from "../data/programs";
 import SupportEmail from "../components/SupportEmail.astro";
 
-const otherMailboxes = [
-  {
-    mailbox: "privacy" as const,
-    label: "Privacy",
-    use: "Privacy requests and questions about how we handle data.",
-  },
-  {
-    mailbox: "security" as const,
-    label: "Security",
-    use: "Vulnerability reports and security concerns.",
-  },
-  {
-    mailbox: "partnerships" as const,
-    label: "Partnerships",
-    use: "Healthcare and business partnership enquiries.",
-  },
-  {
-    mailbox: "careers" as const,
-    label: "Careers",
-    use: "Recruitment and working with us.",
-  },
-  {
-    mailbox: "finance" as const,
-    label: "Finance",
-    use: "Invoices and other financial matters.",
-  },
-  {
-    mailbox: "admin" as const,
-    label: "Administration",
-    use: "General company and administrative matters.",
-  },
-];
+const otherMailboxes = mailboxDirectory.filter(
+  (item) => item.mailbox !== "support",
+);
 ---
 
 <Base
@@ -263,23 +234,23 @@ const otherMailboxes = [
 
   <!-- Questions about BreatheFree -->
   <Section space="tight" width="default">
-    {/* needs-counsel: WEB-005 */}
     <h2 class="text-3xl sm:text-4xl">Questions about BreatheFree</h2>
     <div class="mt-8 max-w-2xl space-y-8">
       <div>
-        <h3 class="text-xl">Can I use BreatheFree today?</h3>
+        <h3 class="text-xl">How do I get BreatheFree?</h3>
         <p class="mt-2 leading-relaxed text-teal-mid">
-          Not yet. BreatheFree is in development for Android first. It is not
-          available to download or use.
+          BreatheFree opens to early-access members first, on Android. Request
+          early access with the form below and we will write to you as places
+          become available.
         </p>
       </div>
       <div id="testing-list">
         <h3 class="text-xl">How do I join the testing list?</h3>
         <p class="mt-2 leading-relaxed text-teal-mid">
-          Use the waitlist form below and say in the message box that you would
-          like to test BreatheFree on Android. Testing has not opened yet. When
-          it does, we may write to the address you give us to ask whether you
-          would like to take part. Joining does not guarantee a place.
+          Use the early-access form below and say in the message box that you
+          would like to help test BreatheFree on Android. We will write to the
+          address you give us when there is a testing place for you. Joining
+          does not guarantee a place.
         </p>
       </div>
       <div>
@@ -287,26 +258,23 @@ const otherMailboxes = [
           What about other platforms and the other health areas?
         </h3>
         <p class="mt-2 leading-relaxed text-teal-mid">
-          We are starting with Android. The other programs in the Tether Health
-          app are prototypes, a proposal or planned, and none of them is
-          available to use.
+          Android comes first. When you request early access, tell us which of
+          the {programCount} programs matters most to you.
         </p>
       </div>
     </div>
   </Section>
 
-  <!-- Waitlist -->
+  <!-- Early access -->
   <Section tone="mint" width="default" id="waitlist">
     <div class="mx-auto max-w-2xl text-center">
-      {/* needs-counsel: WEB-005 */}
-      <p class="eyebrow mb-5">Waitlist</p>
+      <p class="eyebrow mb-5">Early access</p>
       <h2 id="waitlist-heading" class="text-3xl sm:text-4xl">
-        Want to hear about BreatheFree for Android?
+        Be among the first to use BreatheFree.
       </h2>
       <p class="mt-5 text-lg leading-relaxed">
-        Join the waitlist. We will write to you when we have news. If we open
-        Android testing, we may ask whether you would like to take part. Testing
-        has not opened yet.
+        Request early access and we will write to you as places open up on
+        Android.
       </p>
     </div>
 

@@ -1,0 +1,19 @@
+---
+/**
+ * OAuth redirect URI for the CMS Blue Button API: register
+ * https://www.tetherhealthgroup.com/fhir/callback/bluebutton/ with the provider.
+ * Never indexed, never in the sitemap, never cached (public/.htaccess).
+ */
+
+import Base from "../../../layouts/Base.astro";
+import FhirCallback from "../../../components/FhirCallback.astro";
+---
+
+<Base
+  title="Connecting your Medicare records"
+  description="Finishing a CMS Blue Button connection started in the Tether Health app."
+  noindex
+  referrer="no-referrer"
+>
+  <FhirCallback provider="Medicare" />
+</Base>

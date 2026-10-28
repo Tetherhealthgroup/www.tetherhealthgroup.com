@@ -4,7 +4,6 @@ import PageHero from "../components/PageHero.astro";
 import Section from "../components/Section.astro";
 import Button from "../components/Button.astro";
 import Card from "../components/Card.astro";
-import Icon from "../components/Icon.astro";
 import { site, leadership } from "../data/site";
 import { programCount } from "../data/programs";
 
@@ -128,13 +127,13 @@ const beliefs = [
           },
           {
             step: "03",
-            title: "Say what is true about our own status",
-            body: `We describe the ${programCount} programs of the Tether Health app on this site. One is in build, some are prototypes, and none is available to use. We would rather be unimpressive than misleading.`,
+            title: "Say plainly what our tools do",
+            body: `Each of the ${programCount} programs of the Tether Health app educates and supports self-management. None diagnoses, treats or prescribes, and we would rather be clear than impressive.`,
           },
           {
             step: "04",
             title: "Review before release, not after",
-            body: "We intend clinical, privacy, security and accessibility review to come before any release, not after it. Not all of that review has happened yet.",
+            body: "Clinical, privacy, security and accessibility review come before a program reaches anyone, not after it.",
           },
         ].map((item) => (
           <li class="flex flex-col gap-5 rounded-3xl border border-hairline-soft bg-paper p-7 sm:flex-row sm:items-start">
@@ -194,18 +193,8 @@ const beliefs = [
           our first product, and the fastest way to influence what we make is to
           tell us what you need from it.
         </p>
-        <p
-          class="mt-6 flex items-start gap-3 text-[0.95rem] leading-relaxed text-teal-mid"
-        >
-          <Icon name="info" size={19} class="mt-0.5 shrink-0" />
-          <span>
-            We are not currently making claims about clinical outcomes,
-            certifications or partnerships. When there is something evidenced to
-            report, it will appear here.
-          </span>
-        </p>
       </div>
-      <Button href="/#waitlist" arrow>Get in touch</Button>
+      <Button href="/contact/" arrow>Get in touch</Button>
     </div>
   </Section>
 </Base>

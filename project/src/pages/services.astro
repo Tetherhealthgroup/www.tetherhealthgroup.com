@@ -2,9 +2,8 @@
 /**
  * Every service line across every health area, in one place.
  *
- * This page is the one most likely to be misread as an offer, so it says what
- * it is three times: in the intro, in the count line, and on every program's
- * status. One of the eleven programs is in build; none is available to use.
+ * Present tense describes what each program does. No program is released, so
+ * the call to action is early access and nothing here invites a download.
  */
 
 import Base from "../layouts/Base.astro";
@@ -12,28 +11,19 @@ import PageHero from "../components/PageHero.astro";
 import Section from "../components/Section.astro";
 import Icon from "../components/Icon.astro";
 import WaitlistForm from "../components/WaitlistForm.astro";
-import {
-  programs,
-  statusLabels,
-  programsWithStatus,
-  programCount,
-} from "../data/programs";
-
-const inBuild = programsWithStatus("in-build").length;
-const notInBuild = programCount - inBuild;
+import { programs, programCount } from "../data/programs";
 
 const serviceCount = programs.reduce((n, p) => n + p.services.length, 0);
-const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
 ---
 
 <Base
   title="Services"
-  description={`The ${serviceCount} service lines we intend to build across the ${programCount} programs of the Tether Health app. Scope, not availability: none is available to use.`}
+  description={`All ${serviceCount} services across the ${programCount} programs of the Tether Health app, from craving rescue and relapse prevention to screening reminders and care-team coordination.`}
 >
   <PageHero
-    eyebrow="What we would build"
-    title="Every service line, in one place."
-    intro={`The work each program is meant to cover, gathered from all ${programCount}. This is scope, not a menu: ${inBuild} program is in build and ${notInBuild} are prototypes, proposed or planned. None is available to use.`}
+    eyebrow="Services"
+    title="Everything Tether Health does, in one place."
+    intro={`What each program covers, gathered from all ${programCount}. One app, one set of principles, shaped to each area of health.`}
   />
 
   <Section space="tight" width="default">
@@ -47,12 +37,9 @@ const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
       </span>
       <p class="leading-relaxed text-teal-mid">
         <strong class="font-bold text-teal-deep"
-          >{serviceCount} service lines and {projectCount} projects across {
-            programCount
-          } programs.</strong
-        > None of them is available today. {inBuild} of {programCount} programs is
-        in build; the rest are prototypes, a proposal or a plan. Where a line below
-        sounds like something you could use now, it is not.
+          >{serviceCount} services across {programCount} programs.</strong
+        > Every one educates and supports self-management. None diagnoses, treats
+        or prescribes, and none replaces your clinician.
       </p>
     </div>
   </Section>
@@ -79,15 +66,8 @@ const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
               {program.area}
             </span>
           </h2>
-          <span
-            class:list={[
-              "rounded-full px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em]",
-              program.status === "in-build"
-                ? "bg-lime text-teal-deep"
-                : "bg-mint-pale text-teal-mid ring-1 ring-hairline-soft",
-            ]}
-          >
-            {statusLabels[program.status]}
+          <span class="rounded-full bg-mint-pale px-3 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-teal-mid ring-1 ring-hairline-soft">
+            {program.archetype}
           </span>
         </div>
 
@@ -107,12 +87,11 @@ const projectCount = programs.reduce((n, p) => n + p.upcoming.length, 0);
 
   <Section tone="mint" width="default" id="waitlist">
     <div class="mb-10 max-w-2xl">
-      {/* needs-counsel: WEB-005 */}
-      <p class="eyebrow mb-5">Waitlist</p>
+      <p class="eyebrow mb-5">Early access</p>
       <h2 class="text-3xl sm:text-4xl">Which of these matters to you?</h2>
       <p class="mt-5 leading-relaxed text-teal-mid">
-        Tell us the area. It genuinely affects what we build after the first
-        program.
+        Request early access and tell us the area. We will write to you as
+        places become available.
       </p>
     </div>
     <WaitlistForm />

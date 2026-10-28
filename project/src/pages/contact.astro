@@ -1,0 +1,77 @@
+---
+/**
+ * Contact: a form that routes by topic, and every role mailbox.
+ *
+ * No telephone number or postal address yet: the owner is supplying them, and
+ * none is written anywhere until they do.
+ */
+
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Icon from "../components/Icon.astro";
+import ContactForm from "../components/ContactForm.astro";
+import SupportEmail from "../components/SupportEmail.astro";
+import { mailboxDirectory, site } from "../data/site";
+---
+
+<Base
+  title="Contact"
+  description={`Contact ${site.name}: support, partnerships and integrations, clinicians and research, press, careers, privacy and security.`}
+>
+  <PageHero
+    eyebrow="Contact"
+    title="Talk to Tether Health."
+    intro="Questions about the app, partnerships and integrations, research, press or working with us — pick a topic and your message reaches the right team."
+  />
+
+  <Section space="tight" width="wide">
+    <div class="grid gap-10 lg:grid-cols-[1.25fr_0.75fr]">
+      <div
+        class="rounded-3xl border border-hairline-soft bg-paper p-7 shadow-[var(--shadow-card)] sm:p-10"
+      >
+        <h2 class="mb-8 text-3xl">Send us a message</h2>
+        <ContactForm />
+      </div>
+
+      <div>
+        <h2 class="mb-6 text-2xl">Or write to a team directly</h2>
+        <ul class="grid gap-4">
+          {
+            mailboxDirectory.map((item) => (
+              <li class="rounded-3xl border border-hairline-soft bg-paper p-6">
+                <p class="font-bold text-teal-deep">{item.label}</p>
+                <p class="mt-1 text-[0.95rem] leading-relaxed text-teal-mid">
+                  {item.use}
+                </p>
+                <p class="mt-2">
+                  <SupportEmail
+                    mailbox={item.mailbox}
+                    class="inline-block min-h-11 py-3 font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+                  />
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </Section>
+
+  <Section space="tight" width="wide">
+    <p
+      class="flex items-start gap-3 rounded-3xl border-2 border-coral/30 bg-coral-light p-6 leading-relaxed text-teal-deep"
+    >
+      <Icon name="alert" size={20} class="mt-0.5 shrink-0" />
+      <span>
+        Need help right now? In an emergency call 911. For free, confidential
+        help with quitting, see the quitlines on our <a
+          href="/support/"
+          class="font-bold underline decoration-coral decoration-2 underline-offset-4"
+          >support page</a
+        >. Email is not monitored around the clock and we cannot give medical
+        advice.
+      </span>
+    </p>
+  </Section>
+</Base>

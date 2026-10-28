@@ -1,0 +1,136 @@
+---
+/**
+ * Careers: who we look for and how to reach us. No openings are listed,
+ * because the owner has not supplied any; applications go to the careers
+ * mailbox.
+ */
+
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Card from "../components/Card.astro";
+import SupportEmail from "../components/SupportEmail.astro";
+import { site } from "../data/site";
+import { programCount } from "../data/programs";
+
+const values = [
+  {
+    icon: "users" as const,
+    title: "People before metrics",
+    body: "We measure ourselves by whether a tool helps someone on a hard day, not by how often it makes them open an app.",
+  },
+  {
+    icon: "lock" as const,
+    title: "Privacy is the product",
+    body: "No ads and no selling health data. Privacy and security shape what we build from the first sketch, not at the end.",
+  },
+  {
+    icon: "stethoscope" as const,
+    title: "Clinicians in the room",
+    body: "We build with clinicians, and want their judgment shaping the content, the boundaries and the routes to real people in every program.",
+  },
+  {
+    icon: "accessibility" as const,
+    title: "Built for everyone",
+    body: "Plain language, careful design and accessibility treated as part of the work, not a checklist after it.",
+  },
+];
+
+const disciplines = [
+  {
+    icon: "phone" as const,
+    title: "Engineering",
+    body: "Mobile, backend and health-data engineers who care about reliability, privacy and the standards that let records move safely — FHIR and SMART on FHIR among them.",
+  },
+  {
+    icon: "spark" as const,
+    title: "Design and research",
+    body: "Product designers, content designers and researchers who can make a difficult moment feel calmer with fewer words.",
+  },
+  {
+    icon: "stethoscope" as const,
+    title: "Clinical and behavioural science",
+    body: "Clinicians, pharmacists and behavioural scientists who want to shape support for tobacco, heart health, diabetes, healthy aging and more.",
+  },
+  {
+    icon: "shield" as const,
+    title: "Privacy, security and compliance",
+    body: "Specialists in HIPAA, health-data security and digital health regulation who want to build it right from the start.",
+  },
+  {
+    icon: "support" as const,
+    title: "Partnerships and operations",
+    body: "People who can bring health systems, payers, employers and public-health organisations alongside us.",
+  },
+];
+---
+
+<Base
+  title="Careers"
+  description={`Work at ${site.name}: calm, private digital health tools across ${programCount} areas of health. Engineering, design, clinical, privacy and partnerships.`}
+>
+  <PageHero
+    eyebrow="Careers"
+    title="Help build care that meets people where they are."
+    intro={`Tether Health is one app with ${programCount} programs, from quitting smoking to heart health and healthy aging. We are looking for people who want health technology to be calmer, kinder and more private.`}
+  />
+
+  <Section width="wide">
+    <div class="mb-12 max-w-3xl">
+      <p class="eyebrow mb-5">How we work</p>
+      <h2 class="text-4xl sm:text-5xl">Four things we hold to.</h2>
+    </div>
+    <ul class="grid gap-6 md:grid-cols-2">
+      {
+        values.map((value) => (
+          <li>
+            <Card icon={value.icon} title={value.title}>
+              {value.body}
+            </Card>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <Section tone="deep" width="wide">
+    <div class="mb-12 max-w-3xl">
+      <p class="eyebrow eyebrow-on-dark mb-5">Who we look for</p>
+      <h2 class="text-4xl text-paper sm:text-5xl">
+        The people who make Tether Health.
+      </h2>
+    </div>
+    <ul class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      {
+        disciplines.map((item) => (
+          <li>
+            <Card icon={item.icon} title={item.title} tone="deep">
+              {item.body}
+            </Card>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <Section width="default">
+    <div
+      class="rounded-3xl border border-hairline-soft bg-paper p-8 shadow-[var(--shadow-card)] sm:p-12"
+    >
+      <h2 class="text-3xl sm:text-4xl">Want to work with us?</h2>
+      <p class="mt-5 text-lg leading-relaxed">
+        Send your résumé or a link to your work, with a few lines about what you
+        would bring and which area of health matters to you, to <SupportEmail
+          mailbox="careers"
+          subject="Careers enquiry"
+          class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+        />.
+      </p>
+      <p class="mt-5 leading-relaxed text-teal-mid">
+        We welcome applicants of every background, identity and ability. If you
+        need an adjustment to take part in our hiring process, tell us in your
+        first message.
+      </p>
+    </div>
+  </Section>
+</Base>

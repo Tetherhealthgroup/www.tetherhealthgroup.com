@@ -1,0 +1,210 @@
+---
+// Editing the inline-script text changes its CSP hash in public/.htaccess.
+/**
+ * General contact form.
+ *
+ * The site is static, so — like the early-access form — this composes the
+ * message in the visitor's own mail client. The topic decides the inbox
+ * (src/lib/contact.ts); with scripting off, the <noscript> block hides the form
+ * and the mailbox list on the contact page is the route left.
+ *
+ * No health information is requested, and the help text says not to send any:
+ * the message travels by ordinary email.
+ */
+
+import Button from "./Button.astro";
+import Icon from "./Icon.astro";
+import { contactTopics } from "../lib/contact";
+
+const fieldClass =
+  "w-full rounded-[14px] border-2 border-teal-muted bg-paper px-4 py-3.5 text-[1.0625rem] " +
+  "text-teal-deep placeholder:text-teal-mid transition-colors " +
+  "focus:border-teal-deep";
+const selectClass = `${fieldClass} truncate`;
+const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
+---
+
+<div>
+  <form id="contact-form" class="grid gap-5 sm:grid-cols-2" novalidate>
+    <div class="sm:col-span-1">
+      <label class={labelClass} for="ct-name"
+        >Name <span class="font-normal text-teal-mid">(optional)</span></label
+      >
+      <input
+        class={fieldClass}
+        id="ct-name"
+        name="name"
+        type="text"
+        autocomplete="name"
+        placeholder="Your name"
+      />
+    </div>
+
+    <div class="sm:col-span-1">
+      <label class={labelClass} for="ct-email">Email</label>
+      <input
+        class={fieldClass}
+        id="ct-email"
+        name="email"
+        type="email"
+        required
+        autocomplete="email"
+        placeholder="you@example.com"
+        aria-describedby="ct-email-error"
+      />
+      <p
+        id="ct-email-error"
+        class="mt-2 hidden items-center gap-1.5 text-sm font-bold text-teal-deep"
+        role="alert"
+      >
+        <Icon name="alert" size={16} />
+        <span>Please enter an email address we can reply to.</span>
+      </p>
+    </div>
+
+    <div class="sm:col-span-1">
+      <label class={labelClass} for="ct-organisation"
+        >Organisation <span class="font-normal text-teal-mid">(optional)</span
+        ></label
+      >
+      <input
+        class={fieldClass}
+        id="ct-organisation"
+        name="organisation"
+        type="text"
+        autocomplete="organization"
+        placeholder="Health system, company or university"
+      />
+    </div>
+
+    <div class="sm:col-span-1">
+      <label class={labelClass} for="ct-topic">Topic</label>
+      <select class={selectClass} id="ct-topic" name="topic">
+        {
+          contactTopics.map((topic) => (
+            <option value={topic.value}>{topic.label}</option>
+          ))
+        }
+      </select>
+    </div>
+
+    <div class="sm:col-span-2">
+      <label class={labelClass} for="ct-message">Message</label>
+      <textarea
+        class={`${fieldClass} min-h-36 resize-y`}
+        id="ct-message"
+        name="message"
+        rows="5"
+        placeholder="How can we help?"></textarea>
+      <p class="mt-2 text-sm leading-relaxed text-teal-mid">
+        Please do not include medical details. This message travels by ordinary
+        email.
+      </p>
+    </div>
+
+    <div class="sm:col-span-2">
+      <Button type="submit" arrow full class="sm:w-auto">Send message</Button>
+      <p class="mt-4 text-sm leading-relaxed text-teal-mid">
+        Your email app opens with the message addressed to the right team. We
+        use your address to reply and nothing else. Read the <a
+          href="/privacy/"
+          class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+          >privacy notice</a
+        >.
+      </p>
+    </div>
+  </form>
+
+  <div
+    id="contact-success"
+    class="hidden rounded-3xl border border-mint-strong bg-mint p-7"
+    role="status"
+  >
+    <span
+      class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-deep text-lime"
+    >
+      <Icon name="check" size={24} />
+    </span>
+    <h3 class="mb-2 text-xl">Almost there.</h3>
+    <p id="contact-success-body" class="text-teal-mid"></p>
+  </div>
+
+  <noscript>
+    <style>
+      #contact-form {
+        display: none;
+      }
+    </style>
+    <p class="rounded-3xl border border-hairline bg-paper p-5 text-teal-mid">
+      The contact form needs JavaScript, because this site is static and has no
+      server to receive it. Use the addresses on this page instead — each one
+      reaches the team named next to it.
+    </p>
+  </noscript>
+</div>
+
+<script>
+  import {
+    contactMailtoUrl,
+    contactRoute,
+    normalizeContactPayload,
+  } from "../lib/contact";
+  import { isReplyableEmail } from "../lib/waitlist";
+
+  const form = document.getElementById("contact-form");
+  const success = document.getElementById("contact-success");
+  const successBody = document.getElementById("contact-success-body");
+  const emailError = document.getElementById("ct-email-error");
+
+  if (
+    form instanceof HTMLFormElement &&
+    success instanceof HTMLElement &&
+    successBody instanceof HTMLElement &&
+    emailError instanceof HTMLElement
+  ) {
+    const emailField = form.elements.namedItem("email");
+
+    const showError = (show: boolean) => {
+      emailError.classList.toggle("hidden", !show);
+      emailError.classList.toggle("flex", show);
+      if (emailField instanceof HTMLInputElement) {
+        emailField.setAttribute("aria-invalid", show ? "true" : "false");
+        emailField.classList.toggle("border-coral", show);
+      }
+    };
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const payload = normalizeContactPayload({
+        name: data.get("name") as string,
+        email: data.get("email") as string,
+        organisation: data.get("organisation") as string,
+        topic: data.get("topic") as string,
+        message: data.get("message") as string,
+      });
+
+      if (!isReplyableEmail(payload.email)) {
+        showError(true);
+        if (emailField instanceof HTMLInputElement) emailField.focus();
+        return;
+      }
+      showError(false);
+
+      const { address } = contactRoute(payload);
+      window.location.href = contactMailtoUrl(payload);
+
+      form.classList.add("hidden");
+      success.classList.remove("hidden");
+      successBody.textContent =
+        `Your email app should now be open with a message to ${address}. ` +
+        `Send it and we will reply. If nothing opened, email ${address} directly.`;
+      success.setAttribute("tabindex", "-1");
+      success.focus();
+    });
+
+    if (emailField instanceof HTMLInputElement) {
+      emailField.addEventListener("input", () => showError(false));
+    }
+  }
+</script>

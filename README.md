@@ -2,11 +2,18 @@
 
 Marketing and company website for **Tether Health LLC** (Tether Health Group).
 
-The site presents the company, the ten health areas it intends to support, and
-its first product — **BreatheFree**, a smoking-cessation application currently
-in development. It carries a pre-launch ("in development") posture throughout:
-there are no app-store links, and no claim is made that any product is
-available.
+The site presents the company, the eleven programs of the Tether Health app,
+its featured program — **BreatheFree**, for quitting smoking — and the
+health-record integrations it is building (FHIR, SMART on FHIR, the CMS Blue
+Button API and Epic's FHIR APIs).
+
+Since 2026-10-27 the site is presented as a finished product, at the owner's
+direction: no development-status badges or wording, and **early access** as
+the one call to action. Nothing is released yet, so there are still no
+app-store links and no claim that anything can be downloaded or used today,
+and regulatory wording stays at commitments ("designed to meet HIPAA's
+requirements"), never certifications. Tests enforce both
+(`test/acceptance/acceptance.test.js`, `test/acceptance/regulatory-claims.test.js`).
 
 ## Stack
 
@@ -17,7 +24,7 @@ available.
 | Images             | `astro:assets` + sharp (AVIF/WebP, responsive `densities`) |
 | Sitemap            | `@astrojs/sitemap`                                         |
 | Fonts              | System stacks only — no webfont is downloaded              |
-| JavaScript shipped | Two small inline scripts (mobile menu, waitlist form)      |
+| JavaScript shipped | Small scripts: mobile menu, two forms, FHIR callback      |
 
 The site is fully static. There is no server, no database, no analytics, no
 cookies and no third-party request of any kind.
@@ -51,9 +58,9 @@ external mail handler and reports nothing back, so what the company actually
 receives cannot be observed from a browser test.
 
 `test:smoke` runs against `dist/`, so run `npm run build` first. It asserts the
-24 routes are emitted, the sitemap exists, every page has a title, description
-and canonical URL, no page skips a heading level, every health area states its
-own status, the safety routing appears on every page, and — the one that
+32 routes are emitted, the sitemap exists, every page has a title, description
+and canonical URL, no page skips a heading level, the safety routing appears
+on every page, and — the one that
 matters most — that **no page loads a third-party resource** and no page links
 to an app store while the product is pre-launch. Those two guard promises the
 site makes in prose, which a later edit could otherwise break silently.
@@ -86,39 +93,49 @@ project/
   src/
     lib/
       waitlist.ts      Address checking and mailto composition (pure, tested)
+      contact.ts       Contact-form topic routing and mailto (pure, tested)
+      fhir-callback.ts FHIR OAuth redirect decision logic (pure, tested)
     data/
-      site.ts          Identity, navigation, contact, quitline numbers
-      programs.ts       The 10 health areas and each one's honest status
+      site.ts          Identity, navigation, mailboxes, Android package, quitlines
+      programs.ts       The 11 programs (app-pinned fields + website copy)
+      integrations.ts   FHIR / Blue Button / Epic / HIPAA / FDA wording rules
       screens.ts        The 28-screen BreatheFree catalog + artwork resolver
     components/         Logo, TetherLogo, Button, Card, Icon, Section,
                         PageHero, PhoneFrame, ProgramCard, SupportEmail,
-                        WaitlistForm, Header, Footer
+                        WaitlistForm, ContactForm, FhirCallback,
+                        Header, Footer
     layouts/
       Base.astro        Document shell, SEO, structured data, landmarks
       Legal.astro       Shell for the policy pages
-    pages/              24 routes (see below)
+    pages/              32 routes (see below)
     styles/global.css   Design tokens, base styles, motion
     assets/screens/     The 28 approved 1290x2796 PNGs
 ```
 
 ### Routes
 
-`/` · `/programs/` · `/programs/<area>/` (ten, generated) · `/services/` ·
+`/` · `/programs/` · `/programs/<area>/` (eleven, generated) · `/services/` ·
 `/breathefree/` · `/breathefree/how-it-works/` · `/breathefree/tour/` ·
-`/for-clinicians/` · `/about/` · `/support/` · `/privacy/` · `/terms/` ·
-`/security/` · `/accessibility/` · `404`
+`/integrations/` · `/for-clinicians/` · `/about/` · `/careers/` ·
+`/contact/` · `/support/` · `/privacy/` · `/app-privacy/` ·
+`/delete-account/` · `/terms/` · `/security/` · `/accessibility/` · `404`
 
-### Scope versus record
+FHIR OAuth redirect URIs, noindex, outside the sitemap and never cached:
+`/fhir/callback/bluebutton/` and `/fhir/callback/epic/`. Register exactly
+these (with the trailing slash) with CMS and Epic. On Android the app's
+verified App Link for these paths should take the redirect before the page
+renders; the page is the fallback, hands the redirect to the app through an
+`intent://` link, strips the code from the address bar, and never prints it.
+The token exchange happens in the app — this site has no backend.
 
-The site publishes **intent only**, and says so:
+### Program copy
 
-|                             | Where it lives                          | What it means                                      |
-| --------------------------- | --------------------------------------- | -------------------------------------------------- |
-| Services, upcoming projects | `/programs/<area>/`, from `programs.ts` | Intent. Nine of the ten areas have no code at all. |
-
-`programs.ts` carries `services` and `upcoming` per area; project horizons are
-`In development`, `Next` and `Later` — **no dates are published for work that
-has not started**.
+`programs.ts` carries each program's app-pinned fields (name, area, archetype,
+tagline, colour, letter, status) and website copy (`summary`, `services`).
+The app's status text is kept so the pinned fixture can be checked, and is
+never rendered. The per-area roadmap (`upcoming`) was removed on 2026-10-27
+with the rest of the development-status presentation. **No dates are
+published.**
 
 There is no longer a record of shipped work anywhere on the site. The
 `/updates/` feed and the per-area "Already done" section were both removed at
@@ -361,7 +378,9 @@ Remote**, then **Deploy HEAD Commit**.
 ### The CSP pins hashes, and they move
 
 `script-src` allows exactly three `sha256-` hashes: the JSON-LD block, the
-mobile-menu script, and the waitlist form's script. Edit any of those and the
+mobile-menu script, and the FHIR callback script. The early-access and contact
+form scripts share a module, so they ship as files under `/_astro/`, which
+`'self'` covers. Edit any of those and the
 browser silently refuses to run it — the menu stops opening, the form starts
 reloading the page. `npm run test:smoke` recomputes the hashes from the build
 and fails in both directions: a script the policy does not allow, and a hash

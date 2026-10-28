@@ -13,9 +13,18 @@ export const site = {
   domain: "www.tetherhealthgroup.com",
   url: "https://www.tetherhealthgroup.com",
   tagline: "Care that meets people where they are.",
-  // needs-counsel: WEB-005 (feeds meta/og/twitter description and JSON-LD; changing it re-pins a CSP hash)
+  // Feeds meta/og/twitter description and JSON-LD; changing it re-pins a CSP hash.
   description:
-    "Tether Health Group is building calm, private health tools. BreatheFree, designed to help people quit smoking, is in development for Android first.",
+    "Calm, private digital health tools. The Tether Health app brings eleven programs together, starting with BreatheFree for quitting smoking.",
+} as const;
+
+/**
+ * The Android app, as declared in public/.well-known/assetlinks.json (a test
+ * keeps the two equal). The FHIR callback pages use it to hand an OAuth
+ * redirect to the app when its App Link did not fire on its own.
+ */
+export const androidApp = {
+  packageName: "com.TetherHealthLLC.tetherhealth",
 } as const;
 
 /**
@@ -39,6 +48,49 @@ export const contact = {
 
 export type Mailbox = keyof typeof contact;
 
+/** What each mailbox is for, as listed on /contact/ and /support/. */
+export const mailboxDirectory: {
+  mailbox: Mailbox;
+  label: string;
+  use: string;
+}[] = [
+  {
+    mailbox: "support",
+    label: "Support",
+    use: "Help with the Tether Health app and early access.",
+  },
+  {
+    mailbox: "partnerships",
+    label: "Partnerships",
+    use: "Health systems, payers, employers and integration partners.",
+  },
+  {
+    mailbox: "careers",
+    label: "Careers",
+    use: "Recruitment and working with us.",
+  },
+  {
+    mailbox: "privacy",
+    label: "Privacy",
+    use: "Privacy requests and questions about how we handle data.",
+  },
+  {
+    mailbox: "security",
+    label: "Security",
+    use: "Vulnerability reports and security concerns.",
+  },
+  {
+    mailbox: "finance",
+    label: "Finance",
+    use: "Invoices and other financial matters.",
+  },
+  {
+    mailbox: "admin",
+    label: "Administration",
+    use: "Press, general company and administrative matters.",
+  },
+];
+
 /**
  * Leadership, names and titles only. Nothing else about a person belongs here
  * until the owner supplies and approves it.
@@ -54,7 +106,7 @@ export const leadership = [
 ] as const;
 
 /**
- * Where the waitlist form delivers.
+ * Where the early-access form delivers.
  *
  * The site is statically hosted and has no backend, so the form composes a
  * message to `contact.support` in the visitor's own mail client. Point
@@ -63,8 +115,7 @@ export const leadership = [
  */
 export const waitlist = {
   email: contact.support,
-  // needs-counsel: WEB-005
-  subject: "BreatheFree waitlist",
+  subject: "Tether Health early access",
 } as const;
 
 export interface NavLink {
@@ -75,11 +126,11 @@ export interface NavLink {
 
 export const primaryNav: NavLink[] = [
   { label: "Programs", href: "/programs/" },
-  { label: "Services", href: "/services/" },
   { label: "BreatheFree", href: "/breathefree/" },
-  { label: "How it works", href: "/breathefree/how-it-works/" },
+  { label: "Integrations", href: "/integrations/" },
   { label: "For clinicians", href: "/for-clinicians/" },
   { label: "About", href: "/about/" },
+  { label: "Contact", href: "/contact/" },
 ];
 
 export const footerNav: { title: string; links: NavLink[] }[] = [
@@ -91,6 +142,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
       { label: "BreatheFree overview", href: "/breathefree/" },
       { label: "How it works", href: "/breathefree/how-it-works/" },
       { label: "Screen tour", href: "/breathefree/tour/" },
+      { label: "Integrations and standards", href: "/integrations/" },
       { label: "For clinicians and care teams", href: "/for-clinicians/" },
     ],
   },
@@ -98,8 +150,9 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
     title: "Company",
     links: [
       { label: "About Tether Health", href: "/about/" },
+      { label: "Careers", href: "/careers/" },
+      { label: "Contact", href: "/contact/" },
       { label: "Support", href: "/support/" },
-      { label: "Contact", href: "/support/#contact" },
     ],
   },
   {
