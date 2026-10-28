@@ -10,17 +10,30 @@ what the owner does to switch it on, read it, and invite people.
    "Email me about the beta" box.
 2. The browser POSTs it to `/api/beta-signup.php`. This works with JavaScript
    off.
-3. The handler checks every field, appends one row to a CSV file **outside**
-   the website, emails the submission to the notify list, and emails the
-   member a confirmation ("You're on the list; we'll email you an invite when
-   there's a spot").
-4. The visitor lands on `/beta/thanks/`, or back on `/beta/` with a message:
+3. The handler checks every field and stores the sign-up as `pending` in a
+   CSV file **outside** the website, with the hash of a random single-use
+   token. It emails the member only "Confirm your spot on the Tether Health
+   beta waitlist" and a link to `/api/beta-confirm.php?t=…`; the email repeats
+   nothing they typed. The link works once and expires in 7 days.
+4. The visitor lands on `/beta/thanks/` ("Check your email"), or back on
+   `/beta/` with a message (table below).
+5. The link opens a page with a **Confirm my spot** button (a click is needed
+   because mail scanners open links by themselves). Confirming marks the row
+   `confirmed`, and **only then** is the notify list emailed. The member lands
+   on `/beta/confirmed/` ("You're on the list").
+6. Signing up again with the same address sends at most one confirmation
+   email a day. An address that has confirmed is left alone. A pending row
+   whose link has expired is deleted by the cleanup that runs at the start of
+   every request to either handler.
+
+Messages on `/beta/`:
 
    | Message on /beta/                          | Cause                                                          |
    | ------------------------------------------ | -------------------------------------------------------------- |
    | "Please check the form…"                   | A field was missing or invalid                                 |
    | "That was quicker than we expected…"       | Sent faster than a person fills the form in                    |
    | "We have had several attempts…"            | More than 8 attempts from one IP address in an hour            |
+   | "That confirmation link has expired…"      | The link is unknown, past 7 days, or already used              |
    | "The beta waitlist is not available…"      | No config file, a bad config, or the CSV could not be written  |
 
 The handler never stores or sends anything until the private config file
@@ -73,9 +86,11 @@ handler block into that domain's `.htaccess`. Each deploy replaces
 `.htaccess` with the site's own copy, so a per-domain setting is removed and
 the server default PHP is used. After each deploy, repeat the check above.
 
-**Send one test sign-up** with a mailbox you control. Confirm that the
-notification reached `support@`, the confirmation reached the test mailbox,
-and a row appeared in the CSV. Then delete the test row.
+**Send one test sign-up** with a mailbox you control. Check that the
+confirmation email arrived (and that `support@` got nothing yet) and that a
+`pending` row appeared in the CSV. Open the link, press **Confirm my spot**,
+and check that the row is now `confirmed` and the notification reached
+`support@`. Then delete the test row.
 
 ## 2. Read the waitlist
 
@@ -91,9 +106,16 @@ cPanel → File Manager → Home → `tether-private` → `beta-waitlist.csv` �
 | `heard_from`         | One of the form's options, or `(not given)` |
 | `confirmed_18_plus`  | Always `yes`                               |
 | `consent_beta_email` | Always `yes`                               |
+| `status`             | `pending` until the link is used, then `confirmed` |
+| `confirmed_at_utc`   | When they confirmed, UTC                   |
+| `token_hash`, `token_expires_utc`, `last_sent_utc` | Used by the handlers; ignore |
 
 A cell that would start with `=`, `+`, `-` or `@` is stored with a leading
 `'` so a spreadsheet opens it as text, not a formula.
+
+**Invite only rows whose `status` is `confirmed`.** A `pending` row has not
+proved the address is theirs; it is deleted automatically if not confirmed
+within 7 days.
 
 Handling the file:
 
@@ -107,8 +129,18 @@ Handling the file:
   folder. The privacy notice promises this.
 
 The `beta-rate-limit` folder holds one small file per recent IP address
-(named by a hash, holding attempt times). Files are removed a day after the
-last attempt. Nothing in it needs reading.
+(named by a hash, holding attempt times). A file is removed by the first
+request to either handler more than a day after its last attempt; with no
+traffic, nothing runs, so files can stay longer. Nothing in it needs reading.
+
+**Client address.** The rate limit uses `REMOTE_ADDR`, which on this
+HostGator account is the visitor's own address because nothing (no CDN or
+proxy) sits in front of the site. If Cloudflare or another proxy is ever put
+in front, `REMOTE_ADDR` becomes the proxy's address and every visitor shares
+one limit: the IP source in `api/beta-lib.inc` must then change to the
+proxy's trusted header (for Cloudflare, `CF-Connecting-IP`, accepted only
+from Cloudflare's address ranges). Never trust `X-Forwarded-For` from the
+open internet.
 
 ## 3. Make the emails deliverable (SPF and DKIM)
 
@@ -132,7 +164,8 @@ is both the `From` and the reply address members write back to.
 
 ## 4. Invite people
 
-Take addresses from the CSV, oldest first, by `phone` column. Inviting shares
+Take addresses from the CSV rows with `status` `confirmed`, oldest first, by
+`phone` column. Inviting shares
 the member's name and email with Apple or Google, which the privacy notice
 discloses.
 
@@ -179,5 +212,6 @@ Then cPanel → **Git Version Control** → Manage → **Pull or Deploy** →
 curl -sI https://www.tetherhealthgroup.com/.well-known/assetlinks.json   # 200, application/json
 curl -sI https://www.tetherhealthgroup.com/app-ads.txt                   # 200, text/plain
 curl -sI https://www.tetherhealthgroup.com/api/beta-signup.php           # 405
+curl -sI https://www.tetherhealthgroup.com/api/beta-lib.inc              # 403
 curl -sI https://www.tetherhealthgroup.com/beta/                          # 200
 ```

@@ -185,8 +185,10 @@ through.
 
 `/beta/` is the one form that is sent to the server. It POSTs to
 `project/public/api/beta-signup.php` (works with JavaScript off), which
-validates every field, appends a row to a CSV file **outside** the web root,
-emails the notify list and sends the member a confirmation. Its private
+validates every field, stores a `pending` row in a CSV file **outside** the
+web root and emails the member a single-use confirmation link
+(`api/beta-confirm.php`, 7 days). The notify list is emailed only once the
+member confirms. Its private
 config, `beta-config.php`, lives in a `tether-private` folder next to
 `public_html` and is not in this repository; without it the form stores and
 sends nothing.
