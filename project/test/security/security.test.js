@@ -190,12 +190,13 @@ test("security.txt Expires is in the future and no more than a year away", () =>
 });
 
 test("security.txt is not blocked or rewritten by .htaccess and is served as text/plain", () => {
-  // The dotfile deny-list is a <FilesMatch> on FILENAMES. It must not match
-  // "security.txt", and the directory ".well-known" is a path segment it
-  // cannot match.
+  // The dotfile deny-list is a <FilesMatch> on the last resolved path
+  // segment. It must not match "security.txt", nor ".well-known" itself,
+  // which is that segment whenever the directory is missing.
   const deny = htaccess.match(/<FilesMatch "([^"]*\^\\\.[^"]*)">/)?.[1];
   assert.ok(deny, "dotfile deny-list not found; re-check this test");
   assert.equal(new RegExp(deny).test("security.txt"), false);
+  assert.equal(new RegExp(deny).test(".well-known"), false);
 
   // No RewriteRule other than the ACME exemption may reference .well-known,
   // and the .git rule must not catch it.

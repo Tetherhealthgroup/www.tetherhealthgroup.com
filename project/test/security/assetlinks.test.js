@@ -80,8 +80,41 @@ test("assetlinks.json is served as application/json and not blocked by .htaccess
   const deny = conf.match(/<FilesMatch "([^"]*\^\\\.[^"]*)">/)?.[1];
   assert.ok(deny, "dotfile deny-list not found; re-check this test");
   assert.equal(new RegExp(deny).test("assetlinks.json"), false);
+  // Nor the directory name: when .well-known/ is missing from the document
+  // root, Apache matches <FilesMatch> against ".well-known" itself, and a
+  // match there answered 403 for /.well-known/assetlinks.json.
+  assert.equal(new RegExp(deny).test(".well-known"), false);
   assert.equal(
     new RegExp("(^|/)\\.git(/|$)").test(".well-known/assetlinks.json"),
     false,
   );
+});
+
+test("the dotfile deny-list still refuses every other dot-name", () => {
+  const deny = htaccess().match(/<FilesMatch "([^"]*\^\\\.[^"]*)">/)?.[1];
+  assert.ok(deny, "dotfile deny-list not found; re-check this test");
+  const re = new RegExp(deny);
+  for (const name of [
+    ".htaccess",
+    ".env",
+    ".git",
+    ".cpanel.yml",
+    ".well-known-x",
+    ".well-knownx",
+    ".hidden",
+  ])
+    assert.equal(re.test(name), true, `${name} is no longer refused`);
+});
+
+test("the published statement is the exact agreed JSON", () => {
+  assert.deepEqual(parse(), [
+    {
+      relation: [RELATION],
+      target: {
+        namespace: "android_app",
+        package_name: PACKAGE,
+        sha256_cert_fingerprints: [FINGERPRINT],
+      },
+    },
+  ]);
 });
