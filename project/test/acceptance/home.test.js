@@ -77,7 +77,6 @@ test("the doctor section says what the app does, with no claim about clinicians 
     "Work with your doctor",
     "preview first",
     "invite code",
-    "single-use link that expires",
     "911 and 988",
   ])
     assert.ok(text.includes(phrase), `doctor section lacks "${phrase}"`);
@@ -149,4 +148,28 @@ test("the support page lists 988 beside 911", () => {
     visible(html),
     /Thoughts of harming yourself\? 988 Call or text 988\. Emergency: 911\./,
   );
+});
+
+// The app has no share-link feature and has shipped English only, so the site
+// claims neither, anywhere. The Spanish-language quitline is a third-party
+// service, not an app feature, and is the one exempt mention.
+const SPANISH_QUITLINE = /Quitline · Español|Español 1-855-D[^ ]*/g;
+
+test("no page claims a share link or a Spanish version of the app", () => {
+  const shareLink =
+    /single-use link|read-only link|share(?:able)? link|expiring link/i;
+  const spanish = /\bSpanish\b|\bespañol\b|\bbilingual\b/i;
+  for (const sample of [
+    "Share a read-only view through a single-use link that expires",
+    "a choice of English or Spanish",
+  ])
+    assert.ok(
+      shareLink.test(sample) || spanish.test(sample),
+      `not caught: ${sample}`,
+    );
+  for (const rel of htmlFiles()) {
+    const text = visible(readPage(rel)).replace(SPANISH_QUITLINE, "");
+    assert.doesNotMatch(text, shareLink, `${rel} claims a share link`);
+    assert.doesNotMatch(text, spanish, `${rel} claims Spanish`);
+  }
 });
