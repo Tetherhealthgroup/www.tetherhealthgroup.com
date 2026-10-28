@@ -9,7 +9,7 @@ import SupportEmail from "../components/SupportEmail.astro";
   description="What www.tetherhealthgroup.com collects, what it does not, and what happens to an email address sent through the early-access form."
   eyebrow="Trust"
   intro="This notice covers this website. It is short because the site does very little: it has no analytics, no advertising, no cookies and no third-party trackers."
-  updated="2026-10-22"
+  updated="2026-10-27"
   contactMailbox="privacy"
   scopeNote="This notice covers www.tetherhealthgroup.com only. The Tether Health app, with BreatheFree and its other programs, has its own privacy policy covering health information, which this notice does not address."
 >
@@ -26,8 +26,8 @@ import SupportEmail from "../components/SupportEmail.astro";
   <h2>The short version</h2>
   <p>
     We do not set cookies, we do not run analytics, and this site loads no
-    third-party scripts, fonts or images. If you never use the early-access
-    form, we do not learn who you are.
+    third-party scripts, fonts or images. If you never use the early-access form
+    or the beta waitlist, we do not learn who you are.
   </p>
   <p>
     If you do use the form, we receive the email address you give us and use it
@@ -99,6 +99,44 @@ import SupportEmail from "../components/SupportEmail.astro";
     We keep early-access enquiries until the relevant product has launched and
     we have contacted you, or for two years, whichever comes first — and sooner
     if you ask us to delete it.
+  </p>
+
+  <h2 id="beta-waitlist">Beta waitlist</h2>
+  {/* needs-counsel: P-108 — new section, not final legal text. */}
+  <p>
+    The beta waitlist at <a href="/beta/">/beta/</a> is a separate form. Unlike the
+    early-access form, it is sent to our web server rather than composed in your email
+    application.
+  </p>
+  <p>
+    <strong>What it collects.</strong> Your first name, your email address, which
+    kind of phone you use (iPhone or Android), and, only if you choose to tell us,
+    how you heard about us. You also confirm that you are 18 or over and ask us to
+    email you about the beta. It does not ask about your health or which program interests
+    you; please do not send us health information.
+  </p>
+  <p>
+    <strong>Why.</strong> To invite you to test the app on the right kind of phone,
+    to confirm we received your request, and to email you about the beta. The basis
+    is your consent, given by ticking "Email me about the beta".
+  </p>
+  <p>
+    <strong>Who else sees it.</strong> Our hosting provider runs the web server and
+    sends the emails. When we invite you, we give your name and email address to Apple
+    (TestFlight, for iPhone) or Google (for Android testing), which send the invitation
+    and manage test access under their own privacy policies.
+  </p>
+  <p>
+    <strong>Where it is kept.</strong> The server stores your entry in a file that
+    is not part of the public website, emails a copy to our support mailbox, and sends
+    you a confirmation. To limit repeated sign-ups it also keeps a short-lived record
+    derived from your IP address, deleted within a day.
+  </p>
+  <p>
+    <strong>How long we keep it.</strong> We delete the waitlist after the beta ends,
+    or sooner if you ask: write to <SupportEmail mailbox="privacy" />. To stop
+    beta emails, reply "unsubscribe" to any of them. We never sell your details,
+    rent them, or add them to a marketing list.
   </p>
 
   <h2>Your rights</h2>

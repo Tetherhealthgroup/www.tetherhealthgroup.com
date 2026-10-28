@@ -8,7 +8,7 @@ import SupportEmail from "../components/SupportEmail.astro";
   description="How this site is built to minimise risk, the security commitments BreatheFree must meet before release, and how to report a vulnerability."
   eyebrow="Trust"
   intro="This page describes two different things: how this website is secured today, and the security bar our products must clear before anyone can use them."
-  updated="2026-10-12"
+  updated="2026-10-27"
   contactMailbox="security"
   scopeNote="We make no claim to hold any security certification. Where this page describes controls for BreatheFree, it describes release requirements that have not yet been met — not controls that are in place today."
 >
@@ -19,9 +19,12 @@ import SupportEmail from "../components/SupportEmail.astro";
   </p>
   <ul>
     <li>
+      {/* needs-counsel: P-108 */}
       <strong>Static output.</strong> Every page is pre-rendered HTML. There is no
-      application server, no database, and no server-side code that processes your
-      input — so there is no query to inject into and no session to steal.
+      application server, no database and no session to steal. The only server-side
+      code is the small handler behind the <a href="/beta/">beta waitlist</a> form:
+      it accepts nothing but that form, checks every field against a fixed list or
+      length, and writes to a file outside the public site.
     </li>
     <li>
       <strong>No third-party code.</strong> The site loads no external scripts, fonts,
@@ -36,7 +39,10 @@ import SupportEmail from "../components/SupportEmail.astro";
       {/* needs-counsel: WEB-005 */}
       <strong>Minimal data.</strong> The waitlist form composes a message in your
       own email client rather than posting to a server we run. We hold what you chose
-      to send, and nothing else.
+      to send, and nothing else. The beta waitlist form is the exception: it is sent
+      to our web server and asks only for what an invite needs, as the <a
+        href="/privacy/#beta-waitlist">privacy notice</a
+      > describes.
     </li>
   </ul>
 
