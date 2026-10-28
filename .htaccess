@@ -97,9 +97,11 @@ ErrorDocument 404 /404.html
   # 'self' — which is also what makes this policy worth having: any injected
   # script, pixel or font is a policy violation rather than a silent success.
   #
-  # The three hashes are the site's own inline scripts: the JSON-LD block in
-  # Base.astro, the mobile-menu script in Header.astro, and the waitlist form's
-  # script. THEY CHANGE WHENEVER THOSE SCRIPTS CHANGE. `npm run test:smoke`
+  # The hashes are the site's own inline scripts: the JSON-LD block in
+  # Base.astro, the mobile-menu script in Header.astro, and the beta form's
+  # fill-time script in BetaForm.astro. The early-access and contact form scripts share a module,
+  # so Astro emits them as files under /_astro/ and 'self' covers them.
+  # THEY CHANGE WHENEVER THOSE SCRIPTS CHANGE. `npm run test:smoke`
   # recomputes them from the build and fails if this list has drifted, so a
   # stale hash is caught before it silently breaks the menu or the form.
   #
@@ -110,7 +112,7 @@ ErrorDocument 404 /404.html
   # connect-src is 'self' because the form has no endpoint by default. Setting
   # PUBLIC_WAITLIST_ENDPOINT means adding that origin here, or the browser
   # blocks the POST — see README.
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-M78ZcBA9xxIDr6hdFKg8pA2HhAvXI9S8JjzFKeT0GIg=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-SRIauFt3ncH+nyOx5iqeDPulb5Jl+iLxfYdqhU0qnkU='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-Hx4KcxWxvOApu1HWaiZGf/8b1QUtoU8nzXJOBjljn7U=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-gdu2/aNZoTP1rDFzeFxVkgaCrN/Z0wHcN+2IXgIu9Nk='; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
 
   # HSTS — one year, and the ramp is finished.
   #
@@ -180,6 +182,7 @@ ErrorDocument 404 /404.html
   <FilesMatch "^(robots\.txt|sitemap.*\.xml)$">
     Header set Cache-Control "public, max-age=86400"
   </FilesMatch>
+
 </IfModule>
 
 # --- The fingerprinted-asset exception --------------------------------------
@@ -223,16 +226,15 @@ ErrorDocument 404 /404.html
   AddType application/manifest+json .webmanifest
 
   # RFC 9116 requires security.txt to be text/plain with charset=utf-8. Served
-  # at /.well-known/security.txt. The directory is a path SEGMENT, not a
-  # filename, so the dotfile deny-list at the foot of this file does not match
-  # it, and the .git rule above does not either.
+  # at /.well-known/security.txt. The dotfile deny-list at the foot of this
+  # file exempts ".well-known" by name (see there), and the .git rule above
+  # does not match it.
   <Files "security.txt">
     ForceType "text/plain; charset=utf-8"
   </Files>
 
   # Android App Links read /.well-known/assetlinks.json and expect
-  # application/json. Same reasoning as security.txt: the path segment is not
-  # caught by the deny-list or the .git rule.
+  # application/json. Same reasoning as security.txt.
   <Files "assetlinks.json">
     ForceType application/json
   </Files>
@@ -241,7 +243,16 @@ ErrorDocument 404 /404.html
 # --- Do not serve what is not the site --------------------------------------
 # Nothing below should ever be in the document root, but a mistaken upload
 # should not become a public download.
-<FilesMatch "(^\.|~$|\.(bak|config|dist|env|fla|inc|ini|log|psd|sh|sql|swp|ts)$)">
+#
+# Apache matches <FilesMatch> against the last path segment it resolved, and
+# when a directory in the URL does not exist that segment is the missing
+# directory itself. So with no .well-known/ in the document root, every
+# /.well-known/... request resolved to ".well-known", matched "^\." and was
+# refused with 403 — including /.well-known/assetlinks.json, which Android
+# reads to verify App Links. ".well-known" is therefore exempt by name: a
+# missing file under it is an honest 404, and a present one is served. Every
+# other dot-name, including dot-files inside .well-known/, is still refused.
+<FilesMatch "(^\.(?!well-known$)|~$|\.(bak|config|dist|env|fla|inc|ini|log|psd|sh|sql|swp|ts)$)">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
