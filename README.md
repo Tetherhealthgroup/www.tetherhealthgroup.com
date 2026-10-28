@@ -106,7 +106,7 @@ project/
 `/` · `/programs/` · `/programs/<area>/` (ten, generated) · `/services/` ·
 `/breathefree/` · `/breathefree/how-it-works/` · `/breathefree/tour/` ·
 `/for-clinicians/` · `/about/` · `/support/` · `/privacy/` · `/terms/` ·
-`/security/` · `/accessibility/` · `404`
+`/security/` · `/accessibility/` · `/beta/` · `/beta/thanks/` · `404`
 
 ### Scope versus record
 
@@ -180,6 +180,23 @@ enforces — the HTML standard's own expression, in `src/lib/waitlist.ts` — so
 the field's declared type and the form's check agree. The form promises a
 reply, so an address that cannot receive one is refused rather than waved
 through.
+
+## Beta waitlist runbook
+
+`/beta/` is the one form that is sent to the server. It POSTs to
+`project/public/api/beta-signup.php` (works with JavaScript off), which
+validates every field, appends a row to a CSV file **outside** the web root,
+emails the notify list and sends the member a confirmation. Its private
+config, `beta-config.php`, lives in a `tether-private` folder next to
+`public_html` and is not in this repository; without it the form stores and
+sends nothing.
+
+The owner's steps — where the config goes in cPanel File Manager and what it
+contains, how to read the CSV, SPF/DKIM in cPanel → Email Deliverability, and
+how to invite people through TestFlight, Firebase App Distribution or Play
+internal testing — are in
+[`docs/beta-waitlist-runbook.md`](docs/beta-waitlist-runbook.md). The config
+keys are in [`docs/beta-config.example.php`](docs/beta-config.example.php).
 
 ## Hosting and deployment
 
