@@ -188,3 +188,9 @@ test(
     assert.equal((await get(WITH, "/.well-known/.hidden")).status, 403);
   },
 );
+
+test("app-ads.txt is served 200 as text/plain", { skip }, async () => {
+  const res = await get(WITH, "/app-ads.txt");
+  assert.equal(res.status, 200);
+  assert.match(res.type, /^text\/plain/);
+});
