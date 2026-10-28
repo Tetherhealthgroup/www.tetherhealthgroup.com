@@ -42,6 +42,12 @@ const CLAIMS = [
   ],
   [/\bBlue Button\s+(?:[23]\.0|v[23])\b/i, "unverified Blue Button version"],
   [/\bSOC\s*2\b|\bHITRUST\b|\bISO\s*27001\b/i, "unevidenced certification"],
+  // Business associate agreements are part of a HIPAA program under counsel
+  // review; none is evidenced yet. Remove only when counsel approves wording.
+  [
+    /\bbusiness\s+associate\s+agreements?\s+with\b/i,
+    "BAA claimed before counsel review",
+  ],
 ];
 
 const SAMPLES = [
@@ -60,6 +66,7 @@ const SAMPLES = [
   "An Epic-approved app.",
   "Built on Blue Button 3.0.",
   "SOC 2 Type II certified.",
+  "We hold business associate agreements with our partners.",
   "People with Medicare can choose to connect their claims data.",
   "You can now import your Epic records.",
 ];
@@ -70,6 +77,7 @@ const ALLOWED = [
   "We are building connections to the CMS Blue Button API",
   "We are building our connection to Epic's FHIR APIs in Epic's sandbox",
   "it does not imply endorsement by, or partnership with, any of their owners",
+  "Our HIPAA program, including agreements with any partner that handles health information, is being reviewed with counsel before we connect real records.",
   "We are building the connection so people with Medicare can bring in their claims data",
 ];
 

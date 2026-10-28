@@ -85,7 +85,7 @@ export const commitments: Integration[] = [
   {
     icon: "lock",
     title: "Designing for HIPAA's requirements",
-    body: "We are designing Tether Health to meet the HIPAA Privacy, Security and Breach Notification Rules wherever they apply: least-necessary access, encryption in transit and at rest, audit logging, and business associate agreements with the partners that handle health information.",
+    body: "Health information is encrypted in transit; record import is opt-in and you review every item before it is added. Our HIPAA program, including agreements with any partner that handles health information, is being reviewed with counsel before we connect real records.",
   },
   {
     icon: "stethoscope",
