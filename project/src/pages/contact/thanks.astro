@@ -1,0 +1,36 @@
+---
+import Base from "../../layouts/Base.astro";
+import Section from "../../components/Section.astro";
+import Button from "../../components/Button.astro";
+import Icon from "../../components/Icon.astro";
+---
+
+<Base
+  title="Message sent"
+  description="Your message has reached the right team at Tether Health. We will reply to the email address you gave."
+  noindex
+>
+  <Section width="default" space="loose">
+    <div class="mx-auto max-w-2xl text-center">
+      <span
+        class="mb-8 inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-mint text-teal-deep"
+      >
+        <Icon name="check" size={36} />
+      </span>
+      <p class="eyebrow mb-5">Contact</p>
+      <h1 class="text-[2.5rem] sm:text-[3.5rem]">Thank you.</h1>
+      <p class="mt-6 text-xl leading-relaxed">
+        Your message has reached the right team. We will reply to the email
+        address you gave. We do not send an automatic copy of your message.
+      </p>
+      <p class="mt-5 text-lg leading-relaxed text-teal-mid">
+        Email is not monitored around the clock and we cannot give medical
+        advice. In an emergency, call 911.
+      </p>
+      <div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+        <Button href="/" arrow>Back to the home page</Button>
+        <Button href="/support/" variant="secondary">Support</Button>
+      </div>
+    </div>
+  </Section>
+</Base>

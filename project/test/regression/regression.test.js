@@ -117,8 +117,7 @@ test("no built page claims offline use or clinical review as fact", async () => 
 test("no page carries a personal, safecodeg.com or legacy contact address", () => {
   // Public contacts are the role mailboxes only. Personal addresses and
   // safecodeg.com (the hosting account's domain) must never be published.
-  const allowed =
-    /^(admin|careers|finance|partnerships|privacy|security|support)@tetherhealthgroup\.com$/;
+  const allowed = /^(careers|privacy|security|support)@tetherhealthgroup\.com$/;
   // Character references are decoded first, so "&#64;" counts as "@".
   const offenders = [];
   for (const page of htmlFiles()) {
@@ -428,16 +427,9 @@ test("every mailto link meets the 44px bar or sits inside a sentence", () => {
   );
 
   // The /support/ mailbox list stands on its own lines, so it must be sized
-  // explicitly: privacy, security, partnerships, careers, finance and admin.
+  // explicitly: privacy, security and careers (the other public mailboxes).
   const support = pageHtml("support/index.html");
-  for (const box of [
-    "privacy",
-    "security",
-    "partnerships",
-    "careers",
-    "finance",
-    "admin",
-  ]) {
+  for (const box of ["privacy", "security", "careers"]) {
     const tag = support.match(
       new RegExp(`<a [^>]*href="mailto:${box}@[^"]*"[^>]*>`),
     )?.[0];

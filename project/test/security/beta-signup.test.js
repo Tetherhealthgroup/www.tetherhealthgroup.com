@@ -21,7 +21,8 @@ const stripped = (name) =>
 const signup = stripped("beta-signup.php");
 const confirm = stripped("beta-confirm.php");
 const lib = stripped("beta-lib.inc");
-const code = [lib, signup, confirm].join("\n");
+const contactHandler = stripped("contact.php");
+const code = [lib, signup, confirm, contactHandler].join("\n");
 
 test("sign-up accepts only POST; confirm only GET (a page) and POST", () => {
   assert.match(signup, /\$_SERVER\['REQUEST_METHOD'\][^;]*!== 'POST'/);

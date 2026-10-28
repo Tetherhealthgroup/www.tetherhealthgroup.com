@@ -93,7 +93,6 @@ project/
   src/
     lib/
       waitlist.ts      Address checking and mailto composition (pure, tested)
-      contact.ts       Contact-form topic routing and mailto (pure, tested)
     data/
       site.ts          Identity, navigation, mailboxes, quitlines
       programs.ts       The 11 programs (app-pinned fields + website copy)
@@ -393,9 +392,9 @@ Remote**, then **Deploy HEAD Commit**.
 
 ### The CSP pins hashes, and they move
 
-`script-src` allows exactly three `sha256-` hashes: the JSON-LD block, the
-mobile-menu script and the beta form's fill-time script. The early-access and contact form scripts share a module, so they ship
-as files under `/_astro/`, which `'self'` covers. Edit any of those and the
+`script-src` allows exactly five `sha256-` hashes: the JSON-LD block, the
+mobile-menu script, the beta and contact forms' fill-time scripts, and the
+early-access form's script. Edit any of those and the
 browser silently refuses to run it — the menu stops opening, the form starts
 reloading the page. `npm run test:smoke` recomputes the hashes from the build
 and fails in both directions: a script the policy does not allow, and a hash

@@ -3,6 +3,8 @@
 /*
  * Example configuration for the beta waitlist handler (api/beta-signup.php).
  *
+ * Used by the beta waitlist handlers and the contact form (api/contact.php).
+ *
  * Copy this file to the server OUTSIDE the web root, as
  *
  *     /home2/safecode/tether-private/beta-config.php
@@ -31,7 +33,19 @@ return [
     // The From address on both the notification and the member's confirmation.
     'from' => 'support@tetherhealthgroup.com',
 
-    // Optional: attempts allowed per IP address per window (seconds).
+    // Optional: attempts allowed per IP address per window (seconds). The
+    // beta form and the contact form keep separate counters.
     'rate_limit_max' => 8,
     'rate_limit_window' => 3600,
+
+    // Contact form: which mailbox each topic reaches. Visitors never see these
+    // addresses. A topic with no valid entry here makes the form say it is
+    // unavailable instead of sending.
+    'contact_routes' => [
+        'support' => 'support@tetherhealthgroup.com',
+        'sales_partnerships' => 'partnerships@tetherhealthgroup.com',
+        'careers' => 'careers@tetherhealthgroup.com',
+        'privacy' => 'privacy@tetherhealthgroup.com',
+        'finance' => 'finance@tetherhealthgroup.com',
+    ],
 ];

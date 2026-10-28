@@ -28,6 +28,7 @@ export const REQUIRED_PAGES = [
   "accessibility/index.html",
   "careers/index.html",
   "contact/index.html",
+  "contact/thanks/index.html",
   "integrations/index.html",
   "app-privacy/index.html",
   "delete-account/index.html",

@@ -19,8 +19,11 @@ export const site = {
 } as const;
 
 /**
- * Role mailboxes for Tether Health Group (owner-provided, 2026-10-12; admin and
- * finance added 2026-10-20).
+ * The role mailboxes the site publishes (owner, 2026-10-28): support for app
+ * help (app stores require it), privacy (privacy law), security (security.txt)
+ * and careers (applications). Sales and partnerships, finance and everything
+ * else go through the contact form, whose topic routing lives only in the
+ * private server config.
  *
  * This is the only place an address is written down; pages and components
  * read it from here. Never publish a personal address, and never use
@@ -31,35 +34,17 @@ export const contact = {
   support: "support@tetherhealthgroup.com",
   privacy: "privacy@tetherhealthgroup.com",
   security: "security@tetherhealthgroup.com",
-  partnerships: "partnerships@tetherhealthgroup.com",
   careers: "careers@tetherhealthgroup.com",
-  finance: "finance@tetherhealthgroup.com",
-  admin: "admin@tetherhealthgroup.com",
 } as const;
 
 export type Mailbox = keyof typeof contact;
 
-/** What each mailbox is for, as listed on /contact/ and /support/. */
+/** The public mailboxes other than support, as listed on /support/. */
 export const mailboxDirectory: {
   mailbox: Mailbox;
   label: string;
   use: string;
 }[] = [
-  {
-    mailbox: "support",
-    label: "Support",
-    use: "Help with the Tether Health app and early access.",
-  },
-  {
-    mailbox: "partnerships",
-    label: "Partnerships",
-    use: "Health systems, payers, employers and integration partners.",
-  },
-  {
-    mailbox: "careers",
-    label: "Careers",
-    use: "Recruitment and working with us.",
-  },
   {
     mailbox: "privacy",
     label: "Privacy",
@@ -71,14 +56,9 @@ export const mailboxDirectory: {
     use: "Vulnerability reports and security concerns.",
   },
   {
-    mailbox: "finance",
-    label: "Finance",
-    use: "Invoices and other financial matters.",
-  },
-  {
-    mailbox: "admin",
-    label: "Administration",
-    use: "Press, general company and administrative matters.",
+    mailbox: "careers",
+    label: "Careers",
+    use: "Applications and working with us.",
   },
 ];
 
