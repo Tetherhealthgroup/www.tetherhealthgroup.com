@@ -395,8 +395,8 @@ function beta_send_confirmation(string $to, string $token, string $from): bool
         '',
         BETA_SITE_URL . '/api/beta-confirm.php?t=' . $token,
         '',
-        'The link works once and expires in 7 days. If you did not ask for this,',
-        'ignore this email and nothing is kept.',
+        'The link works once and expires in 7 days.',
+        "If you didn't ask to join, ignore this email; the request is deleted after 7 days.",
         '',
         'Questions or deletion: privacy@tetherhealthgroup.com',
     ]);

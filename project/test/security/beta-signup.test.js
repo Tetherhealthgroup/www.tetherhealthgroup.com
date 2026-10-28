@@ -174,6 +174,13 @@ test("the confirmation email body carries the link and no submitted text", () =>
     ["$body", "$from", "$to", "$token"].sort(),
   );
   assert.match(fn, /'Confirm your spot on the Tether Health beta waitlist/);
+  assert.ok(
+    fn.includes(
+      "If you didn't ask to join, ignore this email; the request is deleted after 7 days.",
+    ),
+    "the confirmation email lacks the accurate ignore line",
+  );
+  assert.doesNotMatch(fn, /nothing is kept/, "an inaccurate promise");
   assert.match(
     fn,
     /BETA_SITE_URL \. '\/api\/beta-confirm\.php\?t=' \. \$token/,

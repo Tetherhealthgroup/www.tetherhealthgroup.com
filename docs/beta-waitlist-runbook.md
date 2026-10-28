@@ -133,6 +133,13 @@ The `beta-rate-limit` folder holds one small file per recent IP address
 request to either handler more than a day after its last attempt; with no
 traffic, nothing runs, so files can stay longer. Nothing in it needs reading.
 
+**Access logs and the confirmation token.** The confirmation page sends the
+token back by POST, but the link in the email is a GET, so the token appears
+in the host's Apache access log for `/api/beta-confirm.php?t=…`. This is
+accepted: on this account those logs are readable only by the cPanel owner,
+the token works once, and it expires in 7 days. Do not share raw access logs
+outside the account owner.
+
 **Client address.** The rate limit uses `REMOTE_ADDR`, which on this
 HostGator account is the visitor's own address because nothing (no CDN or
 proxy) sits in front of the site. If Cloudflare or another proxy is ever put

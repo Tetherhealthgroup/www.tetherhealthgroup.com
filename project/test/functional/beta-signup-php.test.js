@@ -293,6 +293,11 @@ test(
       /^From: Tether Health <support@tetherhealthgroup\.com>$/m,
     );
     assert.doesNotMatch(mail.raw, /^Reply-To:/im);
+    assert.match(
+      mail.raw,
+      /If you didn't ask to join, ignore this email; the request is deleted after 7 days\./,
+    );
+    assert.doesNotMatch(mail.raw, /nothing is kept/);
     assert.match(mail.args, /-fsupport@tetherhealthgroup\.com/);
     const token = lastToken();
     assert.match(
