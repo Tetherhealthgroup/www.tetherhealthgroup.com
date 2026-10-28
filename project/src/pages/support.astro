@@ -242,6 +242,7 @@ const otherMailboxes = [
       </div>
       <div>
         <h3 class="text-xl">How is my information handled?</h3>
+        {/* Revisit when ads ship (P-107). */}
         <p class="mt-2 leading-relaxed text-teal-mid">
           No ads, and we never sell your health data. The details are in the <a
             href="/app-privacy/"
@@ -276,10 +277,14 @@ const otherMailboxes = [
       <div id="testing-list">
         <h3 class="text-xl">How do I join the testing list?</h3>
         <p class="mt-2 leading-relaxed text-teal-mid">
-          Use the waitlist form below and say in the message box that you would
-          like to test BreatheFree on Android. Testing has not opened yet. When
-          it does, we may write to the address you give us to ask whether you
-          would like to take part. Joining does not guarantee a place.
+          {/* needs-counsel: P-108 */}
+          <a
+            href="/beta/"
+            class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+            >Join the beta waitlist</a
+          >. Tell us which phone you use and we will email you an invite when
+          there is a spot. We cannot promise a date, and joining does not
+          guarantee a place.
         </p>
       </div>
       <div>
@@ -304,9 +309,12 @@ const otherMailboxes = [
         Want to hear about BreatheFree for Android?
       </h2>
       <p class="mt-5 text-lg leading-relaxed">
-        Join the waitlist. We will write to you when we have news. If we open
-        Android testing, we may ask whether you would like to take part. Testing
-        has not opened yet.
+        Join the waitlist. We will write to you when we have news. Want to help
+        test the app? <a
+          href="/beta/"
+          class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+          >Join the beta waitlist</a
+        > instead.
       </p>
     </div>
 

@@ -224,8 +224,8 @@ const UNPLUG_IPHONE_LIMITS = new RegExp(
  * P-108 (owner decision): a beta waitlist for the mobile app, at /beta/. The
  * beta pages, the privacy notice's beta section and the security page's note
  * on the form's handler may name the beta, iPhone and TestFlight, because the
- * form asks which phone someone uses. Every other page may carry only the
- * call to action into it. All other filters still apply to these pages: no
+ * form asks which phone someone uses. Every other page may name it only as
+ * "beta waitlist" or a link to /beta/. All other filters still apply to these pages: no
  * dates, no availability, no store presence.
  */
 const BETA_WORDING_PAGES = new Set([
@@ -234,7 +234,7 @@ const BETA_WORDING_PAGES = new Set([
   "privacy/index.html",
   "security/index.html",
 ]);
-const BETA_CTA = /Join the beta waitlist|href="\/beta\/"/g;
+const BETA_CTA = /\bbeta waitlist\b|href="\/beta\/"/gi;
 const BETA_WORDS = /\bbeta\b|\biPhone\b|\bTestFlight\b/gi;
 
 /** Text a page may contain even though a filter would otherwise match. */
@@ -414,13 +414,21 @@ test("the support FAQ explains how to join the testing list, without saying test
       `support FAQ must contain "${q}" exactly once`,
     );
   }
+  // P-108: testers join the beta waitlist at /beta/, not the email form.
+  const answer = html.match(/<div id="testing-list">[\s\S]*?<\/div>/)?.[0];
+  assert.ok(answer, "the testing-list answer is missing");
+  assert.match(answer, /href="\/beta\/"/, "the answer does not link to /beta/");
   for (const clause of [
-    "say in the message box that you would like to test BreatheFree on Android",
-    "Testing has not opened yet.",
-    "Joining does not guarantee a place.",
+    "We cannot promise a date,",
+    "joining does not guarantee a place.",
   ]) {
-    assert.ok(html.includes(clause), `testing-list answer lacks: ${clause}`);
+    assert.ok(answer.includes(clause), `testing-list answer lacks: ${clause}`);
   }
+  assert.doesNotMatch(
+    answer,
+    /message box/,
+    "the answer still sends testers to the email form",
+  );
   assert.ok(html.includes('id="testing-list"'), "the FAQ answer has no anchor");
   assert.ok(html.includes('id="waitlist"'), "support has no waitlist anchor");
   assert.ok(
@@ -429,6 +437,27 @@ test("the support FAQ explains how to join the testing list, without saying test
     ),
     "the BreatheFree page does not link to the testing-list FAQ",
   );
+});
+
+test("no page still says testing has not opened, and home invites testers to /beta/", () => {
+  for (const page of htmlFiles())
+    assert.ok(
+      !/Testing has not opened yet/i.test(pageText(page)),
+      `${page} still says testing has not opened`,
+    );
+  const home = pageText("index.html");
+  const waitlist = home.match(/id="waitlist"[\s\S]*?<\/section>/)?.[0] ?? "";
+  assert.match(
+    waitlist,
+    /<a href="\/beta\/"[^>]*>\s*Join the beta waitlist\s*<\/a>/,
+  );
+  assert.ok(
+    home.includes(
+      "The beta waitlist asks for your first name, email, phone type and, if you choose, how you heard about us.",
+    ),
+    "home does not say what the beta waitlist asks for",
+  );
+  assert.ok(!home.includes("We ask for an email address and nothing else"));
 });
 
 test("every program other than BreatheFree states its app status and that nothing is available to use", async () => {

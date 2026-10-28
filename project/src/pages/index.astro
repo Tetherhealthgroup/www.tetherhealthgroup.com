@@ -16,6 +16,7 @@ const principles = [
   {
     icon: "lock" as const,
     title: "Private by design",
+    // Revisit when ads ship (P-107).
     body: "No ads. No selling health data. Sensitive notification text is off by default, so a lock screen never announces someone's health to the room.",
   },
   {
@@ -99,7 +100,9 @@ const principles = [
 
         <p class="mt-7 flex items-center gap-2.5 text-[0.95rem] text-teal-mid">
           <Icon name="shield" size={18} class="text-teal-mid" />
-          No trackers on this site. We ask for an email address and nothing else.
+          {/* needs-counsel: P-108 */}
+          No trackers on this site. The beta waitlist asks for your first name, email,
+          phone type and, if you choose, how you heard about us.
         </p>
       </div>
 
@@ -245,6 +248,7 @@ const principles = [
               {
                 icon: "lock" as const,
                 label: "Private by design",
+                // Revisit when ads ship (P-107).
                 sub: "No ads, no selling health data",
               },
               {
@@ -356,9 +360,12 @@ const principles = [
       </h2>
       <p class="mt-6 text-lg leading-relaxed">
         Join the waitlist and we will write to you when we have news about
-        BreatheFree. If we open Android testing, we may ask whether you would
-        like to take part. Testing has not opened yet. Tell us who you are and
-        what would make this genuinely useful.
+        BreatheFree. Tell us who you are and what would make this genuinely
+        useful. Want to help test the app? <a
+          href="/beta/"
+          class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
+          >Join the beta waitlist</a
+        > and we will email you an invite when there is a spot.
       </p>
     </div>
 
