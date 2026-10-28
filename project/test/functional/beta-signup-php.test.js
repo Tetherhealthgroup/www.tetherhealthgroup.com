@@ -1,11 +1,12 @@
-// Functional — the beta waitlist handler, public/api/beta-signup.php, run by a
-// real PHP interpreter over HTTP.
+// Functional — the beta waitlist handlers, public/api/beta-signup.php and
+// beta-confirm.php, run by a real PHP interpreter over HTTP.
 //
 // Each case POSTs the way the no-JavaScript form does and asserts the whole
-// outcome: the redirect, the CSV row (or its absence) and the mail that was
-// (or was not) handed to sendmail. PHP's built-in server stands in for Apache;
-// sendmail is a capture script, so no mail leaves the machine. Every address is
-// synthetic.
+// outcome: the redirect, the CSV rows (or their absence) and the mail that was
+// (or was not) handed to sendmail. Sign-up is double opt-in: a pending row
+// and a confirmation link to the member; the team hears only after the link
+// is used. PHP's built-in server stands in for Apache; sendmail is a capture
+// script, so no mail leaves the machine. Every address is synthetic.
 //
 // PHP is not part of this repository's toolchain. When no interpreter is found
 // (PHP_BIN, else `php` on PATH) these cases are reported as skipped, with the
@@ -25,6 +26,7 @@ import {
   readdirSync,
   rmSync,
   unlinkSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -39,8 +41,23 @@ const skip = phpAvailable
 
 const PORT = 4332; // e2e uses 4331
 const BASE = `http://127.0.0.1:${PORT}`;
-const ENDPOINT = `${BASE}/api/beta-signup.php`;
+const SIGNUP = `${BASE}/api/beta-signup.php`;
+const CONFIRM = `${BASE}/api/beta-confirm.php`;
 const NOTIFY = "support@tetherhealthgroup.com";
+const COLUMNS = [
+  "submitted_at_utc",
+  "first_name",
+  "email",
+  "phone",
+  "heard_from",
+  "confirmed_18_plus",
+  "consent_beta_email",
+  "status",
+  "confirmed_at_utc",
+  "token_hash",
+  "token_expires_utc",
+  "last_sent_utc",
+];
 
 let tmp, docroot, privateDir, configPath, csvPath, mailLog, server;
 
@@ -78,10 +95,50 @@ function mails() {
     });
 }
 
+/** One CSV line into cells (RFC 4180 quoting, no escape character). */
+function cells(line) {
+  const out = [];
+  let cur = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (quoted) {
+      if (c === '"' && line[i + 1] === '"') ((cur += '"'), i++);
+      else if (c === '"') quoted = false;
+      else cur += c;
+    } else if (c === '"') quoted = true;
+    else if (c === ",") (out.push(cur), (cur = ""));
+    else cur += c;
+  }
+  out.push(cur);
+  return out;
+}
+
 const csvLines = () =>
   existsSync(csvPath)
     ? readFileSync(csvPath, "utf8").split("\n").filter(Boolean)
     : [];
+
+/** Data rows as objects keyed by column. */
+const rows = () =>
+  csvLines()
+    .slice(1)
+    .map((line) =>
+      Object.fromEntries(cells(line).map((v, i) => [COLUMNS[i], v])),
+    );
+
+/** Rewrite the CSV from row objects (for setting up expired or old rows). */
+function writeRows(list) {
+  const quote = (v) => (/[",]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  writeFileSync(
+    csvPath,
+    [COLUMNS, ...list.map((r) => COLUMNS.map((c) => r[c] ?? ""))]
+      .map((line) => line.map(quote).join(","))
+      .join("\n") + "\n",
+  );
+}
+
+const utc = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
 
 function reset() {
   for (const path of [csvPath, mailLog]) if (existsSync(path)) unlinkSync(path);
@@ -101,16 +158,20 @@ const VALID = {
 };
 
 /** POST form fields; `fields` may hold arrays for repeated keys. */
-async function post(fields) {
+async function post(fields, url = SIGNUP) {
   const body = new URLSearchParams();
   for (const [key, value] of Object.entries(fields))
     for (const v of [].concat(value)) body.append(key, v);
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    body,
-    redirect: "manual",
-  });
+  const res = await fetch(url, { method: "POST", body, redirect: "manual" });
   return { status: res.status, location: res.headers.get("location") };
+}
+
+/** The token in the most recent confirmation email. */
+function lastToken() {
+  const sent = mails();
+  const match = sent.at(-1)?.raw.match(/beta-confirm\.php\?t=([0-9a-f]{64})/);
+  assert.ok(match, "no confirmation link in the last email");
+  return match[1];
 }
 
 before(async () => {
@@ -120,10 +181,11 @@ before(async () => {
   privateDir = join(tmp, "private");
   mkdirSync(join(docroot, "api"), { recursive: true });
   mkdirSync(privateDir);
-  copyFileSync(
-    join(projectRoot, "public", "api", "beta-signup.php"),
-    join(docroot, "api", "beta-signup.php"),
-  );
+  for (const name of ["beta-signup.php", "beta-confirm.php", "beta-lib.inc"])
+    copyFileSync(
+      join(projectRoot, "public", "api", name),
+      join(docroot, "api", name),
+    );
   configPath = join(privateDir, "beta-config.php");
   csvPath = join(privateDir, "beta-waitlist.csv");
   mailLog = join(tmp, "mail.log");
@@ -163,7 +225,7 @@ before(async () => {
   const deadline = Date.now() + 15000;
   while (Date.now() < deadline) {
     try {
-      await fetch(ENDPOINT, { redirect: "manual" });
+      await fetch(SIGNUP, { redirect: "manual" });
       return;
     } catch {
       await new Promise((r) => setTimeout(r, 100));
@@ -178,22 +240,21 @@ after(() => {
 });
 
 test(
-  "a GET is refused with 405 and Allow: POST, and stores nothing",
+  "a GET to the sign-up is refused with 405 and Allow: POST, and stores nothing",
   { skip },
   async () => {
     reset();
-    const res = await fetch(`${ENDPOINT}?first_name=<b>x</b>`);
+    const res = await fetch(`${SIGNUP}?first_name=<b>x</b>`);
     assert.equal(res.status, 405);
     assert.equal(res.headers.get("allow"), "POST");
-    const html = await res.text();
-    assert.doesNotMatch(html, /<b>x<\/b>/, "query input must never be echoed");
+    assert.doesNotMatch(await res.text(), /<b>x<\/b>/);
     assert.deepEqual(csvLines(), []);
     assert.deepEqual(mails(), []);
   },
 );
 
 test(
-  "a valid sign-up is stored, the team is notified, the member is confirmed",
+  "a valid sign-up is stored pending and sent only a confirmation link",
   { skip },
   async () => {
     reset();
@@ -201,64 +262,239 @@ test(
     assert.equal(res.status, 303);
     assert.equal(res.location, "/beta/thanks/");
 
-    const rows = csvLines();
-    assert.equal(rows.length, 2, "header plus one row");
-    assert.equal(
-      rows[0],
-      "submitted_at_utc,first_name,email,phone,heard_from,confirmed_18_plus,consent_beta_email",
-    );
-    assert.match(
-      rows[1],
-      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z,Synthetic,synthetic-user-01@example\.test,iPhone,"Friend or family",yes,yes$/,
-    );
+    assert.equal(csvLines()[0], COLUMNS.join(","));
+    const [row] = rows();
+    assert.equal(rows().length, 1);
+    assert.equal(row.first_name, "Synthetic");
+    assert.equal(row.email, "synthetic-user-01@example.test");
+    assert.equal(row.phone, "iPhone");
+    assert.equal(row.heard_from, "Friend or family");
+    assert.equal(row.status, "pending");
+    assert.equal(row.confirmed_at_utc, "");
+    assert.match(row.token_hash, /^[0-9a-f]{64}$/);
+    const expires = Date.parse(row.token_expires_utc);
+    const sevenDays = 7 * 86400 * 1000;
+    assert.ok(Math.abs(expires - Date.now() - sevenDays) < 60000, "not 7 days");
 
     const sent = mails();
-    assert.equal(sent.length, 2, "one notification and one confirmation");
-    const [notify, confirm] = sent;
+    assert.equal(
+      sent.length,
+      1,
+      "only the member is emailed before confirming",
+    );
+    const [mail] = sent;
+    assert.match(mail.raw, /^To: synthetic-user-01@example\.test$/m);
+    assert.match(
+      mail.raw,
+      /^Subject: Confirm your spot on the Tether Health beta waitlist$/m,
+    );
+    assert.match(
+      mail.raw,
+      /^From: Tether Health <support@tetherhealthgroup\.com>$/m,
+    );
+    assert.doesNotMatch(mail.raw, /^Reply-To:/im);
+    assert.match(mail.args, /-fsupport@tetherhealthgroup\.com/);
+    const token = lastToken();
+    assert.match(
+      mail.raw,
+      new RegExp(
+        `https://www\\.tetherhealthgroup\\.com/api/beta-confirm\\.php\\?t=${token}`,
+      ),
+    );
+    // The token is stored only as its hash.
+    assert.equal(
+      row.token_hash,
+      (await import("node:crypto"))
+        .createHash("sha256")
+        .update(token)
+        .digest("hex"),
+    );
+    assert.doesNotMatch(readFileSync(csvPath, "utf8"), new RegExp(token));
+  },
+);
 
+test(
+  "the confirmation email echoes none of the submitted text",
+  { skip },
+  async () => {
+    reset();
+    await post({
+      ...VALID,
+      first_name: "Zqxname <b>",
+      phone: "android",
+      source: "clinician",
+    });
+    const body = mails()[0]
+      .raw.split(/\r?\n\r?\n/)
+      .slice(1)
+      .join("\n\n");
+    for (const echoed of [
+      "Zqxname",
+      "<b>",
+      "Android",
+      "Clinician",
+      "synthetic-user-01",
+    ])
+      assert.ok(!body.includes(echoed), `the email body echoes ${echoed}`);
+  },
+);
+
+test(
+  "confirming marks the row confirmed and only then notifies the team",
+  { skip },
+  async () => {
+    reset();
+    await post(VALID);
+    const token = lastToken();
+
+    const page = await fetch(`${CONFIRM}?t=${token}`);
+    assert.equal(page.status, 200);
+    const html = await page.text();
+    assert.match(
+      html,
+      /<form method="post" action="\/api\/beta-confirm\.php">/,
+    );
+    assert.match(html, new RegExp(`name="t" value="${token}"`));
+    assert.equal(rows()[0].status, "pending", "a GET must not confirm");
+    assert.equal(mails().length, 1);
+
+    const res = await post({ t: token }, CONFIRM);
+    assert.equal(res.status, 303);
+    assert.equal(res.location, "/beta/confirmed/");
+    const [row] = rows();
+    assert.equal(row.status, "confirmed");
+    assert.match(
+      row.confirmed_at_utc,
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/,
+    );
+    assert.equal(row.token_hash, "");
+    assert.equal(row.token_expires_utc, "");
+
+    const sent = mails();
+    assert.equal(sent.length, 2);
+    const notify = sent[1];
     assert.match(notify.raw, new RegExp(`^To: ${NOTIFY}$`, "m"));
     assert.match(
       notify.raw,
-      /^Subject: New beta waitlist sign-up \(iPhone\)$/m,
+      /^Subject: Beta waitlist sign-up confirmed \(iPhone\)$/m,
     );
-    assert.match(notify.raw, /^Reply-To: synthetic-user-01@example\.test$/m);
-    assert.match(
+    assert.doesNotMatch(
       notify.raw,
-      /^From: Tether Health <support@tetherhealthgroup\.com>$/m,
+      /^Reply-To:/im,
+      "no Reply-To on the notification",
     );
     assert.match(notify.raw, /Email: synthetic-user-01@example\.test/);
     assert.match(notify.raw, /Heard about us from: Friend or family/);
-    assert.match(notify.args, /-fsupport@tetherhealthgroup\.com/);
+  },
+);
 
-    assert.match(confirm.raw, /^To: synthetic-user-01@example\.test$/m);
-    assert.match(confirm.raw, /^Content-Type: text\/plain; charset=UTF-8$/m);
-    assert.match(confirm.raw, /^Reply-To: support@tetherhealthgroup\.com$/m);
-    assert.match(
-      confirm.raw,
-      /You're on the list; we'll email you an invite when there's a spot\./,
+test("a used confirmation link does not work again", { skip }, async () => {
+  reset();
+  await post(VALID);
+  const token = lastToken();
+  assert.equal(
+    (await post({ t: token }, CONFIRM)).location,
+    "/beta/confirmed/",
+  );
+  assert.equal(
+    (await post({ t: token }, CONFIRM)).location,
+    "/beta/#error-link",
+  );
+  const get = await fetch(`${CONFIRM}?t=${token}`, { redirect: "manual" });
+  assert.equal(get.headers.get("location"), "/beta/#error-link");
+  assert.equal(mails().length, 2, "the team is notified once");
+});
+
+test(
+  "an expired link fails and its pending row is deleted by the cleanup",
+  { skip },
+  async () => {
+    reset();
+    await post(VALID);
+    const token = lastToken();
+    const [row] = rows();
+    writeRows([{ ...row, token_expires_utc: utc(Date.now() - 1000) }]);
+    assert.equal(
+      (await post({ t: token }, CONFIRM)).location,
+      "/beta/#error-link",
     );
-    assert.match(confirm.raw, /TestFlight/);
-    assert.match(confirm.raw, /We cannot promise a date\./);
-    assert.match(confirm.raw, /reply to this message with "unsubscribe"/);
-    assert.match(confirm.raw, /privacy@tetherhealthgroup\.com/);
-    assert.doesNotMatch(
-      confirm.raw,
-      /\b20\d\d\b|\bweeks?\b|\bdays?\b|\bsoon\b/i,
+    assert.deepEqual(rows(), [], "the expired pending row is gone");
+    assert.equal(mails().length, 1, "nobody is notified");
+  },
+);
+
+test(
+  "an unconfirmed row is deleted after 7 days by any request",
+  { skip },
+  async () => {
+    reset();
+    await post(VALID);
+    await post({ ...VALID, email: "synthetic-user-02@example.test" });
+    const [old, fresh] = rows();
+    writeRows([{ ...old, token_expires_utc: utc(Date.now() - 1000) }, fresh]);
+    await fetch(SIGNUP); // a 405, but the cleanup still runs
+    assert.deepEqual(
+      rows().map((r) => r.email),
+      ["synthetic-user-02@example.test"],
+    );
+  },
+);
+
+test("unknown or malformed tokens fail without detail", { skip }, async () => {
+  reset();
+  await post(VALID);
+  for (const t of ["0".repeat(64), "abc", "<script>", ""]) {
+    const res = await post({ t }, CONFIRM);
+    assert.equal(res.location, "/beta/#error-link", `t=${t}`);
+  }
+  assert.equal(rows()[0].status, "pending");
+});
+
+test(
+  "signing up again sends at most one confirmation a day",
+  { skip },
+  async () => {
+    reset();
+    await post(VALID);
+    const first = lastToken();
+    const again = await post({
+      ...VALID,
+      email: "SYNTHETIC-USER-01@example.test",
+    });
+    assert.equal(again.location, "/beta/thanks/", "the page reveals nothing");
+    assert.equal(mails().length, 1, "no second email within a day");
+    assert.equal(rows().length, 1, "no duplicate row");
+
+    const [row] = rows();
+    writeRows([{ ...row, last_sent_utc: utc(Date.now() - 25 * 3600 * 1000) }]);
+    await post(VALID);
+    assert.equal(mails().length, 2, "a new link after a day");
+    const second = lastToken();
+    assert.notEqual(second, first);
+    assert.equal(
+      (await post({ t: first }, CONFIRM)).location,
+      "/beta/#error-link",
+    );
+    assert.equal(
+      (await post({ t: second }, CONFIRM)).location,
+      "/beta/confirmed/",
     );
   },
 );
 
 test(
-  "the Android choice is stored and confirmed as Android",
+  "an address that has confirmed is not emailed again",
   { skip },
   async () => {
     reset();
-    const res = await post({ ...VALID, phone: "android", source: "" });
-    assert.equal(res.location, "/beta/thanks/");
-    assert.match(csvLines()[1], /,Android,"\(not given\)",yes,yes$/);
-    const confirm = mails()[1];
-    assert.match(confirm.raw, /invite to test on Android\./);
-    assert.doesNotMatch(confirm.raw, /TestFlight/);
+    await post(VALID);
+    await post({ t: lastToken() }, CONFIRM);
+    const before = mails().length;
+    const [row] = rows();
+    writeRows([{ ...row, last_sent_utc: utc(Date.now() - 30 * 86400 * 1000) }]);
+    assert.equal((await post(VALID)).location, "/beta/thanks/");
+    assert.equal(mails().length, before);
+    assert.equal(rows()[0].status, "confirmed");
   },
 );
 
@@ -270,7 +506,7 @@ test(
     const { fill_ms, ...noScript } = VALID;
     const res = await post(noScript);
     assert.equal(res.location, "/beta/thanks/");
-    assert.equal(csvLines().length, 2);
+    assert.equal(rows().length, 1);
   },
 );
 
@@ -356,11 +592,9 @@ test(
       (await post({ ...VALID, email: "" })).location,
       "/beta/#error-fields",
     );
-    const third = await post(VALID);
-    assert.equal(third.location, "/beta/#error-rate");
-    assert.equal(csvLines().length, 2, "only the first attempt was stored");
-    assert.equal(mails().length, 2);
-    // The counter lives in the configured private folder, named by a hash.
+    assert.equal((await post(VALID)).location, "/beta/#error-rate");
+    assert.equal(rows().length, 1, "only the first attempt was stored");
+    assert.equal(mails().length, 1);
     const rateDir = join(privateDir, "rate");
     const files = readdirSync(rateDir);
     assert.equal(files.length, 1);
@@ -369,8 +603,32 @@ test(
       /^[0-9a-f]{64}\.rate$/,
       "named by hash, not by address",
     );
-    const stamps = readFileSync(join(rateDir, files[0]), "utf8").split("\n");
-    assert.equal(stamps.length, 2, "two allowed attempts recorded");
+  },
+);
+
+test(
+  "rate-limit files older than a day are removed on every request",
+  { skip },
+  async () => {
+    reset();
+    const rateDir = join(privateDir, "rate");
+    mkdirSync(rateDir, { recursive: true });
+    const stale = join(rateDir, `${"a".repeat(64)}.rate`);
+    const recent = join(rateDir, `${"b".repeat(64)}.rate`);
+    writeFileSync(stale, "1");
+    writeFileSync(recent, "1");
+    const twoDaysAgo = (Date.now() - 2 * 86400 * 1000) / 1000;
+    utimesSync(stale, twoDaysAgo, twoDaysAgo);
+    await fetch(SIGNUP); // GET: refused, but the cleanup runs first
+    assert.equal(existsSync(stale), false, "the day-old file survived");
+    assert.equal(existsSync(recent), true, "a recent file was removed");
+    utimesSync(recent, twoDaysAgo, twoDaysAgo);
+    await fetch(`${CONFIRM}?t=bad`, { redirect: "manual" });
+    assert.equal(
+      existsSync(recent),
+      false,
+      "the confirm handler skipped cleanup",
+    );
   },
 );
 
@@ -381,13 +639,28 @@ test(
     reset();
     unlinkSync(configPath);
     try {
-      const res = await post(VALID);
-      assert.equal(res.location, "/beta/#error-unavailable");
+      assert.equal((await post(VALID)).location, "/beta/#error-unavailable");
+      assert.equal(
+        (await post({ t: "0".repeat(64) }, CONFIRM)).location,
+        "/beta/#error-unavailable",
+      );
       assert.deepEqual(csvLines(), []);
       assert.deepEqual(mails(), []);
     } finally {
       writeConfig();
     }
+  },
+);
+
+test(
+  "a waitlist file with an unexpected header is left alone",
+  { skip },
+  async () => {
+    reset();
+    writeFileSync(csvPath, "some,other,columns\n1,2,3\n");
+    assert.equal((await post(VALID)).location, "/beta/#error-unavailable");
+    assert.equal(readFileSync(csvPath, "utf8"), "some,other,columns\n1,2,3\n");
+    assert.deepEqual(mails(), []);
   },
 );
 
@@ -398,8 +671,7 @@ test(
     reset();
     const inside = join(docroot, "waitlist.csv");
     writeConfig({ storage_path: inside });
-    const res = await post(VALID);
-    assert.equal(res.location, "/beta/#error-unavailable");
+    assert.equal((await post(VALID)).location, "/beta/#error-unavailable");
     assert.equal(existsSync(inside), false);
     assert.deepEqual(mails(), []);
     writeConfig({ storage_path: "/home/someone/public_html/list.csv" });
@@ -427,5 +699,9 @@ test(
     reset();
     await post({ ...VALID, first_name: "=HYPERLINK(1)" });
     assert.match(csvLines()[1], /,'=HYPERLINK\(1\),/);
+    // Read back and rewritten (by a later request), it is not prefixed twice.
+    await post({ ...VALID, email: "synthetic-user-02@example.test" });
+    assert.match(csvLines()[1], /,'=HYPERLINK\(1\),/);
+    assert.equal(rows()[0].first_name, "'=HYPERLINK(1)");
   },
 );

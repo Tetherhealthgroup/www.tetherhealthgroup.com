@@ -22,9 +22,11 @@ import SupportEmail from "../components/SupportEmail.astro";
       {/* needs-counsel: P-108 */}
       <strong>Static output.</strong> Every page is pre-rendered HTML. There is no
       application server, no database and no session to steal. The only server-side
-      code is the small handler behind the <a href="/beta/">beta waitlist</a> form:
-      it accepts nothing but that form, checks every field against a fixed list or
-      length, and writes to a file outside the public site.
+      code is the two small handlers behind the <a href="/beta/"
+        >beta waitlist</a
+      >: one accepts nothing but its form, the other nothing but the
+      confirmation link we email. They check every field against a fixed list or
+      length and write to a file outside the public site.
     </li>
     <li>
       <strong>No third-party code.</strong> The site loads no external scripts, fonts,

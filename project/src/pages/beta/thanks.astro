@@ -8,8 +8,8 @@ import SupportEmail from "../../components/SupportEmail.astro";
 ---
 
 <Base
-  title="You're on the beta waitlist"
-  description="You're on the Tether Health beta waitlist. We will email you an invite when there is a spot."
+  title="Check your email"
+  description="Confirm your spot on the Tether Health beta waitlist with the link we emailed you."
   noindex
 >
   <Section width="default" space="loose">
@@ -20,14 +20,15 @@ import SupportEmail from "../../components/SupportEmail.astro";
         <Icon name="check" size={36} />
       </span>
       <p class="eyebrow mb-5">Beta waitlist</p>
-      <h1 class="text-[2.5rem] sm:text-[3.5rem]">You're on the list.</h1>
+      <h1 class="text-[2.5rem] sm:text-[3.5rem]">Check your email.</h1>
       <p class="mt-6 text-xl leading-relaxed">
-        We'll email you an invite when there's a spot. We cannot promise a date.
+        To confirm your spot, open the link we emailed you. It works once and
+        expires in 7 days. You are not on the list until you confirm.
       </p>
       <p class="mt-5 text-lg leading-relaxed text-teal-mid">
-        We are sending a confirmation to the address you gave. If it does not
-        arrive, check your spam folder. To leave the list, reply to that email
-        with "unsubscribe". To have your details deleted, email <SupportEmail
+        If it does not arrive, check your spam folder. We send at most one
+        confirmation email a day to the same address. If you did not confirm
+        within 7 days, your details are deleted. Questions or deletion: <SupportEmail
           mailbox="privacy"
           class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
         />.

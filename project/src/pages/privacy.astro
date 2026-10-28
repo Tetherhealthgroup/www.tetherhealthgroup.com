@@ -117,8 +117,9 @@ import SupportEmail from "../components/SupportEmail.astro";
   </p>
   <p>
     <strong>Why.</strong> To invite you to test the app on the right kind of phone,
-    to confirm we received your request, and to email you about the beta. The basis
-    is your consent, given by ticking "Email me about the beta".
+    to check that the email address is yours, and to email you about the beta. The
+    basis is your consent, given by ticking "Email me about the beta" and then confirming
+    through the link we email you.
   </p>
   <p>
     <strong>Who else sees it.</strong> Our hosting provider runs the web server and
@@ -128,9 +129,13 @@ import SupportEmail from "../components/SupportEmail.astro";
   </p>
   <p>
     <strong>Where it is kept.</strong> The server stores your entry in a file that
-    is not part of the public website, emails a copy to our support mailbox, and sends
-    you a confirmation. To limit repeated sign-ups it also keeps a short-lived record
-    derived from your IP address, deleted within a day.
+    is not part of the public website and emails you a link to confirm it. Until you
+    confirm, your entry is marked unconfirmed and nobody else is told. If you do not
+    confirm within 7 days, the entry is deleted the next time the waitlist is used
+    after that. When you confirm, a copy goes to our support mailbox. To limit repeated
+    sign-ups, the server also keeps a record derived from your IP address (a hash
+    of it, with the times of recent attempts). That record is deleted the first time
+    the waitlist is used more than a day after your last attempt.
   </p>
   <p>
     <strong>How long we keep it.</strong> We delete the waitlist after the beta ends,

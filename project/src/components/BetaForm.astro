@@ -6,7 +6,7 @@
  * An ordinary HTML form that POSTs to /api/beta-signup.php, so it submits with
  * JavaScript off. The handler answers with a redirect: to /beta/thanks/, or
  * back to this page with a fragment naming the error (#error-fields and so
- * on). The matching message below is shown with CSS :target, which needs no
+ * on). The confirmation link handler uses the same messages (#error-link). The matching message below is shown with CSS :target, which needs no
  * script either.
  *
  * Data minimisation: first name, email, phone type, an optional source, and two
@@ -60,6 +60,10 @@ const errors = [
   {
     id: "error-rate",
     text: "We have had several attempts from your connection. Please wait an hour and try again.",
+  },
+  {
+    id: "error-link",
+    text: "That confirmation link has expired or has already been used. Fill in the form again to get a new one.",
   },
   {
     id: "error-unavailable",

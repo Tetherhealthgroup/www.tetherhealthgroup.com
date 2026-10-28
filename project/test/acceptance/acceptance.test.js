@@ -231,6 +231,7 @@ const UNPLUG_IPHONE_LIMITS = new RegExp(
 const BETA_WORDING_PAGES = new Set([
   "beta/index.html",
   "beta/thanks/index.html",
+  "beta/confirmed/index.html",
   "privacy/index.html",
   "security/index.html",
 ]);

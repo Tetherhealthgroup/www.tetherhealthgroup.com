@@ -1,5 +1,5 @@
-// Security — static checks on the beta waitlist handler,
-// public/api/beta-signup.php.
+// Security — static checks on the beta waitlist handlers in public/api/:
+// beta-signup.php, beta-confirm.php and their shared beta-lib.inc.
 //
 // These run without PHP. They assert that each required guard is present in
 // the source, that no input reaches output or a shell, and that the private
@@ -13,19 +13,61 @@ import { join } from "node:path";
 import { dist, projectRoot } from "../helpers/dist.js";
 import { repoFiles } from "../helpers/repo.js";
 
-const source = readFileSync(
-  join(projectRoot, "public", "api", "beta-signup.php"),
-  "utf8",
-);
 /** Source with comments removed, so a guard named only in a comment fails. */
-const code = source
-  .replace(/^\s*\/\*[\s\S]*?\*\//gm, "")
-  .replace(/^\s*\/\/.*$/gm, "");
+const stripped = (name) =>
+  readFileSync(join(projectRoot, "public", "api", name), "utf8")
+    .replace(/^\s*\/\*[\s\S]*?\*\//gm, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+const signup = stripped("beta-signup.php");
+const confirm = stripped("beta-confirm.php");
+const lib = stripped("beta-lib.inc");
+const code = [lib, signup, confirm].join("\n");
 
-test("only POST is accepted", () => {
-  assert.match(code, /\$_SERVER\['REQUEST_METHOD'\][^;]*!== 'POST'/);
-  assert.match(code, /header\('Allow: POST'\)/);
-  assert.match(code, /beta_page\(405,/);
+test("sign-up accepts only POST; confirm only GET (a page) and POST", () => {
+  assert.match(signup, /\$_SERVER\['REQUEST_METHOD'\][^;]*!== 'POST'/);
+  assert.match(signup, /header\('Allow: POST'\)/);
+  assert.match(signup, /beta_page\(405,/);
+  assert.match(confirm, /header\('Allow: GET, POST'\)/);
+  // Only the POST branch changes a row to confirmed.
+  const getBranch = confirm.match(
+    /if \(\$method === 'GET'\) \{[\s\S]*?\n}/,
+  )?.[0];
+  assert.ok(getBranch, "no GET branch found; re-check this test");
+  assert.doesNotMatch(getBranch, /'confirmed'/, "a GET confirms");
+});
+
+test("both handlers load the shared code and run the cleanup on every request", () => {
+  for (const [name, src] of [
+    ["beta-signup.php", signup],
+    ["beta-confirm.php", confirm],
+  ]) {
+    assert.match(src, /require __DIR__ \. '\/beta-lib\.inc';/, name);
+    const cleanup = src.indexOf("beta_cleanup($config)");
+    const method = src.indexOf("REQUEST_METHOD");
+    assert.ok(
+      cleanup > -1 && cleanup < method,
+      `${name}: cleanup is not before the method check`,
+    );
+  }
+  assert.match(lib, /\$mtime < \$now - BETA_RATE_FILE_TTL/);
+  assert.match(
+    lib,
+    /\$row\['status'\] === 'pending' && \$row\['token_expires_utc'\] <= \$now/,
+  );
+});
+
+test("tokens are random, single-use, stored as a hash and expire in 7 days", () => {
+  assert.match(lib, /bin2hex\(random_bytes\(32\)\)/);
+  assert.match(lib, /hash\('sha256', \$token\)/);
+  assert.match(lib, /const BETA_TOKEN_TTL = 7 \* 86400;/);
+  assert.match(lib, /const BETA_RESEND_AFTER = 86400;/);
+  assert.match(confirm, /hash_equals\(\$row\['token_hash'\], \$hash\)/);
+  assert.match(
+    confirm,
+    /\$row\['token_hash'\] = '';/,
+    "the token is not cleared",
+  );
+  assert.match(confirm, /preg_match\('\/\^\[0-9a-f\]\{64\}\$\/', \$token\)/);
 });
 
 test("every field is rejected if it carries CR or LF (header injection)", () => {
@@ -36,6 +78,7 @@ test("every field is rejected if it carries CR or LF (header injection)", () => 
   assert.match(field, /is_string\(\$value\)/, "beta_field accepts arrays");
   assert.match(field, /trim\(\$value\)/, "beta_field does not trim");
   for (const name of [
+    "t",
     "first_name",
     "email",
     "phone",
@@ -46,7 +89,7 @@ test("every field is rejected if it carries CR or LF (header injection)", () => 
   ])
     assert.match(
       code,
-      new RegExp(`beta_field\\('${name}'\\)`),
+      new RegExp(`beta_field\\([^,]+, '${name}'\\)`),
       `${name} bypasses beta_field`,
     );
 });
@@ -98,10 +141,16 @@ test("no shell, eval or unsafe input source is used", () => {
     /`/,
     /\bunserialize\s*\(/,
     /\bextract\s*\(/,
-    /\$_(?:GET|REQUEST|COOKIE|FILES)\b/,
+    /\$_(?:REQUEST|COOKIE|FILES)\b/,
     /\binclude\s+\$_|\brequire\s+\$_/,
   ])
     assert.doesNotMatch(code, banned, `banned construct: ${banned}`);
+  // $_GET is read in one place: the confirm token, through beta_field.
+  assert.equal(code.match(/\$_GET\b/g)?.length, 1);
+  assert.match(
+    confirm,
+    /beta_field\(\$method === 'POST' \? \$_POST : \$_GET, 't'\)/,
+  );
 });
 
 test("mail uses fixed headers; only validated addresses reach a header", () => {
@@ -109,9 +158,35 @@ test("mail uses fixed headers; only validated addresses reach a header", () => {
   assert.match(mail, /'Content-Type' => 'text\/plain; charset=UTF-8'/);
   assert.match(mail, /mail\(\$to, \$subject,/);
   assert.doesNotMatch(mail, /\$_POST/);
-  // The member's address is the only input used in a header (Reply-To), and
-  // it has passed beta_is_email by then.
+  assert.doesNotMatch(code, /Reply-To/i, "no email carries a Reply-To");
+  // The member's address is the only input used in a header (To), and it
+  // has passed beta_is_email by then.
   assert.match(code, /beta_is_email\(\$email\)/);
+});
+
+test("the confirmation email body carries the link and no submitted text", () => {
+  const fn =
+    lib.match(/function beta_send_confirmation\([\s\S]*?\n}/)?.[0] ?? "";
+  assert.ok(fn, "beta_send_confirmation not found");
+  const vars = [...fn.matchAll(/\$\w+/g)].map((m) => m[0]);
+  assert.deepEqual(
+    [...new Set(vars)].sort(),
+    ["$body", "$from", "$to", "$token"].sort(),
+  );
+  assert.match(fn, /'Confirm your spot on the Tether Health beta waitlist/);
+  assert.match(
+    fn,
+    /BETA_SITE_URL \. '\/api\/beta-confirm\.php\?t=' \. \$token/,
+  );
+  assert.match(
+    lib,
+    /const BETA_SITE_URL = 'https:\/\/www\.tetherhealthgroup\.com';/,
+  );
+  assert.doesNotMatch(
+    code,
+    /HTTP_HOST|SERVER_NAME/,
+    "the link must not come from the request",
+  );
 });
 
 test("the private config is not in the repository and does not ship", () => {

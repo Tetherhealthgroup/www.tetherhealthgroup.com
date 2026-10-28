@@ -93,6 +93,8 @@ test("app-ads.txt is emitted at /app-ads.txt with the AdMob seller line", () => 
 test("the deploy output carries the handler and both verification files", () => {
   for (const rel of [
     "api/beta-signup.php",
+    "api/beta-confirm.php",
+    "api/beta-lib.inc",
     ".well-known/assetlinks.json",
     "app-ads.txt",
   ])

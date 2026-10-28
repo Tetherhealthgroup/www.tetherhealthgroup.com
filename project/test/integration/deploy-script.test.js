@@ -182,8 +182,11 @@ test("the deploy branch built from the real dist keeps dotfiles and the beta han
     ".well-known/security.txt",
     "app-ads.txt",
     "api/beta-signup.php",
+    "api/beta-confirm.php",
+    "api/beta-lib.inc",
     "beta/index.html",
     "beta/thanks/index.html",
+    "beta/confirmed/index.html",
   ])
     assert.ok(tree.includes(path), `the deploy branch lacks ${path}`);
   assert.equal(

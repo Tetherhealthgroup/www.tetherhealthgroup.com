@@ -13,8 +13,13 @@ import { join } from "node:path";
 import { dist, projectRoot, readPage } from "../helpers/dist.js";
 
 const page = () => readPage("beta/index.html");
+/** The PHP handlers and their shared code, as one text. */
 const handlerSource = () =>
-  readFileSync(join(projectRoot, "public", "api", "beta-signup.php"), "utf8");
+  ["beta-lib.inc", "beta-signup.php", "beta-confirm.php"]
+    .map((name) =>
+      readFileSync(join(projectRoot, "public", "api", name), "utf8"),
+    )
+    .join("\n");
 
 const formTag = () => page().match(/<form\b[^>]*id="beta-form"[^>]*>/)?.[0];
 const formBody = () =>
@@ -150,14 +155,25 @@ test("every error the handler redirects to has a message shown by :target", () =
   assert.match(handlerSource(), /beta_redirect\('\/beta\/thanks\/'\)/);
 });
 
-test("the thank-you page exists, is not indexed, and promises no date", () => {
+test("the thank-you page asks the visitor to confirm by email", () => {
   const html = readPage("beta/thanks/index.html");
+  assert.match(html, /<meta name="robots" content="[^"]*noindex/);
+  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  assert.match(text, /Check your email\./);
+  assert.match(text, /You are not on the list until you confirm\./);
+  assert.match(text, /expires in 7 days/);
+  assert.match(html, /mailto:privacy@tetherhealthgroup\.com/);
+});
+
+test("the confirmed page exists, is not indexed, and promises no date", () => {
+  const html = readPage("beta/confirmed/index.html");
   assert.match(html, /<meta name="robots" content="[^"]*noindex/);
   const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
   assert.match(text, /You're on the list\./);
   assert.match(text, /We'll email you an invite when there's a spot\./);
   assert.match(text, /We cannot promise a date\./);
   assert.match(html, /mailto:privacy@tetherhealthgroup\.com/);
+  assert.match(handlerSource(), /beta_redirect\('\/beta\/confirmed\/'\)/);
 });
 
 test("home and programs carry a clear call to action into /beta/", () => {

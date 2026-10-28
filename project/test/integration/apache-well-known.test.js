@@ -194,3 +194,11 @@ test("app-ads.txt is served 200 as text/plain", { skip }, async () => {
   assert.equal(res.status, 200);
   assert.match(res.type, /^text\/plain/);
 });
+
+test(
+  "the shared PHP code (.inc) is refused, never served as source",
+  { skip },
+  async () => {
+    assert.equal((await get(WITH, "/api/beta-lib.inc")).status, 403);
+  },
+);

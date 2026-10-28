@@ -54,7 +54,21 @@ test("it says why, who else sees it, retention, deletion and that it is never so
   assert.match(html, /mailto:privacy@tetherhealthgroup\.com/);
   assert.match(text, /reply "unsubscribe"/);
   assert.match(text, /never sell/);
-  assert.match(text, /IP address, deleted within a day/);
+  assert.match(text, /emails you a link to confirm it/);
+  assert.match(text, /nobody else is told/);
+  assert.match(
+    text,
+    /If you do not confirm within 7 days, the entry is deleted the next time the waitlist is used after that\./,
+  );
+  assert.match(
+    text,
+    /deleted the first time the waitlist is used more than a day after your last attempt\./,
+  );
+  assert.doesNotMatch(
+    text,
+    /deleted within a day/,
+    "a guarantee the code does not make",
+  );
 });
 
 test("the beta form links to that section", () => {
@@ -64,5 +78,5 @@ test("the beta form links to that section", () => {
 test("the security page no longer says there is no server-side code", () => {
   const text = textOf(readPage("security/index.html"));
   assert.doesNotMatch(text, /no server-side code/);
-  assert.match(text, /The only server-side code is the small handler/);
+  assert.match(text, /The only server-side code is the two small handlers/);
 });
