@@ -134,24 +134,21 @@ test("the About page lists the three leaders, names and titles only", () => {
 
 test("each role mailbox is a mailto link on the page where it fits", () => {
   const expected = {
-    "support/index.html": [
-      "support",
-      "privacy",
-      "security",
-      "partnerships",
-      "careers",
-      "finance",
-      "admin",
-    ],
+    // The four public mailboxes (owner, 2026-10-28); partnerships and
+    // finance are reached through the contact form, admin is retired.
+    "support/index.html": ["support", "privacy", "security", "careers"],
     "privacy/index.html": ["privacy"],
     "security/index.html": ["security"],
-    "terms/index.html": ["support", "partnerships"],
+    "careers/index.html": ["careers"],
+    "terms/index.html": ["support"],
   };
   for (const [page, boxes] of Object.entries(expected)) {
     const html = readFileSync(join(dist, page), "utf8");
     for (const box of boxes) {
       assert.ok(
-        html.includes(`href="mailto:${box}@tetherhealthgroup.com"`),
+        new RegExp(
+          `href="mailto:${box}@tetherhealthgroup\\.com(?:"|\\?subject=)`,
+        ).test(html),
         `${page} has no mailto link to ${box}@tetherhealthgroup.com`,
       );
     }

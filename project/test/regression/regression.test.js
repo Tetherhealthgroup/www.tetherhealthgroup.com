@@ -117,8 +117,7 @@ test("no built page claims offline use or clinical review as fact", async () => 
 test("no page carries a personal, safecodeg.com or legacy contact address", () => {
   // Public contacts are the role mailboxes only. Personal addresses and
   // safecodeg.com (the hosting account's domain) must never be published.
-  const allowed =
-    /^(admin|careers|finance|partnerships|privacy|security|support)@tetherhealthgroup\.com$/;
+  const allowed = /^(careers|privacy|security|support)@tetherhealthgroup\.com$/;
   // Character references are decoded first, so "&#64;" counts as "@".
   const offenders = [];
   for (const page of htmlFiles()) {
@@ -372,10 +371,6 @@ test("repeated links and controls are at least 44px tall", () => {
     }
   }
 
-  const tour = pageHtml("breathefree/tour/index.html");
-  for (const tag of tour.match(/<a [^>]*href="#tour-[^"]*"[^>]*>/g) ?? [])
-    if (!hasMin(tag)) missing.push(`tour ${tag.slice(0, 60)}`);
-
   assert.deepEqual(
     missing,
     [],
@@ -432,16 +427,9 @@ test("every mailto link meets the 44px bar or sits inside a sentence", () => {
   );
 
   // The /support/ mailbox list stands on its own lines, so it must be sized
-  // explicitly: privacy, security, partnerships, careers, finance and admin.
+  // explicitly: privacy, security and careers (the other public mailboxes).
   const support = pageHtml("support/index.html");
-  for (const box of [
-    "privacy",
-    "security",
-    "partnerships",
-    "careers",
-    "finance",
-    "admin",
-  ]) {
+  for (const box of ["privacy", "security", "careers"]) {
     const tag = support.match(
       new RegExp(`<a [^>]*href="mailto:${box}@[^"]*"[^>]*>`),
     )?.[0];
@@ -490,33 +478,6 @@ test("leadership titles are announced in full, once, without relying on title=",
     const count = accessible.split(escape(full)).length - 1;
     assert.equal(count, 1, `leader ${i}: full title announced ${count} times`);
   });
-});
-
-test("phone screenshots are encoded for the size they are displayed at", () => {
-  // The device frame is `width` px wide with border-box padding, so the
-  // screenshot is shown at width - 2*padding. It was encoded at 2*width, i.e.
-  // the 1x candidate was already ~2.1x the display size and the 2x candidate
-  // ~4.3x; Lighthouse image-delivery flagged ~60 KB wasted per image on six
-  // pages. The 1x width must equal the displayed width, with 2x and 3x
-  // candidates for high-density screens.
-  let frames = 0;
-  for (const page of htmlFiles()) {
-    const html = pageHtml(page);
-    for (const m of html.matchAll(
-      /<div class="relative bg-teal-deep[^"]*" style="width:(\d+)px;padding:(\d+)px;[^"]*">\s*(<img[^>]*>)/g,
-    )) {
-      frames += 1;
-      const displayed = Number(m[1]) - 2 * Number(m[2]);
-      const width = Number(m[3].match(/\swidth="(\d+)"/)?.[1]);
-      assert.equal(
-        width,
-        displayed,
-        `${page}: image declares ${width}px for a ${displayed}px slot`,
-      );
-      assert.match(m[3], /\s3x"?[ >]|\s3x,|\s3x"/, `${page}: no 3x candidate`);
-    }
-  }
-  assert.ok(frames > 0, "no phone frame found to check");
 });
 
 test("a field marked invalid keeps a border of at least 3:1 on paper", () => {

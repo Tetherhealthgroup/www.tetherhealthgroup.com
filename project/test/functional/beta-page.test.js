@@ -191,7 +191,7 @@ test('every "Get early access" call to action links to /beta/', async () => {
   const offenders = [];
   let seen = 0;
   for (const rel of htmlFiles()) {
-    for (const [a, href] of readPage(rel).matchAll(
+    for (const [, href] of readPage(rel).matchAll(
       /<a\b[^>]*href="([^"]*)"[^>]*>(?:(?!<\/a>)[\s\S])*?Get early access(?:(?!<\/a>)[\s\S])*?<\/a>/g,
     )) {
       seen += 1;

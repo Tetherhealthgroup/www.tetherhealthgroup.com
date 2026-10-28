@@ -1,7 +1,9 @@
-// Security — published contact addresses. The site may publish the seven
-// role mailboxes and nothing else: in site data, in any mailto: URL in the
-// built markup, in the address the waitlist form sends to, and in any address
-// at the company domain written in a tracked text file.
+// Security — published contact addresses. The built site may publish four
+// role mailboxes and nothing else (owner, 2026-10-28): support, privacy,
+// security and careers. Sales and partnerships and finance are reached only
+// through the contact form, whose routes live in the private server config;
+// admin is retired. Tracked text (docs, the example config) may also name
+// partnerships@ and finance@, never any other company address.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -10,9 +12,12 @@ import { join } from "node:path";
 import { dist, htmlFiles, decodeEntities } from "../helpers/dist.js";
 import { repoFiles, repoTextOf } from "../helpers/repo.js";
 
-/** The seven role mailboxes, the only addresses the site may publish. */
+/** The four mailboxes the built site may publish. */
+const PUBLIC_MAILBOXES = ["careers", "privacy", "security", "support"].map(
+  (box) => `${box}@tetherhealthgroup.com`,
+);
+/** Role mailboxes tracked text may name: the public four plus two routes. */
 const ROLE_MAILBOXES = [
-  "admin",
   "careers",
   "finance",
   "partnerships",
@@ -100,9 +105,25 @@ function recipientsOf(url) {
   return { primary, all };
 }
 
-test("site data holds exactly the seven role mailboxes", async () => {
+test("site data holds exactly the four public mailboxes", async () => {
   const { contact } = await import("../../src/data/site.ts");
-  assert.deepEqual(Object.values(contact).sort(), ROLE_MAILBOXES);
+  assert.deepEqual(Object.values(contact).sort(), PUBLIC_MAILBOXES);
+});
+
+test("no built page shows a routed or retired mailbox", () => {
+  for (const page of htmlFiles()) {
+    const text = decodeEntities(readFileSync(join(dist, page), "utf8"));
+    assert.doesNotMatch(
+      text,
+      /\b(?:finance|partnerships|admin)@tetherhealthgroup\.com/i,
+      `${page} shows a mailbox that only the contact form should reach`,
+    );
+    assert.doesNotMatch(
+      text,
+      /\bAdministration\b/,
+      `${page} mentions Administration`,
+    );
+  }
 });
 
 test("the waitlist delivers to the support mailbox in site data", async () => {
@@ -129,7 +150,7 @@ test("every mailto: URL on every built page names only role mailboxes", () => {
         if (result.primary.length === 0)
           offenders.push(`${where}: no recipient in the path or a to= field`);
         for (const address of result.all)
-          if (!ROLE_MAILBOXES.includes(address))
+          if (!PUBLIC_MAILBOXES.includes(address))
             offenders.push(`${where}: ${address}`);
       }
     }

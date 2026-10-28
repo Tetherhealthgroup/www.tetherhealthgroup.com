@@ -130,10 +130,13 @@ import SupportEmail from "../components/SupportEmail.astro";
   </p>
 
   <h2>Contact</h2>
+  {
+    /* needs-counsel: WEB-916, contact routing in the terms, not final legal text. */
+  }
   <p>
     Questions about these terms can go to <SupportEmail />. Healthcare and
-    business partnership enquiries go to <SupportEmail
-      mailbox="partnerships"
-    />.
+    business partnership enquiries can use the <a href="/contact/"
+      >contact form</a
+    >.
   </p>
 </Legal>

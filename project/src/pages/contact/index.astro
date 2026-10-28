@@ -1,0 +1,51 @@
+---
+/**
+ * Contact: one form, routed by topic to the right team on the server. No
+ * mailbox is listed here (owner, 2026-10-28); the public addresses that must
+ * stay public live on /support/, /privacy/, /careers/ and in security.txt.
+ */
+
+import Base from "../../layouts/Base.astro";
+import PageHero from "../../components/PageHero.astro";
+import Section from "../../components/Section.astro";
+import Icon from "../../components/Icon.astro";
+import ContactForm from "../../components/ContactForm.astro";
+import { site } from "../../data/site";
+---
+
+<Base
+  title="Contact"
+  description={`Contact ${site.name}: support, sales and partnerships, careers, privacy and finance, through one form that reaches the right team.`}
+>
+  <PageHero
+    eyebrow="Contact"
+    title="Talk to Tether Health."
+    intro="Questions about the app, sales and partnerships, careers, privacy or finance: pick a topic and your message reaches the right team."
+  />
+
+  <Section space="tight" width="default">
+    <div
+      class="mx-auto max-w-3xl rounded-3xl border border-hairline-soft bg-paper p-7 shadow-[var(--shadow-card)] sm:p-10"
+    >
+      <h2 class="mb-8 text-3xl">Send us a message</h2>
+      <ContactForm />
+    </div>
+  </Section>
+
+  <Section space="tight" width="wide">
+    <p
+      class="flex items-start gap-3 rounded-3xl border-2 border-coral/30 bg-coral-light p-6 leading-relaxed text-teal-deep"
+    >
+      <Icon name="alert" size={20} class="mt-0.5 shrink-0" />
+      <span>
+        Need help right now? In an emergency call 911. For free, confidential
+        help with quitting, see the quitlines on our <a
+          href="/support/"
+          class="font-bold underline decoration-coral decoration-2 underline-offset-4"
+          >support page</a
+        >. Email is not monitored around the clock and we cannot give medical
+        advice.
+      </span>
+    </p>
+  </Section>
+</Base>

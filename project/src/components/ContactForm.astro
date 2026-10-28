@@ -1,20 +1,23 @@
 ---
-// Editing the inline-script text changes its CSP hash in public/.htaccess.
 /**
- * General contact form.
+ * Contact form.
  *
- * The site is static, so — like the early-access form — this composes the
- * message in the visitor's own mail client. The topic decides the inbox
- * (src/lib/contact.ts); with scripting off, the <noscript> block hides the form
- * and the mailbox list on the contact page is the route left.
+ * An ordinary HTML form that POSTs to /api/contact.php, so it works with
+ * JavaScript off. The handler sends one email to the team for the chosen topic
+ * and redirects to /contact/thanks/, or back here with a fragment naming the
+ * error; the matching message below is shown with CSS :target.
  *
- * No health information is requested, and the help text says not to send any:
- * the message travels by ordinary email.
+ * The topic values are the handler's allowlist (BETA_CONTACT_TOPICS in
+ * public/api/beta-lib.inc); keep the two in step. Which mailbox each topic
+ * reaches is set only in the private server config, never in this page.
+ *
+ * The one script records how long the form was open, for the handler's
+ * minimum-fill-time check. Editing it changes its CSP hash in
+ * public/.htaccess.
  */
 
 import Button from "./Button.astro";
 import Icon from "./Icon.astro";
-import { contactTopics } from "../lib/contact";
 
 const fieldClass =
   "w-full rounded-[14px] border-2 border-teal-muted bg-paper px-4 py-3.5 text-[1.0625rem] " +
@@ -22,25 +25,78 @@ const fieldClass =
   "focus:border-teal-deep";
 const selectClass = `${fieldClass} truncate`;
 const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
+
+const topics = [
+  { value: "support", label: "Support" },
+  { value: "sales_partnerships", label: "Sales & partnerships" },
+  { value: "careers", label: "Careers" },
+  { value: "privacy", label: "Privacy" },
+  { value: "finance", label: "Finance" },
+];
+
+const errors = [
+  {
+    id: "error-fields",
+    text: "Please check the form: a topic, your first name, a valid email address and a message (up to 2,000 characters) are needed.",
+  },
+  {
+    id: "error-retry",
+    text: "That was quicker than we expected. Please check your message and send it again.",
+  },
+  {
+    id: "error-rate",
+    text: "We have had several messages from your connection. Please wait an hour and try again.",
+  },
+  {
+    id: "error-unavailable",
+    text: "Sorry, the form is unavailable. Please email support@tetherhealthgroup.com.",
+  },
+];
 ---
 
 <div>
-  <form id="contact-form" class="grid gap-5 sm:grid-cols-2" novalidate>
-    <div class="sm:col-span-1">
-      <label class={labelClass} for="ct-name"
-        >Name <span class="font-normal text-teal-mid">(optional)</span></label
+  {
+    errors.map((error) => (
+      <p
+        id={error.id}
+        tabindex="-1"
+        class="mb-6 hidden items-start gap-2.5 rounded-2xl border-2 border-coral bg-paper p-4 font-bold text-teal-deep target:flex"
       >
+        <Icon name="alert" size={20} class="mt-0.5 shrink-0" />
+        <span>{error.text}</span>
+      </p>
+    ))
+  }
+
+  <form
+    id="contact-form"
+    method="post"
+    action="/api/contact.php"
+    class="grid gap-5 sm:grid-cols-2"
+  >
+    <div class="sm:col-span-2">
+      <label class={labelClass} for="ct-topic">Topic</label>
+      <select class={selectClass} id="ct-topic" name="topic" required>
+        <option value="" selected disabled>Choose a topic</option>
+        {topics.map((t) => <option value={t.value}>{t.label}</option>)}
+      </select>
+    </div>
+
+    <div>
+      <label class={labelClass} for="ct-first-name">First name</label>
       <input
         class={fieldClass}
-        id="ct-name"
-        name="name"
+        id="ct-first-name"
+        name="first_name"
         type="text"
-        autocomplete="name"
-        placeholder="Your name"
+        required
+        maxlength="80"
+        autocomplete="given-name"
+        placeholder="Your first name"
       />
     </div>
 
-    <div class="sm:col-span-1">
+    <div>
       <label class={labelClass} for="ct-email">Email</label>
       <input
         class={fieldClass}
@@ -48,21 +104,13 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
         name="email"
         type="email"
         required
+        maxlength="254"
         autocomplete="email"
         placeholder="you@example.com"
-        aria-describedby="ct-email-error"
       />
-      <p
-        id="ct-email-error"
-        class="mt-2 hidden items-center gap-1.5 text-sm font-bold text-teal-deep"
-        role="alert"
-      >
-        <Icon name="alert" size={16} />
-        <span>Please enter an email address we can reply to.</span>
-      </p>
     </div>
 
-    <div class="sm:col-span-1">
+    <div class="sm:col-span-2">
       <label class={labelClass} for="ct-organisation"
         >Organisation <span class="font-normal text-teal-mid">(optional)</span
         ></label
@@ -72,20 +120,10 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
         id="ct-organisation"
         name="organisation"
         type="text"
+        maxlength="120"
         autocomplete="organization"
         placeholder="Health system, company or university"
       />
-    </div>
-
-    <div class="sm:col-span-1">
-      <label class={labelClass} for="ct-topic">Topic</label>
-      <select class={selectClass} id="ct-topic" name="topic">
-        {
-          contactTopics.map((topic) => (
-            <option value={topic.value}>{topic.label}</option>
-          ))
-        }
-      </select>
     </div>
 
     <div class="sm:col-span-2">
@@ -95,18 +133,35 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
         id="ct-message"
         name="message"
         rows="5"
+        required
+        maxlength="2000"
+        aria-describedby="ct-message-help"
         placeholder="How can we help?"></textarea>
-      <p class="mt-2 text-sm leading-relaxed text-teal-mid">
-        Please do not include medical details. This message travels by ordinary
-        email.
+      <p
+        id="ct-message-help"
+        class="mt-2 text-sm leading-relaxed text-teal-mid"
+      >
+        Up to 2,000 characters. Please do not include medical details.
       </p>
     </div>
+
+    {/* Honeypot: a field no person sees and no person fills in. */}
+    <div class="hidden" aria-hidden="true">
+      <label for="ct-contact-ref">Leave this empty</label>
+      <input
+        id="ct-contact-ref"
+        name="contact_ref"
+        type="text"
+        tabindex="-1"
+        autocomplete="off"
+      />
+    </div>
+    <input type="hidden" name="fill_ms" value="" />
 
     <div class="sm:col-span-2">
       <Button type="submit" arrow full class="sm:w-auto">Send message</Button>
       <p class="mt-4 text-sm leading-relaxed text-teal-mid">
-        Your email app opens with the message addressed to the right team. We
-        use your address to reply and nothing else. Read the <a
+        We'll use this only to reply. Read the <a
           href="/privacy/"
           class="font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4"
           >privacy notice</a
@@ -114,97 +169,18 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
       </p>
     </div>
   </form>
-
-  <div
-    id="contact-success"
-    class="hidden rounded-3xl border border-mint-strong bg-mint p-7"
-    role="status"
-  >
-    <span
-      class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-deep text-lime"
-    >
-      <Icon name="check" size={24} />
-    </span>
-    <h3 class="mb-2 text-xl">Almost there.</h3>
-    <p id="contact-success-body" class="text-teal-mid"></p>
-  </div>
-
-  <noscript>
-    <style>
-      #contact-form {
-        display: none;
-      }
-    </style>
-    <p class="rounded-3xl border border-hairline bg-paper p-5 text-teal-mid">
-      The contact form needs JavaScript, because it opens a message in your
-      email app. Use the addresses on this page instead — each one reaches the
-      team named next to it.
-    </p>
-  </noscript>
 </div>
 
 <script>
-  import {
-    contactMailtoUrl,
-    contactRoute,
-    normalizeContactPayload,
-  } from "../lib/contact";
-  import { isReplyableEmail } from "../lib/waitlist";
-
+  /* Record how long the form was open, on the visitor's own clock. */
+  const started = performance.now();
   const form = document.getElementById("contact-form");
-  const success = document.getElementById("contact-success");
-  const successBody = document.getElementById("contact-success-body");
-  const emailError = document.getElementById("ct-email-error");
-
-  if (
-    form instanceof HTMLFormElement &&
-    success instanceof HTMLElement &&
-    successBody instanceof HTMLElement &&
-    emailError instanceof HTMLElement
-  ) {
-    const emailField = form.elements.namedItem("email");
-
-    const showError = (show: boolean) => {
-      emailError.classList.toggle("hidden", !show);
-      emailError.classList.toggle("flex", show);
-      if (emailField instanceof HTMLInputElement) {
-        emailField.setAttribute("aria-invalid", show ? "true" : "false");
-        emailField.classList.toggle("border-coral", show);
+  if (form instanceof HTMLFormElement) {
+    form.addEventListener("submit", () => {
+      const field = form.elements.namedItem("fill_ms");
+      if (field instanceof HTMLInputElement) {
+        field.value = String(Math.round(performance.now() - started));
       }
-    };
-
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const data = new FormData(form);
-      const payload = normalizeContactPayload({
-        name: data.get("name") as string,
-        email: data.get("email") as string,
-        organisation: data.get("organisation") as string,
-        topic: data.get("topic") as string,
-        message: data.get("message") as string,
-      });
-
-      if (!isReplyableEmail(payload.email)) {
-        showError(true);
-        if (emailField instanceof HTMLInputElement) emailField.focus();
-        return;
-      }
-      showError(false);
-
-      const { address } = contactRoute(payload);
-      window.location.href = contactMailtoUrl(payload);
-
-      form.classList.add("hidden");
-      success.classList.remove("hidden");
-      successBody.textContent =
-        `Your email app should now be open with a message to ${address}. ` +
-        `Send it and we will reply. If nothing opened, email ${address} directly.`;
-      success.setAttribute("tabindex", "-1");
-      success.focus();
     });
-
-    if (emailField instanceof HTMLInputElement) {
-      emailField.addEventListener("input", () => showError(false));
-    }
   }
 </script>

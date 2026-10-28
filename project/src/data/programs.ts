@@ -116,7 +116,6 @@ export const programs: Program[] = [
           "Support for reducing exposure where stopping outright is not the immediate goal, without presenting reduction as a safe endpoint.",
       },
     ],
-    product: { name: "BreatheFree", href: "/breathefree/" },
   },
   {
     id: "social-media",

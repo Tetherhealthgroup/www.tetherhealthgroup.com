@@ -2,35 +2,118 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { htmlFiles, readPage } from "../helpers/dist.js";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { htmlFiles, projectRoot, readPage } from "../helpers/dist.js";
 
-const { contact, mailboxDirectory, primaryNav, footerNav } =
-  await import("../../src/data/site.ts");
-const { contactTopics } = await import("../../src/lib/contact.ts");
+const { primaryNav, footerNav } = await import("../../src/data/site.ts");
 
-test("the contact page lists every role mailbox, each as a mailto link", () => {
-  const html = readPage("contact/index.html");
-  assert.deepEqual(
-    mailboxDirectory.map((m) => m.mailbox).sort(),
-    Object.keys(contact).sort(),
-    "the mailbox directory and the contact addresses list different mailboxes",
+const contactHtml = () => readPage("contact/index.html");
+const mainOf = (html) => html.match(/<main[\s\S]*?<\/main>/)?.[0] ?? "";
+const lib = readFileSync(
+  join(projectRoot, "public", "api", "beta-lib.inc"),
+  "utf8",
+);
+
+test("the contact page is one form that POSTs to the handler, with no mailbox list", () => {
+  const main = mainOf(contactHtml());
+  assert.ok(main, "contact page has no <main>");
+  const form = main.match(/<form\b[^>]*id="contact-form"[^>]*>/)?.[0];
+  assert.ok(form, "no contact form");
+  assert.match(form, /method="post"/);
+  assert.match(form, /action="\/api\/contact\.php"/);
+  assert.doesNotMatch(form, /novalidate/);
+  assert.doesNotMatch(
+    main,
+    /mailto:/,
+    "the contact page still lists mailboxes",
   );
-  for (const address of Object.values(contact))
-    assert.ok(
-      html.includes(`href="mailto:${address}`),
-      `contact lacks ${address}`,
-    );
+  assert.equal(
+    (contactHtml().match(/<form\b/g) ?? []).length,
+    1,
+    "exactly one form",
+  );
 });
 
-test("the contact form offers every topic and asks for no health information", () => {
-  const html = readPage("contact/index.html");
-  assert.ok(html.includes('id="contact-form"'), "no contact form");
-  for (const topic of contactTopics)
-    assert.ok(
-      html.includes(`value="${topic.value}"`),
-      `no ${topic.value} option`,
+test("the topic dropdown offers exactly the handler's five topics, with no admin", () => {
+  const select = contactHtml().match(
+    /<select\b[^>]*name="topic"[^>]*>([\s\S]*?)<\/select>/,
+  );
+  assert.ok(select, "no topic select");
+  assert.match(select[0], /\srequired/);
+  const options = [
+    ...select[1].matchAll(/<option\b[^>]*value="([^"]*)"[^>]*>([^<]*)</g),
+  ];
+  assert.equal(options[0][1], "", "a placeholder comes first");
+  assert.deepEqual(
+    options.slice(1).map((o) => [o[1], o[2].replace("&amp;", "&")]),
+    [
+      ["support", "Support"],
+      ["sales_partnerships", "Sales & partnerships"],
+      ["careers", "Careers"],
+      ["privacy", "Privacy"],
+      ["finance", "Finance"],
+    ],
+  );
+  const block =
+    lib.match(/const BETA_CONTACT_TOPICS = \[([\s\S]*?)\];/)?.[1] ?? "";
+  assert.deepEqual(
+    [...block.matchAll(/'([a-z_]+)' =>/g)].map((m) => m[1]),
+    options.slice(1).map((o) => o[1]),
+    "the form and the handler allowlist differ",
+  );
+  assert.doesNotMatch(contactHtml(), /admin/i);
+});
+
+test("required fields, caps, consent line, honeypot and fill time are in the markup", () => {
+  const html = contactHtml();
+  const tag = (name) =>
+    html.match(
+      new RegExp(`<(?:input|textarea)\\b[^>]*name="${name}"[^>]*>`),
+    )?.[0] ?? "";
+  for (const name of ["first_name", "email", "message"])
+    assert.match(tag(name), /\srequired/, `${name} is not required`);
+  assert.doesNotMatch(
+    tag("organisation"),
+    /\srequired/,
+    "organisation is optional",
+  );
+  assert.match(tag("email"), /type="email"/);
+  assert.match(tag("message"), /maxlength="2000"/);
+  assert.match(html, /We'll use this only to reply\./);
+  assert.match(
+    html,
+    /<div class="hidden" aria-hidden="true">[\s\S]*?name="contact_ref"/,
+  );
+  assert.match(tag("fill_ms"), /type="hidden"/);
+});
+
+test("every error the handler redirects to has a message shown by :target", () => {
+  const handler = readFileSync(
+    join(projectRoot, "public", "api", "contact.php"),
+    "utf8",
+  );
+  const codes = new Set(
+    [...handler.matchAll(/contact_fail\('([a-z]+)'\)/g)].map((m) => m[1]),
+  );
+  assert.ok(codes.size >= 4);
+  for (const code of codes) {
+    const el = contactHtml().match(
+      new RegExp(`<p\\b[^>]*id="error-${code}"[^>]*>`),
     );
-  assert.ok(html.includes("Please do not include medical details."));
+    assert.ok(el, `no #error-${code} on /contact/`);
+    assert.match(el[0], /target:flex/);
+  }
+  assert.match(
+    contactHtml(),
+    /Sorry, the form is unavailable\. Please email support@tetherhealthgroup\.com\./,
+  );
+});
+
+test("the thank-you page exists, is not indexed, and sends no copy", () => {
+  const html = readPage("contact/thanks/index.html");
+  assert.match(html, /<meta name="robots" content="[^"]*noindex/);
+  assert.match(html, /We do not send an automatic copy of your message\./);
 });
 
 test("no placeholder telephone number or postal address is published", () => {
@@ -51,7 +134,9 @@ test("no placeholder telephone number or postal address is published", () => {
 
 test("the careers page sends applications to the careers mailbox", () => {
   assert.ok(
-    readPage("careers/index.html").includes(`href="mailto:${contact.careers}`),
+    readPage("careers/index.html").includes(
+      'href="mailto:careers@tetherhealthgroup.com',
+    ),
   );
 });
 

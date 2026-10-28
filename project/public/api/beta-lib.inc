@@ -43,6 +43,19 @@ const BETA_SOURCES = [
     'other' => 'Other',
 ];
 
+/** Contact form topics: submitted value => label shown in the subject. */
+const BETA_CONTACT_TOPICS = [
+    'support' => 'Support',
+    'sales_partnerships' => 'Sales & partnerships',
+    'careers' => 'Careers',
+    'privacy' => 'Privacy',
+    'finance' => 'Finance',
+];
+
+/** Contact form caps: bytes for single-line fields, characters for the message. */
+const BETA_MAX_ORGANISATION = 120;
+const BETA_MAX_MESSAGE_CHARS = 2000;
+
 const BETA_COLUMNS = [
     'submitted_at_utc', 'first_name', 'email', 'phone', 'heard_from',
     'confirmed_18_plus', 'consent_beta_email', 'status', 'confirmed_at_utc',
@@ -170,6 +183,18 @@ function beta_load_config(): ?array
             return null;
         }
     }
+    // Contact form routes (topic => mailbox). Optional here; the contact
+    // handler fails closed when the route it needs is absent or invalid.
+    $routes = [];
+    $rawRoutes = $config['contact_routes'] ?? [];
+    if (!is_array($rawRoutes)) {
+        return null;
+    }
+    foreach ($rawRoutes as $topic => $address) {
+        if (is_string($topic) && array_key_exists($topic, BETA_CONTACT_TOPICS) && beta_is_email($address)) {
+            $routes[$topic] = $address;
+        }
+    }
     $max = $config['rate_limit_max'] ?? 8;
     $window = $config['rate_limit_window'] ?? 3600;
     if (!is_int($max) || $max < 1 || !is_int($window) || $window < 1) {
@@ -182,6 +207,7 @@ function beta_load_config(): ?array
         'from' => $from,
         'rate_limit_max' => $max,
         'rate_limit_window' => $window,
+        'contact_routes' => $routes,
     ];
 }
 
@@ -218,7 +244,7 @@ function beta_cleanup(array $config): bool
  * Returns true when this attempt is allowed, false when over the limit, and
  * null when the counter cannot be kept (the caller fails closed).
  */
-function beta_rate_limit(array $config): ?bool
+function beta_rate_limit(array $config, string $scope = 'tether-beta'): ?bool
 {
     $dir = $config['rate_limit_dir'];
     if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) {
@@ -226,7 +252,7 @@ function beta_rate_limit(array $config): ?bool
     }
     $now = time();
     $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
-    $file = $dir . '/' . hash('sha256', 'tether-beta|' . $ip) . '.rate';
+    $file = $dir . '/' . hash('sha256', $scope . '|' . $ip) . '.rate';
     $handle = @fopen($file, 'c+');
     if ($handle === false) {
         return null;
@@ -373,6 +399,14 @@ function beta_new_token(): array
 {
     $token = bin2hex(random_bytes(32));
     return [$token, hash('sha256', $token)];
+}
+
+/** A header value made safe for any UTF-8: RFC 2047 base64 when not ASCII. */
+function beta_header_text(string $text): string
+{
+    return preg_match('/^[\x20-\x7E]*$/', $text) === 1
+        ? $text
+        : '=?UTF-8?B?' . base64_encode($text) . '?=';
 }
 
 /** Plain-text mail with fixed headers and no Reply-To. */

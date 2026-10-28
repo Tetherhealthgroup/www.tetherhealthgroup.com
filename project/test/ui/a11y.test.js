@@ -170,7 +170,12 @@ test("every content image has a non-empty text alternative", () => {
     for (const problem of imageProblems(html))
       problems.push(`${page}: ${problem}`);
   }
-  assert.ok(images > 0, "no images found in the build");
+  // The site shipped no <img> after the app screens were removed (WEB-914),
+  // so prove the check still bites on a bad image instead of requiring one.
+  assert.ok(
+    imageProblems('<img src="/x.png">').length > 0,
+    "the alt-text check no longer catches a missing alt",
+  );
   assert.deepEqual(problems, []);
 });
 

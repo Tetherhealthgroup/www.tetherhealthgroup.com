@@ -1,0 +1,96 @@
+// Security — static checks on the contact handler, public/api/contact.php.
+// Runs without PHP; the behaviour is exercised over HTTP in
+// test/functional/contact-php.test.js when an interpreter exists.
+
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { projectRoot } from "../helpers/dist.js";
+
+const read = (name) =>
+  readFileSync(join(projectRoot, "public", "api", name), "utf8")
+    .replace(/^\s*\/\*[\s\S]*?\*\//gm, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+const handler = read("contact.php");
+const lib = read("beta-lib.inc");
+
+test("POST only, through the shared guards", () => {
+  assert.match(handler, /require __DIR__ \. '\/beta-lib\.inc';/);
+  assert.match(handler, /\$_SERVER\['REQUEST_METHOD'\][^;]*!== 'POST'/);
+  assert.match(handler, /header\('Allow: POST'\)/);
+  assert.match(handler, /beta_rate_limit\(\$config, 'tether-contact'\)/);
+  assert.match(handler, /\$_POST\['contact_ref'\]/);
+  assert.match(handler, /\(int\) \$fill < BETA_MIN_FILL_MS/);
+  for (const name of [
+    "topic",
+    "first_name",
+    "email",
+    "organisation",
+    "fill_ms",
+  ])
+    assert.match(
+      handler,
+      new RegExp(`beta_field\\(\\$_POST, '${name}'\\)`),
+      name,
+    );
+  assert.match(handler, /array_key_exists\(\$topic, BETA_CONTACT_TOPICS\)/);
+  assert.match(handler, /beta_is_email\(\$email\)/);
+  assert.match(handler, /<= BETA_MAX_MESSAGE_CHARS/);
+  assert.match(
+    handler,
+    /\[\\x00-\\x09\\x0B-\\x1F\\x7F\]/,
+    "message control characters",
+  );
+});
+
+test("the topic allowlist is the five agreed topics, with no admin", () => {
+  const block =
+    lib.match(/const BETA_CONTACT_TOPICS = \[([\s\S]*?)\];/)?.[1] ?? "";
+  const keys = [...block.matchAll(/'([a-z_]+)' =>/g)].map((m) => m[1]);
+  assert.deepEqual(keys, [
+    "support",
+    "sales_partnerships",
+    "careers",
+    "privacy",
+    "finance",
+  ]);
+  assert.doesNotMatch(lib + handler, /admin/i);
+});
+
+test("the mailbox comes only from the private config, and fails closed", () => {
+  assert.match(
+    handler,
+    /\$to = \$config\['contact_routes'\]\[\$topic\] \?\? null;/,
+  );
+  assert.match(
+    handler,
+    /if \(\$to === null\) \{[\s\S]*?contact_fail\('unavailable'\);/,
+  );
+  assert.doesNotMatch(
+    handler,
+    /@tetherhealthgroup\.com/,
+    "no address in the handler",
+  );
+});
+
+test("one email to the team: fixed headers, no Reply-To, nothing to the visitor, nothing stored", () => {
+  const sends = [...handler.matchAll(/\bbeta_mail\(([^,]+),/g)].map((m) =>
+    m[1].trim(),
+  );
+  assert.deepEqual(
+    sends,
+    ["$to"],
+    "the handler must send exactly one email, to the route",
+  );
+  assert.doesNotMatch(handler, /\bmail\(/);
+  assert.doesNotMatch(handler + lib, /Reply-To/i);
+  assert.match(
+    handler,
+    /beta_header_text\('\[Contact · ' \. \$label \. '\]'\)/,
+  );
+  assert.doesNotMatch(
+    handler,
+    /fopen|file_put_contents|fputcsv|beta_with_rows|beta_store/,
+  );
+});

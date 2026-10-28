@@ -1,0 +1,175 @@
+// Acceptance — the landing page presents all eleven programs equally and
+// says what the app does with doctors and health records (WEB-914).
+
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { htmlFiles, readPage } from "../helpers/dist.js";
+
+const { programs } = await import("../../src/data/programs.ts");
+
+const visible = (html) =>
+  html
+    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&#39;|&#x27;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ");
+const home = () => readPage("index.html");
+const section = (id) =>
+  home().match(new RegExp(`<section[^>]*id="${id}"[\\s\\S]*?</section>`))?.[0];
+
+test("home does not single out BreatheFree", () => {
+  const text = visible(home());
+  for (const phrase of [
+    "Meet BreatheFree",
+    "Explore BreatheFree",
+    "BreatheFree spotlight",
+    "starting with BreatheFree",
+  ])
+    assert.ok(!text.includes(phrase), `home still says "${phrase}"`);
+  const main = home().match(/<main[\s\S]*?<\/main>/)?.[0] ?? "";
+  assert.ok(main, "home has no <main>");
+  assert.doesNotMatch(
+    main,
+    /<a\b[^>]*href="\/breathefree\/(?:tour|how-it-works)\/"/,
+    "home links the BreatheFree tour or walkthrough",
+  );
+});
+
+test("the hero's two calls to action are early access and all programs", () => {
+  assert.match(home(), /<a\b[^>]*href="\/beta\/"[^>]*>\s*Get early access/);
+  assert.match(
+    home(),
+    /<a\b[^>]*href="\/programs\/"[^>]*>\s*See all 11 programs/,
+  );
+});
+
+test("all eleven programs render on home, in the app's order, presented alike", () => {
+  const grid = section("programs");
+  assert.ok(grid, "no #programs section");
+  const names = [...grid.matchAll(/<h3[^>]*>\s*([^<]+?)\s*<\/h3>/g)].map(
+    (m) => m[1],
+  );
+  assert.equal(programs.length, 11);
+  assert.deepEqual(
+    names,
+    programs.map((p) => p.name),
+  );
+  const links = [
+    ...grid.matchAll(
+      /<a href="([^"]+)"[^>]*>\s*<span class="sr-only">([^<]+): <\/span>What it includes/g,
+    ),
+  ];
+  assert.equal(links.length, 11, "every card has the same single link");
+  for (const [i, program] of programs.entries())
+    assert.equal(
+      links[i][1],
+      program.product?.href ?? `/programs/${program.id}/`,
+    );
+  assert.doesNotMatch(grid, /Meet BreatheFree/);
+});
+
+test("the doctor section says what the app does, with no claim about clinicians using it", () => {
+  const s = section("doctor");
+  assert.ok(s, "no #doctor section");
+  const text = visible(s);
+  for (const phrase of [
+    "Work with your doctor",
+    "preview first",
+    "invite code",
+    "911 and 988",
+  ])
+    assert.ok(text.includes(phrase), `doctor section lacks "${phrase}"`);
+  assert.match(s, /href="\/for-clinicians\/"/);
+});
+
+test("the records section names the four sources and says they are coming", () => {
+  const s = section("records");
+  assert.ok(s, "no #records section");
+  const text = visible(s);
+  for (const source of [
+    "Epic MyChart",
+    "Medicare Blue Button",
+    "Apple Health",
+    "Health Connect",
+  ])
+    assert.ok(text.includes(source), `records section lacks ${source}`);
+  assert.match(text, /coming in the app/i);
+  assert.match(text, /It is not available today\./);
+  assert.match(text, /opt-in only/);
+  assert.match(text, /review every item before it is added/);
+  assert.match(text, /disconnect at any time/);
+  assert.match(s, /href="\/integrations\/"/);
+});
+
+test("home tells people how to get help and what to do in an emergency", () => {
+  const s = section("help");
+  assert.ok(s, "no #help section");
+  assert.match(s, /mailto:support@tetherhealthgroup\.com/);
+  assert.match(s, /href="\/support\/"/);
+  assert.match(s, /href="tel:911"/);
+  assert.match(s, /href="tel:988"/);
+});
+
+test("no page claims to build with clinicians", () => {
+  const pattern =
+    /\b(?:building|build|built|working|work|designed)\s+(?:this\s+|it\s+)?with\s+clinicians\b/i;
+  for (const sample of [
+    "Building this with clinicians, not around them.",
+    "We build with clinicians.",
+  ])
+    assert.match(sample, pattern);
+  for (const rel of htmlFiles())
+    assert.doesNotMatch(
+      visible(readPage(rel)),
+      pattern,
+      `${rel} claims to build with clinicians`,
+    );
+});
+
+test("the programs list page presents all eleven alike, with no featured program", () => {
+  const html = readPage("programs/index.html");
+  const text = visible(html);
+  assert.ok(!text.includes("starting with BreatheFree"));
+  assert.doesNotMatch(html, /with BreatheFree to/);
+  for (const program of programs)
+    assert.ok(
+      text.includes(program.name),
+      `programs page lacks ${program.name}`,
+    );
+  assert.doesNotMatch(text, /Meet BreatheFree/);
+});
+
+test("the support page lists 988 beside 911", () => {
+  const html = readPage("support/index.html");
+  assert.match(html, /href="tel:911"/);
+  assert.match(html, /href="tel:988"/);
+  assert.match(
+    visible(html),
+    /Thoughts of harming yourself\? 988 Call or text 988\. Emergency: 911\./,
+  );
+});
+
+// The app has no share-link feature and has shipped English only, so the site
+// claims neither, anywhere. The Spanish-language quitline is a third-party
+// service, not an app feature, and is the one exempt mention.
+const SPANISH_QUITLINE = /Quitline · Español|Español 1-855-D[^ ]*/g;
+
+test("no page claims a share link or a Spanish version of the app", () => {
+  const shareLink =
+    /single-use link|read-only link|share(?:able)? link|expiring link/i;
+  const spanish = /\bSpanish\b|\bespañol\b|\bbilingual\b/i;
+  for (const sample of [
+    "Share a read-only view through a single-use link that expires",
+    "a choice of English or Spanish",
+  ])
+    assert.ok(
+      shareLink.test(sample) || spanish.test(sample),
+      `not caught: ${sample}`,
+    );
+  for (const rel of htmlFiles()) {
+    const text = visible(readPage(rel)).replace(SPANISH_QUITLINE, "");
+    assert.doesNotMatch(text, shareLink, `${rel} claims a share link`);
+    assert.doesNotMatch(text, spanish, `${rel} claims Spanish`);
+  }
+});

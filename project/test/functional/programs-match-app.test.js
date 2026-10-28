@@ -1,12 +1,15 @@
 // Functional — the website's programs match the Tether Health app's programs.
 //
-// test/fixtures/app-programs.json is a byte-for-byte copy of the app's
-// tether_ui/spec/programs.json, and test/fixtures/app-program-tokens.json is
+// test/fixtures/app-programs.json holds, in the app's order, only the fields
+// of the app's tether_ui/spec/programs.json that this site shows (id, name,
+// area, archetype, colour, status, tagline): never its screen lists, flows or
+// other internal structure, because this repository is public.
+// test/fixtures/app-program-tokens.json is
 // the "program" block of the app's tether_ui/design/tokens.json, both taken
 // from the Tether-Health repository at commit 274dd69. When the app's program
-// list changes, replace the fixtures with the new files and update
-// src/data/programs.ts in the same change; these tests then say exactly which
-// field drifted.
+// list changes, regenerate the fixtures from the new files, keeping only those
+// fields, and update src/data/programs.ts in the same change; these tests then
+// say exactly which field drifted.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -30,6 +33,33 @@ const pageText = (rel) =>
     .replace(/&#39;|&#x27;/g, "'")
     .replace(/&quot;/g, '"')
     .replace(/\s+/g, " ");
+
+test("the pinned app program list carries only the fields the site shows", () => {
+  const allowed = [
+    "archetype",
+    "area",
+    "color",
+    "id",
+    "name",
+    "status",
+    "tagline",
+  ];
+  for (const app of appPrograms)
+    assert.deepEqual(
+      Object.keys(app).sort(),
+      allowed,
+      `${app.id} has extra fields`,
+    );
+  const raw = readFileSync(
+    join(projectRoot, "test/fixtures/app-programs.json"),
+    "utf8",
+  );
+  assert.doesNotMatch(
+    raw,
+    /"screens"|"flows?"|\bbf_\w+/,
+    "internal app structure in the fixture",
+  );
+});
 
 test("the pinned app program list has eleven programs", () => {
   assert.equal(appPrograms.length, 11);

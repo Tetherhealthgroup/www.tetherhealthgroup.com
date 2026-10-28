@@ -5,7 +5,6 @@ import Section from "../components/Section.astro";
 import Button from "../components/Button.astro";
 import Card from "../components/Card.astro";
 import Icon from "../components/Icon.astro";
-import PhoneFrame from "../components/PhoneFrame.astro";
 import { contact } from "../data/site";
 import SupportEmail from "../components/SupportEmail.astro";
 
@@ -48,9 +47,6 @@ const boundaries = [
         arrow
       >
         Talk to us about clinical input
-      </Button>
-      <Button href="/breathefree/tour/" variant="secondary">
-        Review every screen
       </Button>
     </div>
   </PageHero>
@@ -102,7 +98,7 @@ const boundaries = [
 
   <!-- Between visits -->
   <Section tone="paper" width="wide">
-    <div class="grid items-center gap-16 lg:grid-cols-[1fr_auto]">
+    <div class="grid items-center gap-16">
       <div>
         <p class="eyebrow mb-5">Between visits</p>
         <h2 class="text-4xl">What your patient actually gets.</h2>
@@ -113,7 +109,7 @@ const boundaries = [
               {
                 icon: "wave" as const,
                 title: "A tool for the craving itself",
-                body: "Rate intensity on a 1–10 scale, receive one recommended coping tool matched to the trigger and to what has worked before, run it, then recheck. One-handed, no typing.",
+                body: "Short, guided help for the moment a craving hits. One-handed, no typing.",
               },
               {
                 icon: "calendar" as const,
@@ -128,7 +124,7 @@ const boundaries = [
               {
                 icon: "learn" as const,
                 title: "Plain-language education, pending clinical review",
-                body: "Short lessons on cravings, withdrawal, sleep, medicines and support, designed to be offered in English and Spanish, with audio and transcripts.",
+                body: "Short lessons on cravings, withdrawal, sleep, medicines and support, designed to be offered in English, with audio and transcripts.",
               },
             ].map((item) => (
               <li class="flex items-start gap-4">
@@ -147,11 +143,6 @@ const boundaries = [
             ))
           }
         </ul>
-      </div>
-
-      <div class="mx-auto flex items-end gap-6">
-        <PhoneFrame screen={24} width={224} class="hidden xl:flex" />
-        <PhoneFrame screen={18} width={252} />
       </div>
     </div>
   </Section>

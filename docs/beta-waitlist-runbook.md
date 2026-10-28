@@ -63,6 +63,13 @@ return [
     'from' => 'support@tetherhealthgroup.com',
     'rate_limit_max' => 8,
     'rate_limit_window' => 3600,
+    'contact_routes' => [
+        'support' => 'support@tetherhealthgroup.com',
+        'sales_partnerships' => 'partnerships@tetherhealthgroup.com',
+        'careers' => 'careers@tetherhealthgroup.com',
+        'privacy' => 'privacy@tetherhealthgroup.com',
+        'finance' => 'finance@tetherhealthgroup.com',
+    ],
 ];
 ```
 
@@ -222,3 +229,44 @@ curl -sI https://www.tetherhealthgroup.com/api/beta-signup.php           # 405
 curl -sI https://www.tetherhealthgroup.com/api/beta-lib.inc              # 403
 curl -sI https://www.tetherhealthgroup.com/beta/                          # 200
 ```
+
+## 6. Contact form routing
+
+`/contact/` has one form with a required topic: Support, Sales &
+partnerships, Careers, Privacy or Finance. It POSTs to `/api/contact.php`,
+which sends **one** plain-text email to the mailbox for that topic and
+redirects to `/contact/thanks/`. The mailboxes are set only in the private
+config; the page never shows them.
+
+- From: the config's `from`. No Reply-To: reply to the visitor's address,
+  which is in the body.
+- Subject: `[Contact · <Topic>]`, nothing the visitor typed.
+- Nothing is stored, and the visitor is not emailed (an automatic copy would
+  repeat what they typed to any address they enter).
+- Same guards as the beta form: POST only, length caps (message up to 2,000
+  characters), control characters refused, honeypot, minimum fill time, and a
+  per-IP limit with its own counter in `beta-rate-limit`.
+- If the config is missing, or the chosen topic has no valid route, the form
+  says "Sorry, the form is unavailable; email support@tetherhealthgroup.com"
+  and sends nothing.
+
+**Add this to the server config** (cPanel → File Manager → Home →
+`tether-private` → `beta-config.php` → Edit), inside the `return [ … ];`,
+for example after `'rate_limit_window' => 3600,`:
+
+```php
+    'contact_routes' => [
+        'support' => 'support@tetherhealthgroup.com',
+        'sales_partnerships' => 'partnerships@tetherhealthgroup.com',
+        'careers' => 'careers@tetherhealthgroup.com',
+        'privacy' => 'privacy@tetherhealthgroup.com',
+        'finance' => 'finance@tetherhealthgroup.com',
+    ],
+```
+
+**Test it** after deploying: send one message per topic from `/contact/`
+using a mailbox you control as the visitor email, and check each arrives at
+its team mailbox with the subject `[Contact · <Topic>]` and no Reply-To.
+`curl -sI https://www.tetherhealthgroup.com/api/contact.php` should answer
+405.
+

@@ -224,7 +224,7 @@ input[aria-invalid="true"] {
 /* ---------------------------------------------------------------------------
    Motion — every animation here is opt-out via prefers-reduced-motion.
    The app states "Reduced motion follows your phone setting"
-   (design/approved/screen-19-active-craving-rescue-iphone.svg); the site
+   (the approved app design); the site
    honours the same contract.
 --------------------------------------------------------------------------- */
 

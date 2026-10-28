@@ -3,8 +3,7 @@
 Marketing and company website for **Tether Health LLC** (Tether Health Group).
 
 The site presents the company, the eleven programs of the Tether Health app,
-its featured program — **BreatheFree**, for quitting smoking — and the
-health-record integrations it is building (FHIR, SMART on FHIR, the CMS Blue
+presented alike, and the health-record integrations it is building (FHIR, SMART on FHIR, the CMS Blue
 Button API and Epic's FHIR APIs).
 
 Since 2026-10-27 the site is presented as a finished product, at the owner's
@@ -94,14 +93,12 @@ project/
   src/
     lib/
       waitlist.ts      Address checking and mailto composition (pure, tested)
-      contact.ts       Contact-form topic routing and mailto (pure, tested)
     data/
       site.ts          Identity, navigation, mailboxes, quitlines
       programs.ts       The 11 programs (app-pinned fields + website copy)
       integrations.ts   FHIR / Blue Button / Epic / HIPAA / FDA wording rules
-      screens.ts        The 28-screen BreatheFree catalog + artwork resolver
     components/         Logo, TetherLogo, Button, Card, Icon, Section,
-                        PageHero, PhoneFrame, ProgramCard, SupportEmail,
+                        PageHero, ProgramCard, SupportEmail,
                         WaitlistForm, ContactForm, BetaForm, BetaCta,
                         Header, Footer
     layouts/
@@ -115,7 +112,6 @@ project/
 ### Routes
 
 `/` · `/programs/` · `/programs/<area>/` (eleven, generated) · `/services/` ·
-`/breathefree/` · `/breathefree/how-it-works/` · `/breathefree/tour/` ·
 `/integrations/` · `/for-clinicians/` · `/about/` · `/careers/` ·
 `/contact/` · `/support/` · `/privacy/` · `/app-privacy/` ·
 `/delete-account/` · `/terms/` · `/security/` · `/accessibility/` ·
@@ -166,8 +162,9 @@ with `2.2/12 = 0.183em` tracking, and a 14px control radius, all taken from
 
 **Do not change a colour here without changing it in the app first.**
 
-The 28 screenshots are the application's own approved artwork, copied from
-`assets/screens/`. The site never redraws an app screen.
+The site publishes no app screens or screen walkthroughs. `/breathefree/`,
+`/breathefree/how-it-works/` and `/breathefree/tour/` were removed (WEB-914)
+and 301 to `/programs/tobacco/`.
 
 ## The waitlist form
 
@@ -395,9 +392,9 @@ Remote**, then **Deploy HEAD Commit**.
 
 ### The CSP pins hashes, and they move
 
-`script-src` allows exactly three `sha256-` hashes: the JSON-LD block, the
-mobile-menu script and the beta form's fill-time script. The early-access and contact form scripts share a module, so they ship
-as files under `/_astro/`, which `'self'` covers. Edit any of those and the
+`script-src` allows exactly five `sha256-` hashes: the JSON-LD block, the
+mobile-menu script, the beta and contact forms' fill-time scripts, and the
+early-access form's script. Edit any of those and the
 browser silently refuses to run it — the menu stops opening, the form starts
 reloading the page. `npm run test:smoke` recomputes the hashes from the build
 and fails in both directions: a script the policy does not allow, and a hash

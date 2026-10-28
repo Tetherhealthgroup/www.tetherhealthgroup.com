@@ -200,6 +200,11 @@ before(async () => {
   server = spawn(
     PHP,
     [
+      // The tests rewrite the config between requests. PHP's built-in server
+      // runs OPcache (opcache.enable, not enable_cli), whose timestamp check
+      // can serve the previous config for up to revalidate_freq seconds.
+      "-d",
+      "opcache.enable=0",
       "-d",
       `sendmail_path=${sendmail}`,
       "-d",

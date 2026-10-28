@@ -105,8 +105,7 @@ test("every image declares its own size, so nothing reflows on load", () => {
 });
 
 test("offscreen images are deferred and decoded off the main thread", () => {
-  // The screen tour renders 28 phone screenshots. If they all loaded eagerly
-  // the page would fetch every one before settling.
+  // A page with many images must not fetch every one before settling.
   const bad = [];
   for (const page of htmlFiles()) {
     const html = readFileSync(join(dist, page), "utf8");
@@ -132,8 +131,8 @@ const walk = (dir) =>
   }, 0);
 
 test("the deployed payload stays inside its budget", () => {
-  // Measured: 5.8 MB, almost entirely the 94 responsive screenshots.
-  // 12 MB catches the whole screen catalog being duplicated or shipped
+  // Measured 5.8 MB while the site shipped 94 responsive app screenshots
+  // (removed in WEB-914). 12 MB catches images being duplicated or shipped
   // un-optimised, which is the realistic regression. The program intro videos
   // under media/ have their own budget below and are not counted here.
   const bytes = walk(dist) - walk(join(dist, "media"));

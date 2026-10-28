@@ -103,7 +103,11 @@ function request(port, path) {
       },
       (res) => {
         res.resume();
-        resolve({ status: res.statusCode, type: res.headers["content-type"] });
+        resolve({
+          status: res.statusCode,
+          type: res.headers["content-type"],
+          location: res.headers.location,
+        });
       },
     );
     req.on("error", reject);
@@ -200,5 +204,29 @@ test(
   { skip },
   async () => {
     assert.equal((await get(WITH, "/api/beta-lib.inc")).status, 403);
+  },
+);
+
+test(
+  "the retired BreatheFree pages 301 to the program page",
+  { skip },
+  async () => {
+    for (const path of [
+      "/breathefree",
+      "/breathefree/",
+      "/breathefree/how-it-works",
+      "/breathefree/how-it-works/",
+      "/breathefree/tour",
+      "/breathefree/tour/",
+    ]) {
+      const res = await get(WITH, path);
+      assert.equal(res.status, 301, path);
+      assert.equal(
+        res.location,
+        "https://www.tetherhealthgroup.com/programs/tobacco/",
+        path,
+      );
+    }
+    assert.equal((await get(WITH, "/programs/tobacco/")).status, 200);
   },
 );

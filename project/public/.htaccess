@@ -64,6 +64,12 @@
   # exempted above and stays reachable.
   RewriteRule (^|/)\.git(/|$) - [F,L]
 
+  # Retired pages (WEB-914). /breathefree/, its walkthrough and its screen
+  # tour showed the app's full screen sequence; they are gone, and old links
+  # and search results land on the program's own page instead of a 404. With
+  # or without the trailing slash; straight to the canonical https host.
+  RewriteRule ^breathefree(?:/(?:how-it-works|tour))?/?$ https://www.tetherhealthgroup.com/programs/tobacco/ [R=301,L]
+
   # Force HTTPS. Both conditions are needed: %{HTTPS} is what a server that
   # terminates TLS itself sets, X-Forwarded-Proto is what one behind a proxy
   # sets, and a redirect that reads only the first loops forever behind the
@@ -98,9 +104,9 @@ ErrorDocument 404 /404.html
   # script, pixel or font is a policy violation rather than a silent success.
   #
   # The hashes are the site's own inline scripts: the JSON-LD block in
-  # Base.astro, the mobile-menu script in Header.astro, and the beta form's
-  # fill-time script in BetaForm.astro. The early-access and contact form scripts share a module,
-  # so Astro emits them as files under /_astro/ and 'self' covers them.
+  # Base.astro, the mobile-menu script in Header.astro, the beta form's and
+  # the contact form's fill-time scripts, and the early-access form's script
+  # in WaitlistForm.astro.
   # THEY CHANGE WHENEVER THOSE SCRIPTS CHANGE. `npm run test:smoke`
   # recomputes them from the build and fails if this list has drifted, so a
   # stale hash is caught before it silently breaks the menu or the form.
@@ -116,7 +122,7 @@ ErrorDocument 404 /404.html
   # connect-src is 'self' because the form has no endpoint by default. Setting
   # PUBLIC_WAITLIST_ENDPOINT means adding that origin here, or the browser
   # blocks the POST — see README.
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-Hx4KcxWxvOApu1HWaiZGf/8b1QUtoU8nzXJOBjljn7U=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-gdu2/aNZoTP1rDFzeFxVkgaCrN/Z0wHcN+2IXgIu9Nk='; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-eFQE4oGVWjqb6tI/eOYqb+vJD8Ks3TS+aOeN/fOahfg=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-gdu2/aNZoTP1rDFzeFxVkgaCrN/Z0wHcN+2IXgIu9Nk=' 'sha256-63n01SFGTutZHkD1UWiG42GwPbSxE+btioXIa7MRoPU=' 'sha256-SRIauFt3ncH+nyOx5iqeDPulb5Jl+iLxfYdqhU0qnkU='; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
 
   # HSTS — one year, and the ramp is finished.
   #
