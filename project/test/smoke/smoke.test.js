@@ -89,3 +89,12 @@ test("app-ads.txt is emitted at /app-ads.txt with the AdMob seller line", () => 
     "google.com, pub-6959814479889503, DIRECT, f08c47fec0942fa0\n",
   );
 });
+
+test("the deploy output carries the handler and both verification files", () => {
+  for (const rel of [
+    "api/beta-signup.php",
+    ".well-known/assetlinks.json",
+    "app-ads.txt",
+  ])
+    assert.ok(existsSync(join(dist, rel)), `dist/${rel} is missing`);
+});
