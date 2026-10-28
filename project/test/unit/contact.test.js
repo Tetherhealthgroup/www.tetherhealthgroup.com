@@ -23,7 +23,10 @@ test("every topic routes to a role mailbox defined in site data", () => {
   const addresses = new Set(Object.values(contact));
   for (const topic of contactTopics) {
     const { address } = contactRoute(
-      normalizeContactPayload({ email: "a@b.com", topic: topic.value }),
+      normalizeContactPayload({
+        email: "synthetic-user-01@example.test",
+        topic: topic.value,
+      }),
     );
     assert.ok(addresses.has(address), `${topic.value} -> ${address}`);
   }
@@ -36,7 +39,12 @@ test("topic values are unique", () => {
 
 test("specialist topics reach their specialist inbox", () => {
   const route = (topic) =>
-    contactRoute(normalizeContactPayload({ email: "a@b.com", topic })).address;
+    contactRoute(
+      normalizeContactPayload({
+        email: "synthetic-user-01@example.test",
+        topic,
+      }),
+    ).address;
   assert.equal(route("partnerships"), contact.partnerships);
   assert.equal(route("careers"), contact.careers);
   assert.equal(route("privacy"), contact.privacy);
@@ -51,11 +59,11 @@ test("an unknown or missing topic falls back to the default, not to nowhere", ()
 
 test("free-text fields are trimmed and optional ones say so when blank", () => {
   const payload = normalizeContactPayload({
-    email: "  a@b.com ",
+    email: "  synthetic-user-01@example.test ",
     name: "  ",
     organisation: "",
   });
-  assert.equal(payload.email, "a@b.com");
+  assert.equal(payload.email, "synthetic-user-01@example.test");
   const body = contactMessageBody(payload);
   assert.match(body, /^Name: \(not given\)$/m);
   assert.match(body, /^Organisation: \(not given\)$/m);
@@ -65,7 +73,7 @@ test("free-text fields are trimmed and optional ones say so when blank", () => {
 
 test("the mailto URL encodes the subject and body so nothing is cut short", () => {
   const payload = normalizeContactPayload({
-    email: "a@b.com",
+    email: "synthetic-user-01@example.test",
     topic: "partnerships",
     message: "Tom & Jerry + friends?",
   });
