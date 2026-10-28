@@ -139,12 +139,12 @@ export const programs: Program[] = [
     status: "proposed",
     icon: "clock",
     summary:
-      "ScrollFree is the Tether Health program for social media use. It starts from what you say about your own use, before asking for any screen-time permission, then turns that into goals that feel doable, a pause when the urge hits, and an easy way back after a long scroll.",
+      "ScrollFree is the Tether Health program for social media use. It starts from what you say about your own use, then turns that into goals that feel doable, a pause when the urge hits, and an easy way back after a long scroll.",
     services: [
       {
         name: "Self-report first",
         description:
-          "Starting from what a person tells it about their own use and triggers, with screen-time access optional rather than required.",
+          "Starting from what a person tells it about their own use and triggers.",
       },
       {
         name: "Minute goals and app-free windows",
@@ -164,7 +164,7 @@ export const programs: Program[] = [
       {
         name: "Unplug",
         description:
-          "Optional app limits and focus sessions that the person chooses to set up and can turn off.",
+          "Coming: optional app limits (needs Apple approval). Not part of the app yet.",
       },
     ],
   },

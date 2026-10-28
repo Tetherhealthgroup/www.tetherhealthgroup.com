@@ -14,7 +14,7 @@
 //
 // Sources: the narration and captions are `video.scenes` in
 // project/src/data/program-pages.ts, the screens are
-// project/src/assets/programs/<id>/<specId>.png, and the program name, area,
+// project/src/assets/programs/<id>/<role>.png, and the program name, area,
 // tagline and colour come from project/src/data/programs.ts. Change those, then
 // rerun this script, and commit the new media.
 //
@@ -604,7 +604,7 @@ function build(page) {
       project,
       "src/assets/programs",
       page.id,
-      `${screen.specId}.png`,
+      `${screen.role}.png`,
     );
     if (!existsSync(png)) throw new Error(`missing ${png}`);
     const out = join(work, `phone${i}.png`);

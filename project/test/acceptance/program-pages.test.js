@@ -10,7 +10,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync, statSync } from "node:fs";
+import { readFileSync, existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import {
   dist,
@@ -80,7 +80,7 @@ test("each program has three screen renders, home, action and recovery, on disk"
         projectRoot,
         "src/assets/programs",
         page.id,
-        `${screen.specId}.png`,
+        `${screen.role}.png`,
       );
       assert.ok(existsSync(png), `missing ${png}`);
       assert.ok(screen.alt.length >= 80, `${screen.specId}: alt is too short`);
@@ -96,7 +96,7 @@ test("the screens and their alt text use synthetic content only", () => {
     for (const screen of page.screens)
       assert.doesNotMatch(
         screen.alt,
-        /\b(?:Patel|Rosa|Epic|Example)\b/,
+        /\b(?:Patel|Rosa|Sam|Epic|Example)\b/,
         `${page.id}/${screen.specId}`,
       );
 });
@@ -312,4 +312,29 @@ test("the caption tracks name a platform only in the P-113 end card", () => {
 
 test("the content security policy allows same-origin media and nothing wider", () => {
   assert.match(cspLine(), /(?:^|; )media-src 'self';/);
+});
+
+test("no built file name or page names an app screen id", () => {
+  // The renders are stored as home/action/recovery.png so the app's internal
+  // screen ids (for example be_diary) never reach a public URL or page.
+  const ids = programPages.flatMap((p) => p.screens.map((s) => s.specId));
+  const idPattern = new RegExp(
+    `(?:^|[^a-z])(?:${ids.join("|")}|(?:bf|sf|ca|hw|st|re|nu|sd|ea|ck|be|rescue)_[a-z]+)(?:[^a-z]|$)`,
+  );
+  const walk = (dir, prefix = "") =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory()
+        ? walk(join(dir, e.name), `${prefix}${e.name}/`)
+        : [`${prefix}${e.name}`],
+    );
+  const files = walk(dist);
+  assert.ok(files.length > 0);
+  assert.deepEqual(
+    files.filter((f) => idPattern.test(f)),
+    [],
+    "built files named after app screen ids",
+  );
+  for (const rel of htmlFiles())
+    for (const id of ids)
+      assert.ok(!readPage(rel).includes(id), `${rel} contains ${id}`);
 });

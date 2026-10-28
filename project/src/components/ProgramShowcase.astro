@@ -27,11 +27,11 @@ const renders = import.meta.glob<{ default: ImageMetadata }>(
   { eager: true },
 );
 
-function renderFor(specId: string): ImageMetadata {
-  const module = renders[`../assets/programs/${page.id}/${specId}.png`];
+function renderFor(role: string): ImageMetadata {
+  const module = renders[`../assets/programs/${page.id}/${role}.png`];
   if (!module)
     throw new Error(
-      `Missing src/assets/programs/${page.id}/${specId}.png for ${name}`,
+      `Missing src/assets/programs/${page.id}/${role}.png for ${name}`,
     );
   return module.default;
 }
@@ -99,7 +99,7 @@ const transcriptId = `transcript-${page.id}`;
           <figure class="flex flex-col items-center">
             <div class="w-full rounded-[22px] bg-teal-deep p-1.5 shadow-[var(--shadow-card)]">
               <Image
-                src={renderFor(screen.specId)}
+                src={renderFor(screen.role)}
                 alt={screen.alt}
                 width={180}
                 densities={[1, 2, 3]}

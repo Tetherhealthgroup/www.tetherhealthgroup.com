@@ -9,9 +9,12 @@
  *   (Tether-Health, specs-and-design/tether_ui/flutter at commit 417ee8c) in
  *   preview mode at 390 x 844 pt, 1.5x. The design's example person and clinic
  *   names were replaced with neutral synthetic text for these renders, and
- *   the health-record row on the Heartwise home was hidden. `specId` is the
- *   screen id in tether_ui/spec/screens/. The PNGs are in
- *   src/assets/programs/<id>/<specId>.png.
+ *   the health-record row on the Heartwise home was hidden. Elements behind
+ *   a feature switch that is off in store builds (lib/config/
+ *   feature_switches.dart: Unplug, records import, lesson drafts and others)
+ *   are left out, as the store app leaves them out. `specId` records which
+ *   design screen was rendered; the PNGs are stored under neutral names,
+ *   src/assets/programs/<id>/<role>.png, so no built asset carries it.
  * - `helpsWith` and `recovery`: tether_ui/spec (flows.json, screens/*.json)
  *   at the same commit. Step names are the app's own labels. Nothing here may
  *   describe a feature the spec does not have.
@@ -209,7 +212,7 @@ export const programPages: ProgramPage[] = [
         specId: "sf_home",
         role: "home",
         title: "ScrollFree home",
-        alt: "ScrollFree home screen. A dark card shows yesterday's time on social media against a 90-minute goal, followed by a coral Pause 60 button for the urge to scroll, an optional card to set up firmer limits, today's step (charge your phone outside the bedroom), and links to this week and to long-scroll recovery.",
+        alt: "ScrollFree home screen. A dark card shows yesterday's time on social media against a 90-minute goal, followed by a coral Pause 60 button for the urge to scroll, today's step (charge your phone outside the bedroom), and links to this week, long-scroll recovery, goal and windows, and the buddy.",
       },
       {
         specId: "sf_pause",
@@ -239,7 +242,7 @@ export const programPages: ProgramPage[] = [
       {
         name: "Self-report first",
         description:
-          "It starts from what you say about your own use and triggers. Screen Time access is optional.",
+          "It starts from what you say about your own use and what pulls you in.",
       },
       {
         name: "Goal and app-free windows",
@@ -255,11 +258,6 @@ export const programPages: ProgramPage[] = [
         name: "Buddy and weekly reflection",
         description:
           "An optional accountability buddy who sees only what you choose to send, and a weekly look back at how the week went.",
-      },
-      {
-        name: "Unplug",
-        description:
-          "Optional app limits and focus sessions you set up yourself and can turn off.",
       },
     ],
     recovery: {
@@ -614,7 +612,7 @@ export const programPages: ProgramPage[] = [
         specId: "re_home",
         role: "home",
         title: "Renew home",
-        alt: "Renew home screen. A dark card shows the latest eGFR value and notes that your clinician sets your next check. Below are today's reminders (a medicine reminder as entered from your clinician, and a water reminder only if fluids are not limited) and links to add lab results, lab history, check symptoms, and missed labs or a diet slip.",
+        alt: "Renew home screen. A dark card shows the latest eGFR value and notes that your clinician sets your next check. Below is today's checklist (medicine as entered from your clinician, and water only if fluids are not limited) and links to add lab results, lab history, check symptoms, and missed labs or a diet slip.",
       },
       {
         specId: "re_labs",
@@ -659,9 +657,9 @@ export const programPages: ProgramPage[] = [
           "Copy in lab results as printed and see them over time. Renew shows trends only, never grades; your clinician explains what the numbers mean.",
       },
       {
-        name: "Reminders",
+        name: "Daily checklist",
         description:
-          "Medicine reminders as entered from your clinician, and water reminders only if your clinician has not limited fluids.",
+          "A simple checklist for the day to tick off: medicine as entered from your clinician, and water only if your clinician has not limited fluids.",
       },
       {
         name: "Warning-symptom guidance",
@@ -698,7 +696,7 @@ export const programPages: ProgramPage[] = [
       scenes: [
         ["Renew is the Tether Health program for kidney and liver health."],
         [
-          "Home brings together your latest lab value and the reminders your clinician asked for.",
+          "Home brings together your latest lab value and a simple checklist for the day.",
         ],
         [
           "You copy in lab results exactly as printed, and see your trends over time.",
@@ -717,7 +715,7 @@ export const programPages: ProgramPage[] = [
         specId: "nu_home",
         role: "home",
         title: "Nourish home",
-        alt: "Nourish home screen. A card shows this week's habit, add a vegetable to dinner, on three of five nights, with a Done today button. Below are a tip that frozen vegetables count, a quick low-cost recipe, and links for when food feels hard, a busy week, the week 4 milestone, changing the habit, and a gentle restart.",
+        alt: "Nourish home screen. A card shows this week's habit, add a vegetable to dinner, on three of five nights, with a Done today button. Below are a tip that frozen vegetables count, and links for when food feels hard, a busy week, the week 4 milestone, changing the habit, and a gentle restart.",
       },
       {
         specId: "nu_habit",
@@ -799,9 +797,7 @@ export const programPages: ProgramPage[] = [
     video: {
       scenes: [
         ["Nourish is the Tether Health program for obesity and nutrition."],
-        [
-          "Home shows one small habit for this week, with a tip and a quick recipe.",
-        ],
+        ["Home shows one small habit for this week, marked done with one tap."],
         [
           "You pick one habit at a time. Weight tracking is off by default, and can stay off.",
         ],
@@ -921,7 +917,7 @@ export const programPages: ProgramPage[] = [
         specId: "ea_home",
         role: "home",
         title: "Ease home",
-        alt: "Ease home screen. A dark card offers a 30-second mood check-in with a Start button. Below are links to my safety plan, check-back, find a professional and having a hard week, a coral Help now card with grounding, your safety plan and crisis lines, a short lesson, and a crisis card for thoughts of harming yourself.",
+        alt: "Ease home screen. A dark card offers a 30-second mood check-in with a Start button. Below are links to my safety plan, check-back, find a professional and having a hard week, a coral Help now card with grounding, your safety plan and crisis lines, and a crisis card to call or text 988, or call 911.",
       },
       {
         specId: "ea_mood",
@@ -1064,14 +1060,14 @@ export const programPages: ProgramPage[] = [
           "For each item, the options there are, a note on cost, and the public guidance it comes from.",
       },
       {
-        name: "Mark done and reminders",
+        name: "Mark done",
         description:
-          "Record what you had and when, with an optional reminder for next time.",
+          "Record what you had and when, and note when you'd like your next check.",
       },
       {
         name: "Screening-day prep",
         description:
-          "A reminder of your next appointment, and what to expect on the day.",
+          "The next appointment you entered, and what to expect on the day.",
       },
     ],
     recovery: {
@@ -1105,7 +1101,9 @@ export const programPages: ProgramPage[] = [
         [
           "Your due list keeps common vaccines and screenings in one place, as general guidance to discuss with your clinician.",
         ],
-        ["When you have one, mark it done, and set a reminder for next time."],
+        [
+          "When you have one, mark it done, and note when you would like your next check.",
+        ],
         [
           "Behind on screenings? Many people are, and nothing on your list is lost.",
           "Pick one to start.",
@@ -1120,7 +1118,7 @@ export const programPages: ProgramPage[] = [
         specId: "be_home",
         role: "home",
         title: "Beacon home",
-        alt: "Beacon home screen on the lowering-risk journey, headed three steps that lower risk: quitting smoking with BreatheFree (active), a monthly skin self-check, and asking about genetic counseling if cancer runs in your family. Below are a card to open Checkup for screenings, and links to change the journey stage and program settings.",
+        alt: "Beacon home screen on the lowering-risk journey, headed three steps that lower risk, listing quitting smoking with BreatheFree (active) and asking about genetic counseling if cancer runs in your family. Below are a card to open Checkup for screenings, and links to change the journey stage and program settings.",
       },
       {
         specId: "be_diary",
@@ -1200,9 +1198,7 @@ export const programPages: ProgramPage[] = [
     video: {
       scenes: [
         ["Beacon is the Tether Health program for cancer."],
-        [
-          "Home follows the journey you choose. Here, three steps that lower risk.",
-        ],
+        ["Home follows the journey you choose. Here, steps that lower risk."],
         [
           "During treatment, a quick daily diary keeps track of how you feel, and says when to call your team.",
         ],
