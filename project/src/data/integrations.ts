@@ -27,30 +27,6 @@ export interface Integration {
   body: string;
 }
 
-/** The four-card summary on the home page. */
-export const integrationHighlights: Integration[] = [
-  {
-    icon: "globe",
-    title: "Open standards",
-    body: "HL7® FHIR® and SMART on FHIR, the standards US health records use to share data.",
-  },
-  {
-    icon: "shield",
-    title: "CMS Blue Button API",
-    body: "We are building the connection so people with Medicare can bring in their claims data, signing in with Medicare rather than with us.",
-  },
-  {
-    icon: "stethoscope",
-    title: "Epic FHIR APIs",
-    body: "We are building the connection so patients of health systems that use Epic can bring in their records through their own patient sign-in.",
-  },
-  {
-    icon: "lock",
-    title: "Opt-in, reviewed first",
-    body: "Coming in the app. Import stays off until you turn it on, and you review what came in before anything is added.",
-  },
-];
-
 /** The detailed cards on /integrations/. */
 export const integrations: Integration[] = [
   {

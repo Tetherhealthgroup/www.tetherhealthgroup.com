@@ -15,7 +15,7 @@ export const site = {
   tagline: "Care that meets people where they are.",
   // Feeds meta/og/twitter description and JSON-LD; changing it re-pins a CSP hash.
   description:
-    "Calm, private digital health tools. The Tether Health app brings eleven programs together, starting with BreatheFree for quitting smoking.",
+    "Calm, private digital health tools. The Tether Health app brings eleven programs together, from quitting smoking to healthy aging.",
 } as const;
 
 /**

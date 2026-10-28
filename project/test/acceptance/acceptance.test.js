@@ -208,6 +208,9 @@ const BETA_WORDING_PAGES = new Set([
   "security/index.html",
 ]);
 const BETA_CTA = /\bbeta waitlist\b|href="\/beta\/"/gi;
+/** WEB-914: home says early access covers the programs on both platforms. */
+const HOME_PLATFORMS = /\bprograms on iPhone and Android\b/g;
+
 /**
  * WEB-913: the owner's role descriptions name "beta testers" (Growth &
  * community) and "iOS and Android" (Mobile engineer). Job descriptions, not
@@ -222,6 +225,7 @@ function scrub(text, page = "") {
     .replace(QUITLINE_NOW, "")
     .replace(PRIVACY_RETENTION, "")
     .replace(BETA_CTA, "");
+  if (page === "index.html") return scrubbed.replace(HOME_PLATFORMS, "");
   if (page === "careers/index.html") return scrubbed.replace(CAREERS_BETA, "");
   return BETA_WORDING_PAGES.has(page)
     ? scrubbed.replace(BETA_WORDS, "")

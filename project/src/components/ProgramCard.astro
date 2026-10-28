@@ -12,9 +12,17 @@ interface Props {
   program: Program;
   /** Compact cards omit the "could address" list. */
   compact?: boolean;
+  /**
+   * One link per card, the same label on every card, so no program stands out
+   * (the home page). It goes to the program's own page: its product page when
+   * it has one, otherwise /programs/<id>/.
+   */
+  single?: boolean;
 }
 
-const { program, compact = false } = Astro.props;
+const { program, compact = false, single = false } = Astro.props;
+const mainHref =
+  single && program.product ? program.product.href : `/programs/${program.id}/`;
 ---
 
 <article
@@ -63,7 +71,7 @@ const { program, compact = false } = Astro.props;
 
   <div class="mt-auto flex flex-wrap items-center gap-x-5">
     <a
-      href={`/programs/${program.id}/`}
+      href={mainHref}
       class="-mb-2 mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl py-3 text-[0.95rem] font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4 transition-colors hover:decoration-coral"
     >
       <span class="sr-only">{program.name}: </span>What it includes
@@ -71,7 +79,7 @@ const { program, compact = false } = Astro.props;
     </a>
 
     {
-      program.product && (
+      !single && program.product && (
         <a
           href={program.product.href}
           class="-mb-2 mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl py-3 text-[0.95rem] font-bold text-teal-deep underline decoration-mint-strong decoration-2 underline-offset-4 transition-colors hover:decoration-coral"
