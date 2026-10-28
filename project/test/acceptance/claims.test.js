@@ -17,7 +17,9 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { htmlFiles, readPage } from "../helpers/dist.js";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { dist, htmlFiles, readPage } from "../helpers/dist.js";
 
 /** Built page as one line, with hashed /_astro/ asset URLs removed. */
 const pageText = (rel) =>
@@ -103,6 +105,14 @@ const CLAIMS = [
     /\bevidence[- ](?:informed|based|led|backed|driven)\b|\bclinically\s+(?:proven|validated|tested|reviewed|approved)\b|\bscientifically\s+(?:proven|backed|validated)\b|\bproven\s+to\b/i,
     "claim about the evidence behind the content",
   ],
+  // Outcomes (WEB-915, P-113): the program pages describe self-care support
+  // and must not promise to cure, reverse or guarantee anything.
+  [
+    unhedged(
+      String.raw`\bcur(?:e|es|ed|ing)\b|\brevers(?:e|es|ed|ing|al)\b|\bproven\b|\bguaranteed\b|\bguarantees?\s+(?:to|that|results?|recovery|success|you|your)\b`,
+    ),
+    "cure, reversal, proof or guarantee of an outcome",
+  ],
 ];
 
 /** Wording each family must catch, including paraphrases. */
@@ -143,6 +153,13 @@ const SAMPLES = [
   "Calm, evidence-informed digital health tools.",
   "Evidence-based support.",
   "Clinically proven to help.",
+  "Steady can reverse type 2 diabetes.",
+  "A cure for cravings.",
+  "Nourish cures emotional eating.",
+  "Proven results in weeks.",
+  "Guaranteed to help you quit.",
+  "We guarantee results.",
+  "It guarantees you will stop.",
 ];
 
 /** Hedged or unrelated wording the families must leave alone. */
@@ -156,6 +173,10 @@ const ALLOWED = [
   "BreatheFree does not yet support VoiceOver.",
   "Nothing is sent anywhere until you preview it and confirm.",
   "Where the evidence is settled.",
+  "We cannot promise a date, and joining does not guarantee a place.",
+  "We work to keep this site accurate and available, but we do not guarantee either.",
+  "Listing them is not an endorsement or a guarantee of availability.",
+  "Nothing resets, and your smoke-free days stay counted.",
 ];
 
 /**
@@ -194,4 +215,20 @@ test("each counsel-owned exemption still matches its page", () => {
       pattern,
       `${page} changed: remove its entry from COUNSEL_OWNED`,
     );
+});
+
+test("no program video caption track states a product claim", () => {
+  // WEB-915: the captions are burned into the videos too, so the tracks are
+  // the reviewable text of what the videos say.
+  const root = join(dist, "media/programs");
+  assert.ok(existsSync(root), "dist/media/programs is missing");
+  const offenders = [];
+  for (const id of readdirSync(root)) {
+    const text = readFileSync(join(root, id, "intro.vtt"), "utf8").replace(
+      /\s+/g,
+      " ",
+    );
+    for (const why of hits(text)) offenders.push(`${id}/intro.vtt: ${why}`);
+  }
+  assert.deepEqual(offenders, []);
 });
