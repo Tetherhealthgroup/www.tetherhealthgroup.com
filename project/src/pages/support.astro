@@ -58,6 +58,27 @@ const otherMailboxes = mailboxDirectory.filter(
           </span>
         </li>
 
+        <li
+          class="flex items-start gap-4 rounded-3xl border-2 border-coral/40 bg-paper p-6"
+        >
+          <span
+            class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-coral text-paper"
+          >
+            <Icon name="alert" size={22} />
+          </span>
+          <span>
+            <span class="eyebrow block">Thoughts of harming yourself?</span>
+            <a
+              href="tel:988"
+              class="mt-1.5 flex min-h-11 items-center text-2xl font-extrabold tracking-[-0.03em] text-teal-deep underline decoration-coral decoration-2 underline-offset-4"
+              >988</a
+            >
+            <span class="mt-1.5 block text-[0.9rem] text-teal-mid">
+              Call or text 988. Emergency: 911.
+            </span>
+          </span>
+        </li>
+
         {
           quitlines.map((line) => (
             <li class="flex items-start gap-4 rounded-3xl border border-hairline-soft bg-paper p-6">

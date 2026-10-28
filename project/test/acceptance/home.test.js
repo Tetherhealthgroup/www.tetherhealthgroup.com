@@ -127,3 +127,26 @@ test("no page claims to build with clinicians", () => {
       `${rel} claims to build with clinicians`,
     );
 });
+
+test("the programs list page presents all eleven alike, with no featured program", () => {
+  const html = readPage("programs/index.html");
+  const text = visible(html);
+  assert.ok(!text.includes("starting with BreatheFree"));
+  assert.doesNotMatch(html, /with BreatheFree to/);
+  for (const program of programs)
+    assert.ok(
+      text.includes(program.name),
+      `programs page lacks ${program.name}`,
+    );
+  assert.doesNotMatch(text, /Meet BreatheFree/);
+});
+
+test("the support page lists 988 beside 911", () => {
+  const html = readPage("support/index.html");
+  assert.match(html, /href="tel:911"/);
+  assert.match(html, /href="tel:988"/);
+  assert.match(
+    visible(html),
+    /Thoughts of harming yourself\? 988 Call or text 988\. Emergency: 911\./,
+  );
+});
