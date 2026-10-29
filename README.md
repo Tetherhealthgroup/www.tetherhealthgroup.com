@@ -196,10 +196,11 @@ through.
 
 ## Beta waitlist runbook
 
-`/beta/` is the one form that is sent to the server. It POSTs to
-`project/public/api/beta-signup.php` (works with JavaScript off), which
-validates every field, stores a `pending` row in a CSV file **outside** the
-web root and emails the member a single-use confirmation link
+`/beta/` POSTs to `project/public/api/beta-signup.php` (works with JavaScript
+off), which validates every field, stores a `pending` row (in Supabase when
+the private config has its three Supabase keys, P-116, with a CSV file
+**outside** the web root as the fallback; otherwise in that CSV file) and
+emails the member a single-use confirmation link
 (`api/beta-confirm.php`, 7 days). The notify list is emailed only once the
 member confirms. Its private
 config, `beta-config.php`, lives in a `tether-private` folder next to

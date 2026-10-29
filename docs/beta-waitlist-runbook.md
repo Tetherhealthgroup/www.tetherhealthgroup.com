@@ -120,6 +120,9 @@ cPanel → File Manager → Home → `tether-private` → `beta-waitlist.csv` �
 A cell that would start with `=`, `+`, `-` or `@` is stored with a leading
 `'` so a spreadsheet opens it as text, not a formula.
 
+When Supabase is configured (section 7), the list lives there and this CSV
+holds only sign-ups made while Supabase was unreachable. Check both.
+
 **Invite only rows whose `status` is `confirmed`.** A `pending` row has not
 proved the address is theirs; it is deleted automatically if not confirmed
 within 7 days.
@@ -269,4 +272,95 @@ using a mailbox you control as the visitor email, and check each arrives at
 its team mailbox with the subject `[Contact · <Topic>]` and no Reply-To.
 `curl -sI https://www.tetherhealthgroup.com/api/contact.php` should answer
 405.
+
+## 7. Supabase as the source of truth (P-116)
+
+With three keys in the private config, sign-ups are stored in Supabase
+(`marketing.beta_waitlist`) and this server's CSV becomes the fallback: if
+Supabase is unreachable, answers "forbidden" or fails, the sign-up goes to the
+CSV instead and is never lost. The page always says "Check your email", so it
+never reveals whether an address is already on the list. Without the keys,
+everything works from the CSV exactly as before. The database side (the
+migration and its four functions) is set up from the app repository's
+`docs/WAITLIST.md`.
+
+1. **Generate the server secret** on your own computer:
+
+   ```sh
+   openssl rand -hex 32
+   ```
+
+2. **Store only its hash in Supabase.** In the Supabase SQL editor, run this
+   one statement with your secret in place of `<secret>` (keep the quotes):
+
+   ```sql
+   insert into marketing.config(server_secret_hash) values (encode(extensions.digest('<secret>','sha256'),'hex'))
+   on conflict (id) do update set server_secret_hash = excluded.server_secret_hash, updated_at = now();
+   ```
+
+   Then **delete that query from the SQL editor history** (and from any saved
+   snippet): it contains the secret. The database keeps only the hash.
+
+3. **Find the publishable key:** Supabase → Project Settings → API Keys →
+   the **publishable** key (`sb_publishable_…`). Use that one only. Never the
+   secret key (`sb_secret_…`) or the service role key; the website refuses
+   them and falls back to the CSV.
+
+4. **Add these three lines** to `beta-config.php` (cPanel → File Manager →
+   Home → `tether-private`), inside `return [ … ];`:
+
+   ```php
+       'supabase_url' => 'https://<your-project-ref>.supabase.co',
+       'supabase_publishable_key' => '<the sb_publishable_ key>',
+       'supabase_waitlist_secret' => '<the openssl rand -hex 32 output>',
+   ```
+
+5. **Test:** sign up on `/beta/` with a mailbox you control. In Supabase,
+   Table Editor → schema `marketing` → `beta_waitlist` shows the row as
+   `pending`; nothing new is in the CSV. Open the email link, press **Confirm
+   my spot**: the row becomes `confirmed` and `support@` gets the
+   notification. Delete the test row:
+
+   ```sql
+   delete from marketing.beta_waitlist where email = lower(btrim('<your test address>')) returning email;
+   ```
+
+**If Supabase fails,** the PHP error log (cPanel → Metrics → Errors, or a file named `error_log` in the `api` folder, which the site refuses to serve) gets one
+line per request such as `beta-signup: waitlist database unavailable
+(forbidden); using the file fallback`. It never contains names, addresses,
+tokens or keys. `(forbidden)` usually means the secret in `beta-config.php`
+does not match the hash in Supabase; `(config)` means one of the three keys
+is missing or not in the expected form. Links from fallback sign-ups keep
+working: the confirm page checks Supabase first and then the CSV.
+
+**Cleanup.** Expired pending sign-ups are deleted in Supabase whenever
+someone confirms; `docs/WAITLIST.md` also shows a daily `pg_cron` job.
+
+### Moving the existing CSV into Supabase
+
+`scripts/import-waitlist-csv.php` is a one-time import, run by you on the
+server. Upload it to `tether-private`, then in cPanel → Terminal:
+
+```sh
+php ~/tether-private/import-waitlist-csv.php           # dry run: counts only
+php ~/tether-private/import-waitlist-csv.php --apply   # import
+```
+
+It reads the CSV and never changes it, and prints counts only. Each pending,
+unexpired row is signed up in Supabase and emailed a **new** confirmation
+link (the old link's token exists only in the CSV, where it keeps working
+until it expires). **Confirmed rows stay in the CSV**: Supabase confirms only
+with a token. To add a confirmed person directly, run this in the SQL editor,
+one row at a time, from the CSV values (`phone` is `iphone` or `android`;
+`heard_from` is `search`, `social`, `friend`, `clinician`, `event`, `other`,
+or `null`):
+
+```sql
+insert into marketing.beta_waitlist
+  (first_name, email, phone, heard_from, consent_at, age_confirmed, status, created_at, confirmed_at, last_sent_at)
+values
+  ('<first_name>', lower(btrim('<email>')), '<iphone|android>', null,
+   '<submitted_at_utc>', true, 'confirmed', '<submitted_at_utc>', '<confirmed_at_utc>', '<last_sent_utc>')
+on conflict (email) do nothing;
+```
 

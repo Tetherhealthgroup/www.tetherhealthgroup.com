@@ -38,6 +38,16 @@ return [
     'rate_limit_max' => 8,
     'rate_limit_window' => 3600,
 
+    // Supabase (optional, P-116). With all three set, the beta waitlist is
+    // stored in Supabase and this server's CSV is only the fallback. Leave
+    // them out to keep the CSV alone. Use the PUBLISHABLE key only
+    // (sb_publishable_...); never a secret key or the service role key.
+    // The server secret is the output of `openssl rand -hex 32`; only its
+    // hash goes into Supabase (see docs/beta-waitlist-runbook.md).
+    'supabase_url' => 'https://YOUR-PROJECT-REF.supabase.co',
+    'supabase_publishable_key' => 'sb_publishable_REPLACE_ME',
+    'supabase_waitlist_secret' => 'REPLACE_WITH_OUTPUT_OF_openssl_rand_hex_32',
+
     // Contact form: which mailbox each topic reaches. Visitors never see these
     // addresses. A topic with no valid entry here makes the form say it is
     // unavailable instead of sending.

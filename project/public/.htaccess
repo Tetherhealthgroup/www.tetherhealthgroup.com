@@ -272,7 +272,10 @@ ErrorDocument 404 /404.html
 # reads to verify App Links. ".well-known" is therefore exempt by name: a
 # missing file under it is an honest 404, and a present one is served. Every
 # other dot-name, including dot-files inside .well-known/, is still refused.
-<FilesMatch "(^\.(?!well-known$)|~$|\.(bak|config|dist|env|fla|inc|ini|log|psd|sh|sql|swp|ts)$)">
+#
+# "error_log" is the file PHP on cPanel writes beside a script that logs; the
+# beta and contact handlers log one line on failure, so it would sit in /api/.
+<FilesMatch "(^\.(?!well-known$)|~$|^error_log$|\.(bak|config|dist|env|fla|inc|ini|log|psd|sh|sql|swp|ts)$)">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>

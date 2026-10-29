@@ -54,7 +54,12 @@ test("it says why, who else sees it, retention, deletion and that it is never so
   assert.match(html, /mailto:privacy@tetherhealthgroup\.com/);
   assert.match(text, /reply "unsubscribe"/);
   assert.match(text, /never sell/);
-  assert.match(text, /emails you a link to confirm it/);
+  assert.match(text, /we email you a link to confirm it/);
+  assert.match(text, /Supabase, our database provider, stores the list\./);
+  assert.match(
+    text,
+    /If Supabase cannot be reached when you sign up, it is stored instead on our hosting server/,
+  );
   assert.match(text, /nobody else is told/);
   assert.match(
     text,

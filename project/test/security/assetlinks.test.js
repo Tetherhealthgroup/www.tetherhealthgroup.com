@@ -102,8 +102,11 @@ test("the dotfile deny-list still refuses every other dot-name", () => {
     ".well-known-x",
     ".well-knownx",
     ".hidden",
+    "error_log",
   ])
     assert.equal(re.test(name), true, `${name} is no longer refused`);
+  for (const name of ["beta-signup.php", "contact.php", "index.html"])
+    assert.equal(re.test(name), false, `${name} is refused`);
 });
 
 test("the published statement is the exact agreed JSON", () => {

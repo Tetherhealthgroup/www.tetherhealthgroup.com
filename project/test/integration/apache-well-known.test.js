@@ -204,6 +204,7 @@ test(
   { skip },
   async () => {
     assert.equal((await get(WITH, "/api/beta-lib.inc")).status, 403);
+    assert.equal((await get(WITH, "/api/error_log")).status, 403);
   },
 );
 

@@ -51,7 +51,13 @@ $matches = static function (array $row) use ($hash, $now): bool {
         && $row['token_expires_utc'] > $now;
 };
 
-if ($method === 'GET') {
+$sb = is_array($config['supabase']) ? $config['supabase'] : null;
+if ($config['supabase'] === false) {
+    beta_supabase_fallback_log('beta-confirm', 'config');
+}
+
+/** Whether the file holds a pending, unexpired row for this token. */
+$inFile = static function () use ($config, $matches): bool|null {
     $found = beta_with_rows($config['storage_path'], static function (array $rows) use ($matches): array {
         foreach ($rows as $row) {
             if ($matches($row)) {
@@ -60,10 +66,29 @@ if ($method === 'GET') {
         }
         return [$rows, 'missing'];
     });
-    if ($found === false) {
-        beta_fail('unavailable');
+    return $found === false ? null : $found === 'found';
+};
+
+if ($method === 'GET') {
+    // Supabase answers whether the link is still valid without consuming it;
+    // a link from a fallback sign-up is checked in the file.
+    $valid = false;
+    if ($sb !== null) {
+        $answer = beta_supabase_call($sb, 'beta_waitlist_token_status', ['p_token' => $token]);
+        if (is_array($answer)) {
+            $valid = $answer['status'] === 'valid';
+        } else {
+            beta_supabase_fallback_log('beta-confirm', $answer);
+        }
     }
-    if ($found !== 'found') {
+    if (!$valid) {
+        $file = $inFile();
+        if ($file === null && $sb === null) {
+            beta_fail('unavailable');
+        }
+        $valid = $file === true;
+    }
+    if (!$valid) {
         beta_fail('link');
     }
     header('Content-Type: text/html; charset=utf-8');
@@ -90,7 +115,33 @@ if ($rate === false) {
     beta_fail('rate');
 }
 
-$confirmed = beta_with_rows($config['storage_path'], static function (array $rows) use ($matches, $now): array {
+$confirmed = null;
+if ($sb !== null) {
+    $answer = beta_supabase_call($sb, 'beta_waitlist_confirm', ['p_token' => $token]);
+    if (is_array($answer) && $answer['status'] === 'confirmed') {
+        $text = static fn ($v): string => is_string($v) && preg_match('/^[^\x00-\x1F\x7F]{0,254}$/u', $v) === 1 ? $v : '';
+        $phoneKey = $text($answer['phone'] ?? null);
+        $sourceKey = $text($answer['heard_from'] ?? null);
+        $confirmed = [
+            'first_name' => $text($answer['first_name'] ?? null),
+            'email' => $text($answer['email'] ?? null),
+            'phone' => BETA_PHONES[$phoneKey] ?? '(unknown)',
+            'heard_from' => BETA_SOURCES[$sourceKey] ?? '(not given)',
+            'submitted_at_utc' => $text($answer['created_at'] ?? null),
+            'confirmed_at_utc' => $text($answer['confirmed_at'] ?? null),
+        ];
+        // Opportunistic: expired pending sign-ups are deleted; the result does
+        // not affect this request.
+        $cleanup = beta_supabase_call($sb, 'beta_waitlist_cleanup', []);
+        if (is_string($cleanup)) {
+            beta_supabase_fallback_log('beta-confirm', 'cleanup ' . $cleanup);
+        }
+    } elseif (is_string($answer)) {
+        beta_supabase_fallback_log('beta-confirm', $answer);
+    }
+}
+
+$confirmed ??= beta_with_rows($config['storage_path'], static function (array $rows) use ($matches, $now): array {
     foreach ($rows as $i => $row) {
         if ($matches($row)) {
             $row['status'] = 'confirmed';

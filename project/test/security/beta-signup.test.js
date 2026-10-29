@@ -236,3 +236,40 @@ test("the example config shows every key, with role mailboxes only", () => {
     "the example points storage inside public_html",
   );
 });
+
+test("Supabase calls verify TLS, follow no redirect, time out, and refuse a secret key", () => {
+  const call = lib.match(/function beta_supabase_call\([\s\S]*?\n}/)?.[0] ?? "";
+  assert.match(call, /CURLOPT_SSL_VERIFYPEER => true/);
+  assert.match(call, /CURLOPT_SSL_VERIFYHOST => 2/);
+  assert.match(call, /CURLOPT_FOLLOWLOCATION => false/);
+  assert.match(call, /CURLOPT_TIMEOUT => \$sb\['timeout'\]/);
+  assert.match(
+    call,
+    /CURLOPT_PROTOCOLS => \$sb\['local'\] \? CURLPROTO_HTTP : CURLPROTO_HTTPS/,
+  );
+  assert.match(lib, /const BETA_SUPABASE_TIMEOUT = 5;/);
+  const settings =
+    lib.match(/function beta_supabase_settings\([\s\S]*?\n}/)?.[0] ?? "";
+  assert.match(settings, /str_starts_with\(\$key, 'sb_secret_'\)/);
+  assert.match(settings, /service_role/);
+  assert.match(settings, /\^https:\/\//);
+});
+
+test("no log line carries the secret, key, token or personal data", () => {
+  const calls = [...code.matchAll(/error_log\(([\s\S]*?)\);\n/g)].map(
+    (m) => m[1],
+  );
+  assert.ok(calls.length > 0, "no error_log found; re-check this test");
+  for (const args of calls)
+    assert.doesNotMatch(
+      args,
+      /\$(?:email|firstName|token|answer|sb|config|secret|key|payload|body|row|confirmed|data)\b/,
+      `error_log may log sensitive data: ${args}`,
+    );
+  const fallback =
+    lib.match(/function beta_supabase_fallback_log\([\s\S]*?\n}/)?.[0] ?? "";
+  assert.match(
+    fallback,
+    /error_log\(\$handler \. ': waitlist database unavailable \(' \. \$reason \. '\); using the file fallback'\)/,
+  );
+});
