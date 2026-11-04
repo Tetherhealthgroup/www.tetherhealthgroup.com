@@ -154,18 +154,27 @@ test("the in-app steps follow the app's Account and Your data screens, in order"
     "On Today, tap your avatar at the top to open Account.",
     'Tap "Your data".',
     'Under Delete, tap "Delete account and all data".',
-    "Type DELETE to confirm, then enter your password. If you signed in with Apple or Google, confirm with that same account instead.",
+    'Type DELETE to confirm, then enter your password. If you signed in with Apple or Google, there is no password: when you tap "Delete everything", Apple or Google asks you to confirm with the same account you signed in with.',
     'Tap "Delete everything".',
-    "The app shows a deletion receipt and signs you out on that phone. Keep the receipt ID if you contact support.",
+    "Your account and data are deleted from our servers straight away. The app shows a deletion receipt and signs you out on that phone. Keep the receipt ID if you contact support.",
   ]);
 });
 
-test("the page also covers versions of the app with a Settings & privacy screen", () => {
-  assert.deepEqual(listOf("settingsSteps"), [
-    'Open "Settings & privacy".',
-    'Under "Your data", tap "Delete account and data".',
-    "Enter your password, type DELETE and confirm.",
-  ]);
+test("the page describes only the 1.0 app's screens", () => {
+  // The 1.0 app runs only the Account screens; the older "Settings &
+  // privacy" screen is no longer reached, so the page does not describe it.
+  const src = source();
+  assert.doesNotMatch(src, /settingsSteps|Settings &(amp;)? privacy/);
+  assert.doesNotMatch(src, /profile photo/);
+});
+
+test("the page says deletion happens as soon as the member confirms", () => {
+  const text = builtText();
+  assert.ok(
+    text.includes(
+      "Deletion happens as soon as you confirm. There is no waiting period: your data and your sign-in account are deleted from our servers together, in one step.",
+    ),
+  );
 });
 
 test("the page explains deleting a single program's data", () => {
@@ -192,14 +201,23 @@ test("the cannot-sign-in route uses only the support mailbox and needs no app", 
 test("the page says what is deleted and what is kept", () => {
   const text = builtText();
   for (const item of [
-    "your profile, display name and profile photo",
+    "your profile and display name",
     "the programs you joined, with their plans and setup answers",
     "your check-ins, readings, logs and other program entries",
+    "the health records you entered by hand",
+    "the supporters and caregiver you added, with their names and phone numbers",
+    "including the name and date of birth you typed for a summary",
     "your sign-in account",
-    "Copies in backups and logs are kept until those backups and logs expire.",
     "stays with the people who received it",
+    "the phone's copy of your program answers, any entries not yet sent, and your Ease safety plan",
   ])
     assert.ok(text.includes(item), `missing: ${item}`);
+});
+
+test("the page makes no claim about backups", () => {
+  // Backup retention is not settled by any source, so the page neither
+  // promises a backup period nor says copies are kept in backups.
+  assert.doesNotMatch(builtText(), /backup/i);
 });
 
 test("unconfirmed facts stay visibly marked as to be confirmed", () => {
@@ -208,8 +226,7 @@ test("unconfirmed facts stay visibly marked as to be confirmed", () => {
   for (const placeholder of [
     /To be confirmed: who handles email requests, and how we check that a request comes from the account holder\./,
     /To be confirmed: how long it takes to complete a request\./,
-    /To be confirmed: how long copies remain in backups and logs after deletion\./,
-    /To be confirmed: which data on the phone is cleared when a signed-in account is deleted\./,
+    /To be confirmed: whether any copy remains with our service providers after deletion, for example in their logs, and for how long\./,
   ])
     assert.match(text, placeholder);
 });
@@ -231,7 +248,7 @@ test("the draft's to-be-confirmed lines state scope, not a gap", () => {
   const open = sentencesOf(textOf(source()))
     .filter((s) => s.includes(marker))
     .map((s) => s.slice(s.indexOf(marker)));
-  assert.ok(open.length >= 4, `only ${open.length} open items found`);
+  assert.ok(open.length >= 3, `only ${open.length} open items found`);
   assert.deepEqual(
     open.filter((s) => gapSentences(s).length > 0),
     [],
