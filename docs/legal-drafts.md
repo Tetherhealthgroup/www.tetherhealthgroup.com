@@ -20,6 +20,34 @@ confirmed" instead of promising it.
 | `/terms/` | `project/src/pages/terms.astro` | Scope note no longer says BreatheFree is the product; new section says the app is not covered and that the app's terms are to be confirmed. Last-updated date moved to 2026-10-22. |
 | `/support/` | `project/src/pages/support.astro` | Not legal text, but new app FAQ repeats two policy statements ("No ads, and we never sell your health data" and the deletion path). |
 
+### Aligned with the 1.0 app (2026-11-04)
+
+`/app-privacy/` and `/delete-account/` were checked against the 1.0 store build
+of the app (version 1.0.0) and only factual mismatches were changed. No new
+legal commitment was added; each changed sentence below still needs counsel.
+
+- Deletion timing: both pages now say the server deletes the data and the
+  sign-in account together as soon as the member confirms, with no waiting
+  period, and the deletion page says what the app then removes from the phone
+  (its copy of program answers, unsent entries, the Ease safety plan).
+- Backups: the deletion page no longer says "Copies in backups and logs are
+  kept until those backups and logs expire", and neither page mentions
+  backups. Both now leave open whether any copy remains with service
+  providers, for example in their logs.
+- Not in the 1.0 store build, so no longer described as offered: connecting
+  health records (Epic, Oracle Health, Blue Button, SMART on FHIR, Apple Health
+  Records, Health Connect), ScrollFree's screen-time reading (Unplug), the
+  quitline call-back and profile or plan photos. The deletion page's second
+  path for a "Settings & privacy" screen is gone: the 1.0 app does not show it.
+- Added data the 1.0 app collects: health values entered by hand; the name,
+  phone number and help phrase of a supporter; a caregiver's name and phone
+  number and the name typed for them; the full name and date of birth typed
+  for a care-team summary; messages to a connected clinic; ScrollFree daily
+  minutes, opens and phone-free nights typed by the member.
+- Settled from the app and removed from "To be confirmed": notifications are
+  local (no notification service), the full export is one JSON file, and the
+  data cleared from the phone on deletion.
+
 Publishing either app page for real means removing `noindex`, the sitemap
 filter in `project/astro.config.mjs` and the draft notice, and updating its
 test file in the same change. Deploying the site as it stands makes both pages
@@ -47,7 +75,9 @@ reachable at their URLs as drafts.
    health data." and "We do not share your information with third parties for
    their own use." are stated as commitments. Counsel to confirm they can be
    made without qualification.
-7. **Health-record import.** The design says provider refresh tokens are kept
+7. **Health-record import.** Not in the 1.0 store build; `/app-privacy/` now
+   says so and describes only values entered by hand. The rest of this item
+   applies when import is switched on. The design says provider refresh tokens are kept
    encrypted on our servers and never on the phone; no code for record import
    or token storage exists yet. The draft states it as the design and marks
    the date of import and the encryption as to be confirmed. Epic and CMS Blue
@@ -56,25 +86,28 @@ reachable at their URLs as drafts.
    design are not yet accepted by the server. The draft describes what each
    program collects by design and marks which programs save to an account as
    to be confirmed.
-9. **ScrollFree on Android.** The design says daily totals by category are
+9. **ScrollFree on Android.** Not in the 1.0 store build (screen-time reading
+   is switched off; members type their own minutes). The design says daily totals by category are
    saved to the account; no server storage for them exists yet.
 10. **Retention.** How long account data is kept if a user stops using the
-    app; how long backups and logs keep copies after deletion. The app's
-    deletion receipt says "Backups are purged within 30 days"; nothing in the
-    code sets that, so the website does not repeat it.
+    app, and whether service providers keep any copy after deletion, for
+    example in logs. The app's deletion receipt says "Backups are purged
+    within 30 days"; nothing in the code sets that and the database plan has
+    no backups according to the owner, so the website says nothing about
+    backups. The receipt text is an app question.
 11. **Deletion by email.** Who handles email requests, how identity is checked,
     and how long a request takes.
-12. **Export.** The app's copy promises "Every program · PDF + JSON"; the
-    server's export today returns JSON with the profile, quit plan and some
-    program data only. The draft leaves the format and contents to be
-    confirmed.
+12. **Export.** The 1.0 app exports one JSON file with a guide to each part,
+    covering every program and what is kept only on the phone. The policy now
+    says so.
 13. **Processors and hosting.** Supabase (sign-in, database, photo storage) and
     Render (application server) are named; only a development Render service is
     configured in the app repository. Production hosting, regions, contracts,
     the email sender and any notification service are to be confirmed.
-14. **Sharing with third parties the user chooses.** Care-team summaries,
-    caregiver access, and the quitline call-back (first name, phone number and
-    preferred time sent to a quitline) need consent wording; the consent
+14. **Sharing with third parties the user chooses.** Care-team summaries
+    (with the full name and date of birth the member types) and caregiver
+    access need consent wording. The quitline call-back is not in the 1.0 app
+    and the policy no longer describes it; the consent
     documents in the backend are unapproved placeholders.
 15. **Research and diagnostics.** The app has "De-identified research" and
     "Anonymous app diagnostics" switches, off by default. What is collected, by
