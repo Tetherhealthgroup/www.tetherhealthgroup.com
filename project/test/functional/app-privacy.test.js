@@ -172,16 +172,21 @@ test("the multi-program facts the policy must state are present", () => {
     "We never see your Apple or Google password.",
     // age
     "You must be 18 or older to use the app.",
-    // health records
-    "Epic MyChart",
-    "Oracle Health (Cerner)",
-    "Medicare Blue Button 2.0",
-    "SMART on FHIR",
-    "Apple Health Records",
-    "Health Connect",
-    "Access is read-only.",
-    "Ease and ScrollFree get nothing.",
-    "encrypted on our servers, never on your phone",
+    // health records: entered by hand only in 1.0
+    'Values you add are labelled "Entered by you".',
+    "In this version of the app, you cannot connect the app to a health system or read health records from your phone.",
+    // ScrollFree: typed, not read from the phone, in 1.0
+    "In this version of the app, ScrollFree does not read screen time from your phone.",
+    // what sharing keeps
+    "We keep the name, phone number and any help phrase you enter for them.",
+    "We keep your caregiver's name and phone number",
+    "you type your full name and date of birth; we keep them with that summary only",
+    // reminders: local notifications only
+    "Reminders are scheduled and shown by your phone itself. No notification service sends them.",
+    // export
+    "The full export is one JSON file, with a guide to each part, covering every program.",
+    // deletion timing
+    "deleted from our servers as soon as you confirm, in one step.",
     // the app's own privacy copy
     "No ads. We never sell your health data.",
     // processors
@@ -202,23 +207,35 @@ test("unconfirmed facts stay visibly marked as to be confirmed", () => {
     /To be confirmed: the date this policy takes effect\./,
     /To be confirmed: whether this policy also covers a version of the app for Apple devices\./,
     /To be confirmed: which of the programs above can save information to an account/,
-    /To be confirmed: the date health-record import is offered in the app, and that token encryption on our servers is in place on that date\./,
-    /To be confirmed: when care-team connections, caregiver invites and quitline call-backs are offered/,
+    /To be confirmed: when care-team connections and caregiver invites are offered/,
     /To be confirmed: what the optional "De-identified research" and "Anonymous app diagnostics" choices collect/,
-    /To be confirmed: which service, if any, delivers notifications/,
     /To be confirmed: that our production application server is hosted by Render/,
     /To be confirmed: which service sends the sign-up confirmation and password-reset emails\./,
     /To be confirmed: the contract terms we have with our service providers/,
     /To be confirmed: how your data is protected on your phone, in transit and at our service providers\./,
-    /To be confirmed: the format of the full export and which data it includes\./,
     /To be confirmed: how long we keep your account data if you stop using the app without deleting your account\./,
-    /To be confirmed: how long copies remain in backups and logs after you delete your account\./,
+    /To be confirmed: whether any copy remains with our service providers after you delete your account, for example in their logs, and for how long\./,
     /To be confirmed: which privacy and health-data laws apply to the app/,
     /To be confirmed: who answers these emails, how we check who you are/,
     /To be confirmed: what we do if we learn that a child has an account\./,
     /To be confirmed: how people who already have an account will be told/,
   ])
     assert.match(text, placeholder);
+});
+
+test("the policy does not describe features the 1.0 store build leaves out", () => {
+  // Connecting health records, ScrollFree's screen-time reading, a quitline
+  // call-back and profile photos are not in the 1.0 store build; backup
+  // retention is not settled by any source.
+  const text = builtText();
+  for (const pattern of [
+    /Epic MyChart|SMART on FHIR|Blue Button|Apple Health Records|Health Connect/,
+    /Unplug|usage access|Screen Time/,
+    /call-back/i,
+    /profile photo|photo of the plan/i,
+    /backup/i,
+  ])
+    assert.doesNotMatch(text, pattern);
 });
 
 test("the draft describes no unverified security or privacy weakness", () => {
@@ -232,7 +249,7 @@ test("the draft's to-be-confirmed lines state scope, not a gap", () => {
   const open = sentencesOf(textOf(source()))
     .filter((s) => s.includes(marker))
     .map((s) => s.slice(s.indexOf(marker)));
-  assert.ok(open.length >= 18, `only ${open.length} open items found`);
+  assert.ok(open.length >= 15, `only ${open.length} open items found`);
   assert.deepEqual(
     open.filter((s) => gapSentences(s).length > 0),
     [],

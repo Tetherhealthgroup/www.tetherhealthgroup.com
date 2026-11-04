@@ -3,12 +3,13 @@
  * Privacy policy for the Tether Health app: the privacy policy URL the app
  * stores ask for.
  *
- * Draft for counsel review. The text describes the multi-program Tether
- * Health app as its design and code stood when this draft was written: what
- * each of the 11 programs stores, health-record import, sign-in, sharing,
- * reminders, export and deletion. Where the design describes something the
- * code does not yet do, or the sources say nothing, the page says "To be
- * confirmed" instead of promising it. No source path or evidence note ships
+ * Draft for counsel review. The text describes the 1.0 store build of the
+ * multi-program Tether Health app: what each of the 11 programs stores,
+ * health records entered by hand, sign-in, sharing, reminders, export and
+ * deletion. Features the 1.0 store build leaves out (connecting health
+ * records, ScrollFree's screen-time reading, a quitline call-back, profile
+ * photos) are not described as offered. Where the sources say nothing, the
+ * page says "To be confirmed" instead of promising it. No source path or evidence note ships
  * in the HTML; the open legal questions are listed in docs/legal-drafts.md.
  *
  * Built and reachable at /app-privacy/ so the app and the store listings can
@@ -34,8 +35,8 @@ const packageName = "com.TetherHealthLLC.tetherhealth";
    another program's name. */
 const programData: Record<string, string> = {
   bf: "your smoking or vaping answers, triggers, quit path and quit date, your reasons, the supporters you name, slips you record and the medication status you choose to record",
-  sf: "how much you use social media (a range you choose), the kinds of apps that pull you in (categories, not app names), your triggers, your minute goal and app-free windows, Pause 60 use, long scrolls you record and your buddy's name",
-  ca: "the action plan your clinician gave you (zones, daily medicines and a photo of the plan if you add one), zone checks, peak flow readings and symptoms",
+  sf: "how much you use social media (a range you choose), the kinds of apps that pull you in (categories, not app names), your triggers, your minute goal and app-free windows, the daily minutes, app opens and phone-free nights you enter, Pause 60 use, long scrolls you record and your buddy's name",
+  ca: "the action plan your clinician gave you (zones and daily medicines), zone checks, peak flow readings and symptoms",
   hw: "the targets your clinician set, blood pressure and pulse readings, and cholesterol panels",
   st: "the range and low plan your clinician gave you, glucose readings with their timing, how you felt and any note, and A1C results",
   re: "your answers to the risk questions and kidney and liver lab results (eGFR, urine ACR and ALT)",
@@ -142,7 +143,7 @@ const programData: Record<string, string> = {
       <h2>Information shared by all your programs</h2>
       <p>If you create an account, the app keeps:</p>
       <ul>
-        <li>your display name, and a profile photo if you add one</li>
+        <li>your display name</li>
         <li>
           your age range, sleep and stress answers, which your programs share so
           you are never asked twice; your age range sets which lessons and
@@ -177,15 +178,13 @@ const programData: Record<string, string> = {
         }
       </ul>
       <p>
-        Two things stay on your phone and are never sent to us: the Ease safety
-        plan, which the app's design keeps encrypted on your phone, and the apps
-        and limits you choose in ScrollFree's optional Unplug feature.
+        The Ease safety plan stays on your phone and is never sent to us; the
+        app's design keeps it encrypted on your phone.
       </p>
       <p>
-        ScrollFree with Screen Time on an Apple device: Apple shares no app
-        names or minutes with us. On Android, ScrollFree measures use on your
-        phone with usage access, and only daily totals by category are saved to
-        your account.
+        In this version of the app, ScrollFree does not read screen time from
+        your phone. The daily minutes and app opens it keeps are the ones you
+        enter yourself.
       </p>
       <p>
         To be confirmed: which of the programs above can save information to an
@@ -194,53 +193,22 @@ const programData: Record<string, string> = {
 
       <h2>Health records</h2>
       <p>
-        You can choose to connect your health records. Sources are Epic MyChart,
-        Oracle Health (Cerner), Medicare Blue Button 2.0, any other SMART on
-        FHIR server, Apple Health Records on Apple devices and Health Connect on
-        Android. You can also enter values by hand; those are labelled "Entered
-        by you".
+        You can add health values by hand: the type (blood pressure, glucose, a
+        lab result, a vaccine, a medication or a condition), the test, the value
+        and the date. Values you add are labelled "Entered by you".
       </p>
-      <ul>
-        <li>
-          Access is read-only. Tether never writes to your health record. You
-          sign in with your provider, and Tether never sees that password.
-        </li>
-        <li>
-          Before you connect, the app shows exactly what it will read:
-          conditions, vital signs (blood pressure, weight), lab results (A1C,
-          lipids, eGFR), medications, immunizations and smoking status. Clinical
-          notes are not requested. From Apple Health Records or Health Connect
-          it asks for blood pressure, blood glucose and clinical records; steps
-          and sleep are not requested.
-        </li>
-        <li>Nothing reaches your programs until you review and confirm it.</li>
-        <li>
-          Only the programs you joined get data: Heartwise gets blood pressure
-          and lipids, Steady gets A1C and glucose, Renew gets eGFR, Checkup gets
-          immunizations and BreatheFree gets smoking status. Ease and ScrollFree
-          get nothing. Medications and conditions are shown for reference only.
-        </li>
-        <li>
-          While connected, records refresh daily. You can disconnect at any time
-          and choose to keep or delete the data imported from that source.
-        </li>
-        <li>
-          The app's design keeps the access tokens from your provider encrypted
-          on our servers, never on your phone.
-        </li>
-      </ul>
       <p>
-        To be confirmed: the date health-record import is offered in the app,
-        and that token encryption on our servers is in place on that date.
+        In this version of the app, you cannot connect the app to a health
+        system or read health records from your phone.
       </p>
 
       <h2>Sharing, only when you choose</h2>
       <ul>
         <li>
           <strong>Supporters.</strong> You can add a supporter for BreatheFree or
-          ScrollFree. Messages to them are sent from your phone's own Messages app
-          after you preview them; Tether never sends on its own and never contacts
-          them.
+          ScrollFree. We keep the name, phone number and any help phrase you enter
+          for them. Messages to them are sent from your phone's own Messages app after
+          you preview them; Tether never sends on its own and never contacts them.
         </li>
         <li>
           <strong>ScrollFree buddy.</strong> Your buddy only sees what you choose
@@ -249,19 +217,17 @@ const programData: Record<string, string> = {
         <li>
           <strong>Stride caregiver.</strong> If you invite a caregiver, they can see
           only what you allow: when you finish a session and if you log a fall. Your
-          other programs are never available to caregivers.
+          other programs are never available to caregivers. We keep your caregiver's
+          name and phone number, and the name you type for them to see.
         </li>
         <li>
           <strong>Care team.</strong> You can connect a clinic with an invite code.
           Connecting shares nothing until you approve a summary, and you preview every
-          share. A Heartwise visit summary contains only Heartwise data. Copies you
-          send stay with the care team.
-        </li>
-        <li>
-          <strong>Quitline call-back.</strong> If you ask a quitline to call you,
-          the app sends your first name, phone number and preferred time to that quitline,
-          and nothing about your plan, check-ins or health. That consent expires after
-          30 days.
+          share. A Heartwise visit summary contains only Heartwise data. When you
+          send a summary, you type your full name and date of birth; we keep them
+          with that summary only, and the care team sees them with it. You can also
+          send messages to a connected clinic. Copies you send stay with the care
+          team.
         </li>
         <li>
           <strong>Cross-program insights.</strong> A setting under Privacy & consent
@@ -269,9 +235,8 @@ const programData: Record<string, string> = {
         </li>
       </ul>
       <p>
-        To be confirmed: when care-team connections, caregiver invites and
-        quitline call-backs are offered, and how a caregiver invite is
-        delivered.
+        To be confirmed: when care-team connections and caregiver invites are
+        offered, and how a caregiver invite is delivered.
       </p>
       <p>
         To be confirmed: what the optional "De-identified research" and
@@ -288,18 +253,18 @@ const programData: Record<string, string> = {
         safety alerts still come through.
       </p>
       <p>
-        To be confirmed: which service, if any, delivers notifications to your
-        phone.
+        Reminders are scheduled and shown by your phone itself. No notification
+        service sends them.
       </p>
 
       <h2>Permissions the app asks for</h2>
       <p>
-        The app asks for these permissions, each for the feature that needs it:
-        notifications for reminders; Screen Time on Apple devices, or usage
-        access and display over other apps on Android, for ScrollFree's optional
-        Unplug; health-record access for Apple Health Records or Health Connect;
-        and your photos or camera if you add a profile photo or a photo of your
-        ClearAir plan. The app does not ask for your location, contacts or
+        The app asks to send notifications only when you turn reminders on, or
+        when you tap "Alert me when it's time" on a re-check timer. If you tap
+        "Add to calendar" in Checkup, the app opens your phone's own calendar
+        screen with the appointment filled in, and you choose whether to save
+        it; some phones ask for calendar access first. The app never reads your
+        calendar. It does not ask for your location, contacts, camera or
         microphone.
       </p>
 
@@ -318,13 +283,12 @@ const programData: Record<string, string> = {
 
       <h2>Who handles your information for us</h2>
       <ul>
-        <li>Supabase, for sign-in accounts, the database and photo storage.</li>
+        <li>Supabase, for sign-in accounts and the database.</li>
         <li>
           Render, which hosts our application server: the service that handles
           your profile, programs, plans, entries, export and deletion.
         </li>
         <li>Apple and Google, if you sign in with them.</li>
-        <li>The health-record providers you choose to connect.</li>
       </ul>
       <p>
         To be confirmed: that our production application server is hosted by
@@ -352,13 +316,15 @@ const programData: Record<string, string> = {
 
       <h2>Exporting your data</h2>
       <p>
-        In the app, go to Account, then Your data, then Export. You can export
-        your data, or export a care summary for the dates you choose and preview
-        every detail first.
+        In the app, go to Account, then "Your data", then Export, and choose to
+        export everything. You can also export a care summary for the dates you
+        choose and preview every detail first.
       </p>
       <p>
-        To be confirmed: the format of the full export and which data it
-        includes.
+        The full export is one JSON file, with a guide to each part, covering
+        every program. It also includes what is kept only on your phone, such as
+        your Ease safety plan. The app sends the file only where you choose to
+        save or send it.
       </p>
       <p>
         A copy you export is outside the app and is not deleted when you delete
@@ -374,6 +340,10 @@ const programData: Record<string, string> = {
         >.
       </p>
       <p>
+        When you delete your account, your data and your sign-in account are
+        deleted from our servers as soon as you confirm, in one step.
+      </p>
+      <p>
         If you leave a program and keep its data, it is kept until you delete it
         or delete your account.
       </p>
@@ -382,8 +352,9 @@ const programData: Record<string, string> = {
         the app without deleting your account.
       </p>
       <p>
-        To be confirmed: how long copies remain in backups and logs after you
-        delete your account.
+        To be confirmed: whether any copy remains with our service providers
+        after you delete your account, for example in their logs, and for how
+        long.
       </p>
 
       <h2>Your rights</h2>

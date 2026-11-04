@@ -83,16 +83,11 @@ const ALLOWED = [
 
 /**
  * Counsel-owned legal text, unchanged by this suite: page → wording that stays
- * until counsel revises it. The app privacy policy draft names "Medicare Blue
- * Button 2.0"; the owner has since referred to a 3.0 gateway, and which is
- * current is Unknown. Each entry is stale-checked below.
+ * until counsel revises it. Each entry is stale-checked below. Empty since the
+ * app privacy policy stopped describing health-record connections, which the
+ * 1.0 app does not offer.
  */
-const COUNSEL_OWNED = new Map([
-  [
-    "app-privacy/index.html",
-    /Medicare Blue Button 2\.0|You can choose to connect your health records\./g,
-  ],
-]);
+const COUNSEL_OWNED = new Map();
 
 const hits = (text) =>
   CLAIMS.filter(([pattern]) => pattern.test(text)).map(([, why]) => why);
