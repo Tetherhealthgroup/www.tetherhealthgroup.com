@@ -225,17 +225,25 @@ test("unconfirmed facts stay visibly marked as to be confirmed", () => {
 
 test("the policy does not describe features the 1.0 store build leaves out", () => {
   // Connecting health records, ScrollFree's screen-time reading, a quitline
-  // call-back and profile photos are not in the 1.0 store build; backup
-  // retention is not settled by any source.
+  // call-back, photos of any kind and changing the display name after
+  // onboarding are not in the 1.0 store build; backup retention is not
+  // settled by any source.
   const text = builtText();
   for (const pattern of [
     /Epic MyChart|SMART on FHIR|Blue Button|Apple Health Records|Health Connect/,
     /Unplug|usage access|Screen Time/,
     /call-back/i,
-    /profile photo|photo of the plan/i,
+    /photo/i,
+    /(change|edit|update) your (display )?name/i,
     /backup/i,
   ])
     assert.doesNotMatch(text, pattern);
+  assert.ok(
+    text.includes(
+      "In the app you can view and export your data, change your consent choices, leave a program, and delete your account.",
+    ),
+    "the in-app rights sentence is missing",
+  );
 });
 
 test("the draft describes no unverified security or privacy weakness", () => {

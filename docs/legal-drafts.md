@@ -44,6 +44,10 @@ legal commitment was added; each changed sentence below still needs counsel.
   number and the name typed for them; the full name and date of birth typed
   for a care-team summary; messages to a connected clinic; ScrollFree daily
   minutes, opens and phone-free nights typed by the member.
+- "Your rights" no longer says the member can change their name and photo
+  in the app: the 1.0 app has no photo feature, and the display name is set
+  only during onboarding. The sentence now lists viewing and exporting data,
+  changing consent choices, leaving a program and deleting the account.
 - Settled from the app and removed from "To be confirmed": notifications are
   local (no notification service), the full export is one JSON file, and the
   data cleared from the phone on deletion.
