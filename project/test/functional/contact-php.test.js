@@ -39,6 +39,7 @@ const ROUTES = {
 };
 const LABELS = {
   support: "Support",
+  app_feedback: "App feedback",
   sales_partnerships: "Sales & partnerships",
   careers: "Careers",
   privacy: "Privacy",
@@ -391,6 +392,93 @@ test(
     } finally {
       writeConfig();
     }
+    assert.deepEqual(mails(), []);
+  },
+);
+
+test(
+  "App feedback with no route of its own reaches the support mailbox",
+  { skip },
+  async () => {
+    reset(); // ROUTES has no app_feedback entry
+    const res = await post({ ...VALID, topic: "app_feedback" });
+    assert.equal(res.location, "/contact/thanks/");
+    const sent = mails();
+    assert.equal(sent.length, 1);
+    assert.match(sent[0].headers, /^To: support@tetherhealthgroup\.com$/m);
+    assert.equal(
+      decodeHeader(sent[0].headers.match(/^Subject: (.*)$/m)[1]),
+      "[Contact · App feedback]",
+    );
+  },
+);
+
+test(
+  "an App feedback route in the config wins over the fallback",
+  { skip },
+  async () => {
+    reset({
+      routes: { ...ROUTES, app_feedback: "feedback-team@example.test" },
+    });
+    assert.equal(
+      (await post({ ...VALID, topic: "app_feedback" })).location,
+      "/contact/thanks/",
+    );
+    const sent = mails();
+    assert.equal(sent.length, 1);
+    assert.match(sent[0].headers, /^To: feedback-team@example\.test$/m);
+  },
+);
+
+test(
+  "an invalid App feedback route fails closed instead of falling back, back on /feedback/",
+  { skip },
+  async () => {
+    reset({ routes: { ...ROUTES, app_feedback: "not-an-address" } });
+    assert.equal(
+      (await post({ ...VALID, topic: "app_feedback" })).location,
+      "/feedback/#error-unavailable",
+    );
+    assert.deepEqual(mails(), []);
+  },
+);
+
+test(
+  "App feedback fails closed when there is no support route either",
+  { skip },
+  async () => {
+    const { support, ...withoutSupport } = ROUTES;
+    reset({ routes: withoutSupport });
+    assert.equal(
+      (await post({ ...VALID, topic: "app_feedback" })).location,
+      "/feedback/#error-unavailable",
+    );
+    assert.deepEqual(mails(), []);
+  },
+);
+
+test(
+  "App feedback errors return to /feedback/, every other topic to /contact/",
+  { skip },
+  async () => {
+    reset();
+    const feedback = { ...VALID, topic: "app_feedback" };
+    assert.equal(
+      (await post({ ...feedback, email: "not-an-address" })).location,
+      "/feedback/#error-fields",
+    );
+    assert.equal(
+      (await post({ ...feedback, fill_ms: "200" })).location,
+      "/feedback/#error-retry",
+    );
+    assert.equal(
+      (await post({ ...VALID, email: "not-an-address" })).location,
+      "/contact/#error-fields",
+    );
+    assert.equal(
+      (await post({ ...VALID, topic: "/feedback/" })).location,
+      "/contact/#error-fields",
+    );
     assert.deepEqual(mails(), []);
   },
 );

@@ -35,7 +35,7 @@ test("the contact page is one form that POSTs to the handler, with no mailbox li
   );
 });
 
-test("the topic dropdown offers exactly the handler's five topics, with no admin", () => {
+test("the topic dropdown offers exactly the handler's six topics, with no admin", () => {
   const select = contactHtml().match(
     /<select\b[^>]*name="topic"[^>]*>([\s\S]*?)<\/select>/,
   );
@@ -46,9 +46,17 @@ test("the topic dropdown offers exactly the handler's five topics, with no admin
   ];
   assert.equal(options[0][1], "", "a placeholder comes first");
   assert.deepEqual(
+    [...select[1].matchAll(/<option\b([^>]*)>/g)]
+      .filter((o) => /\sselected\b/.test(o[1]))
+      .map((o) => o[1].match(/value="([^"]*)"/)[1]),
+    [""],
+    "on /contact/ only the placeholder is preselected",
+  );
+  assert.deepEqual(
     options.slice(1).map((o) => [o[1], o[2].replace("&amp;", "&")]),
     [
       ["support", "Support"],
+      ["app_feedback", "App feedback"],
       ["sales_partnerships", "Sales & partnerships"],
       ["careers", "Careers"],
       ["privacy", "Privacy"],

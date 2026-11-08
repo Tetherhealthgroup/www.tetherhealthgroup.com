@@ -235,11 +235,20 @@ curl -sI https://www.tetherhealthgroup.com/beta/                          # 200
 
 ## 6. Contact form routing
 
-`/contact/` has one form with a required topic: Support, Sales &
-partnerships, Careers, Privacy or Finance. It POSTs to `/api/contact.php`,
-which sends **one** plain-text email to the mailbox for that topic and
-redirects to `/contact/thanks/`. The mailboxes are set only in the private
-config; the page never shows them.
+`/contact/` has one form with a required topic: Support, App feedback,
+Sales & partnerships, Careers, Privacy or Finance. It POSTs to
+`/api/contact.php`, which sends **one** plain-text email to the mailbox for
+that topic and redirects to `/contact/thanks/`. The mailboxes are set only in
+the private config; the page never shows them.
+
+`/feedback/` is the same form with App feedback preselected; it is the
+address to give App Store Connect and TestFlight as the feedback URL. Its
+errors come back to `/feedback/` rather than `/contact/`. **App feedback
+needs no config change:** when `contact_routes` has no `app_feedback` entry
+it goes to the `support` mailbox, with the subject `[Contact · App
+feedback]`. To send it elsewhere, add an `'app_feedback' => '…'` line to
+`contact_routes`; an entry that is present but not a valid address makes the
+form say it is unavailable rather than falling back.
 
 - From: the config's `from`. No Reply-To: reply to the visitor's address,
   which is in the body.
@@ -249,7 +258,8 @@ config; the page never shows them.
 - Same guards as the beta form: POST only, length caps (message up to 2,000
   characters), control characters refused, honeypot, minimum fill time, and a
   per-IP limit with its own counter in `beta-rate-limit`.
-- If the config is missing, or the chosen topic has no valid route, the form
+- If the config is missing, or the chosen topic has no valid route (for App
+  feedback: an invalid entry of its own, or no entry and no support route), the form
   says "Sorry, the form is unavailable; email support@tetherhealthgroup.com"
   and sends nothing.
 
@@ -270,6 +280,8 @@ for example after `'rate_limit_window' => 3600,`:
 **Test it** after deploying: send one message per topic from `/contact/`
 using a mailbox you control as the visitor email, and check each arrives at
 its team mailbox with the subject `[Contact · <Topic>]` and no Reply-To.
+Send one more from `/feedback/` and check it arrives at the support mailbox
+(or the `app_feedback` one, if you added it).
 `curl -sI https://www.tetherhealthgroup.com/api/contact.php` should answer
 405.
 

@@ -50,7 +50,9 @@ return [
 
     // Contact form: which mailbox each topic reaches. Visitors never see these
     // addresses. A topic with no valid entry here makes the form say it is
-    // unavailable instead of sending.
+    // unavailable instead of sending. One exception: 'app_feedback' (the
+    // /feedback/ page) may be left out, and then uses the 'support' mailbox.
+    // Add an 'app_feedback' line only to send app feedback somewhere else.
     'contact_routes' => [
         'support' => 'support@tetherhealthgroup.com',
         'sales_partnerships' => 'partnerships@tetherhealthgroup.com',

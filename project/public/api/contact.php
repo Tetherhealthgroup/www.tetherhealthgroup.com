@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 /*
- * Contact form handler. The form on /contact/ POSTs here as an ordinary HTML
- * form, so it works with JavaScript off. Every outcome is a 303 redirect:
+ * Contact form handler. The form on /contact/ (and on /feedback/, with the
+ * App feedback topic preselected) POSTs here as an ordinary HTML form, so it
+ * works with JavaScript off. Every outcome is a 303 redirect:
  *
  *   /contact/thanks/              sent to the team for the chosen topic
  *   /contact/#error-fields        a field is missing or not valid
@@ -12,9 +13,14 @@ declare(strict_types=1);
  *   /contact/#error-rate          too many attempts from one address
  *   /contact/#error-unavailable   no config, no route for the topic, or mail failed
  *
+ * Errors for the App feedback topic go to /feedback/#error-... instead, the
+ * page that form is on (CONTACT_ERROR_PAGES; a fixed map, never a URL taken
+ * from the request).
+ *
  * The topic decides the mailbox through 'contact_routes' in the private config
  * (see beta-lib.inc and docs/beta-config.example.php); no address is in the
- * page or this file. One plain-text email goes to that mailbox: fixed From,
+ * page or this file. App feedback uses the support route when the config
+ * names no route of its own (BETA_CONTACT_ROUTE_FALLBACKS). One plain-text email goes to that mailbox: fixed From,
  * no Reply-To, a fixed subject naming only the topic, and the visitor's
  * details in the body. Nothing is stored and nothing is sent to the visitor.
  *
@@ -37,10 +43,19 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     beta_page(405, 'Use the contact form', 'This address only accepts the contact form.');
 }
 
-/** Redirect back to the contact page with an error fragment. */
+/** Topics whose form is on a page other than /contact/. */
+const CONTACT_ERROR_PAGES = [
+    'app_feedback' => '/feedback/',
+];
+
+/** Redirect back to the form's page with an error fragment. */
 function contact_fail(string $code): void
 {
-    beta_redirect('/contact/#error-' . $code);
+    $topic = $_POST['topic'] ?? null;
+    $page = is_string($topic) && array_key_exists($topic, CONTACT_ERROR_PAGES)
+        ? CONTACT_ERROR_PAGES[$topic]
+        : '/contact/';
+    beta_redirect($page . '#error-' . $code);
 }
 
 if ($config === null) {

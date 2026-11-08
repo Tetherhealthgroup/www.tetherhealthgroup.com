@@ -46,10 +46,21 @@ const BETA_SOURCES = [
 /** Contact form topics: submitted value => label shown in the subject. */
 const BETA_CONTACT_TOPICS = [
     'support' => 'Support',
+    'app_feedback' => 'App feedback',
     'sales_partnerships' => 'Sales & partnerships',
     'careers' => 'Careers',
     'privacy' => 'Privacy',
     'finance' => 'Finance',
+];
+
+/**
+ * Contact topics that share another topic's mailbox unless the private config
+ * routes them itself: topic => the topic whose route it uses. Only a topic
+ * absent from 'contact_routes' falls back; one that is present but invalid
+ * still fails closed, so a typo in the config is not silently redirected.
+ */
+const BETA_CONTACT_ROUTE_FALLBACKS = [
+    'app_feedback' => 'support',
 ];
 
 /** Contact form caps: bytes for single-line fields, characters for the message. */
@@ -205,6 +216,11 @@ function beta_load_config(): ?array
     foreach ($rawRoutes as $topic => $address) {
         if (is_string($topic) && array_key_exists($topic, BETA_CONTACT_TOPICS) && beta_is_email($address)) {
             $routes[$topic] = $address;
+        }
+    }
+    foreach (BETA_CONTACT_ROUTE_FALLBACKS as $topic => $fallback) {
+        if (!array_key_exists($topic, $rawRoutes) && isset($routes[$fallback])) {
+            $routes[$topic] = $routes[$fallback];
         }
     }
     $supabase = beta_supabase_settings($config);

@@ -44,12 +44,13 @@ test("POST only, through the shared guards", () => {
   );
 });
 
-test("the topic allowlist is the five agreed topics, with no admin", () => {
+test("the topic allowlist is the six agreed topics, with no admin", () => {
   const block =
     lib.match(/const BETA_CONTACT_TOPICS = \[([\s\S]*?)\];/)?.[1] ?? "";
   const keys = [...block.matchAll(/'([a-z_]+)' =>/g)].map((m) => m[1]);
   assert.deepEqual(keys, [
     "support",
+    "app_feedback",
     "sales_partnerships",
     "careers",
     "privacy",
@@ -93,4 +94,32 @@ test("one email to the team: fixed headers, no Reply-To, nothing to the visitor,
     handler,
     /fopen|file_put_contents|fputcsv|beta_with_rows|beta_store/,
   );
+});
+
+test("only App feedback falls back, to the support route, and only when it has no entry of its own", () => {
+  const block =
+    lib.match(/const BETA_CONTACT_ROUTE_FALLBACKS = \[([\s\S]*?)\];/)?.[1] ??
+    "";
+  assert.deepEqual(
+    [...block.matchAll(/'([a-z_]+)' => '([a-z_]+)'/g)].map((m) => [m[1], m[2]]),
+    [["app_feedback", "support"]],
+  );
+  assert.match(
+    lib,
+    /!array_key_exists\(\$topic, \$rawRoutes\) && isset\(\$routes\[\$fallback\]\)/,
+    "a present-but-invalid route must not fall back",
+  );
+});
+
+test("errors return to a page from a fixed map, never a URL from the request", () => {
+  const block =
+    handler.match(/const CONTACT_ERROR_PAGES = \[([\s\S]*?)\];/)?.[1] ?? "";
+  assert.deepEqual(
+    [...block.matchAll(/'([a-z_]+)' => '([^']+)'/g)].map((m) => [m[1], m[2]]),
+    [["app_feedback", "/feedback/"]],
+  );
+  const fail = handler.match(/function contact_fail\([\s\S]*?\n\}/)?.[0] ?? "";
+  assert.match(fail, /CONTACT_ERROR_PAGES\[\$topic\]/);
+  assert.match(fail, /: '\/contact\/';/);
+  assert.doesNotMatch(fail, /\$_(?:GET|SERVER|REQUEST)|HTTP_REFERER/);
 });

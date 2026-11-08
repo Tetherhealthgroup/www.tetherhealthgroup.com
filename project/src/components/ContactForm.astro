@@ -10,6 +10,8 @@
  * The topic values are the handler's allowlist (BETA_CONTACT_TOPICS in
  * public/api/beta-lib.inc); keep the two in step. Which mailbox each topic
  * reaches is set only in the private server config, never in this page.
+ * `topic` preselects one of them (the /feedback/ page uses "app_feedback");
+ * the visitor can still change it.
  *
  * The one script records how long the form was open, for the handler's
  * minimum-fill-time check. Editing it changes its CSP hash in
@@ -18,6 +20,13 @@
 
 import Button from "./Button.astro";
 import Icon from "./Icon.astro";
+
+interface Props {
+  /** A topic value to preselect. */
+  topic?: string;
+}
+
+const { topic } = Astro.props;
 
 const fieldClass =
   "w-full rounded-[14px] border-2 border-teal-muted bg-paper px-4 py-3.5 text-[1.0625rem] " +
@@ -28,11 +37,14 @@ const labelClass = "mb-2 block text-[0.95rem] font-bold text-teal-deep";
 
 const topics = [
   { value: "support", label: "Support" },
+  { value: "app_feedback", label: "App feedback" },
   { value: "sales_partnerships", label: "Sales & partnerships" },
   { value: "careers", label: "Careers" },
   { value: "privacy", label: "Privacy" },
   { value: "finance", label: "Finance" },
 ];
+/* An unknown value preselects nothing, so the placeholder stays selected. */
+const selected = topics.some((t) => t.value === topic) ? topic : undefined;
 
 const errors = [
   {
@@ -77,8 +89,14 @@ const errors = [
     <div class="sm:col-span-2">
       <label class={labelClass} for="ct-topic">Topic</label>
       <select class={selectClass} id="ct-topic" name="topic" required>
-        <option value="" selected disabled>Choose a topic</option>
-        {topics.map((t) => <option value={t.value}>{t.label}</option>)}
+        <option value="" selected={!selected} disabled>Choose a topic</option>
+        {
+          topics.map((t) => (
+            <option value={t.value} selected={t.value === selected}>
+              {t.label}
+            </option>
+          ))
+        }
       </select>
     </div>
 

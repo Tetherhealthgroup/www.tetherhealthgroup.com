@@ -113,7 +113,7 @@ project/
 
 `/` · `/programs/` · `/programs/<area>/` (eleven, generated) · `/services/` ·
 `/integrations/` · `/for-clinicians/` · `/about/` · `/careers/` ·
-`/contact/` · `/support/` · `/privacy/` · `/app-privacy/` ·
+`/contact/` · `/support/` · `/feedback/` · `/privacy/` · `/app-privacy/` ·
 `/delete-account/` · `/terms/` · `/security/` · `/accessibility/` ·
 `/beta/` · `/beta/thanks/` · `/beta/confirmed/` · `404`
 

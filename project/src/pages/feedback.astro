@@ -1,0 +1,89 @@
+---
+/**
+ * App feedback: the contact form with the App feedback topic preselected, so
+ * this page can be given as the feedback address for the Tether Health app.
+ * The handler sends it to the App feedback route in the private server
+ * config, or to the support route when there is none; no mailbox is shown
+ * here. Errors come back to this page (CONTACT_ERROR_PAGES in
+ * public/api/contact.php).
+ */
+
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Section from "../components/Section.astro";
+import Icon from "../components/Icon.astro";
+import ContactForm from "../components/ContactForm.astro";
+---
+
+<Base
+  title="App feedback"
+  description="Send feedback about the Tether Health app: what works, what doesn't, and your ideas. Your message reaches our team by email."
+>
+  <PageHero
+    eyebrow="App feedback"
+    title="Tell us how the app is working for you."
+    intro="Tell us what works, what doesn't, and any ideas you have for the Tether Health app. Your message reaches our team by email."
+  />
+
+  <Section space="tight" width="default">
+    <div class="mx-auto max-w-3xl">
+      <h2 class="text-3xl">What helps us most</h2>
+      <ul class="mt-6 space-y-3 text-lg leading-relaxed">
+        <li class="flex items-start gap-3">
+          <Icon name="check" size={20} class="mt-1.5 shrink-0" />
+          <span
+            >What you were trying to do, what happened, and what you expected to
+            happen.</span
+          >
+        </li>
+        <li class="flex items-start gap-3">
+          <Icon name="check" size={20} class="mt-1.5 shrink-0" />
+          <span
+            >The app version, shown at the bottom of Account, and the phone you
+            use.</span
+          >
+        </li>
+        <li class="flex items-start gap-3">
+          <Icon name="check" size={20} class="mt-1.5 shrink-0" />
+          <span>Which program you were using, if it was one in particular.</span
+          >
+        </li>
+      </ul>
+      <p
+        class="mt-8 flex items-start gap-3 rounded-3xl border border-hairline-soft bg-paper p-6 text-[0.95rem] leading-relaxed text-teal-mid"
+      >
+        <Icon name="info" size={20} class="mt-0.5 shrink-0 text-teal-mid" />
+        <span>
+          Your message reaches us as ordinary email. Please do not include
+          health details you would not want to share by email.
+        </span>
+      </p>
+    </div>
+  </Section>
+
+  <Section space="tight" width="default">
+    <div
+      class="mx-auto max-w-3xl rounded-3xl border border-hairline-soft bg-paper p-7 shadow-[var(--shadow-card)] sm:p-10"
+    >
+      <h2 class="mb-8 text-3xl">Send your feedback</h2>
+      <ContactForm topic="app_feedback" />
+    </div>
+  </Section>
+
+  <Section space="tight" width="wide">
+    <p
+      class="flex items-start gap-3 rounded-3xl border-2 border-coral/30 bg-coral-light p-6 leading-relaxed text-teal-deep"
+    >
+      <Icon name="alert" size={20} class="mt-0.5 shrink-0" />
+      <span>
+        Need help right now? In an emergency call 911. Thoughts of harming
+        yourself? Call or text 988. Email is not monitored around the clock and
+        we cannot give medical advice. For help with the app, see our <a
+          href="/support/"
+          class="font-bold underline decoration-coral decoration-2 underline-offset-4"
+          >support page</a
+        >.
+      </span>
+    </p>
+  </Section>
+</Base>

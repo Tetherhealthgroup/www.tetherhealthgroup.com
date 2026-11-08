@@ -32,6 +32,7 @@ export const REQUIRED_PAGES = [
   "integrations/index.html",
   "app-privacy/index.html",
   "delete-account/index.html",
+  "feedback/index.html",
   "for-clinicians/index.html",
   "privacy/index.html",
   "programs/index.html",

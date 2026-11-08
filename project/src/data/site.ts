@@ -120,6 +120,7 @@ export const footerNav: { title: string; links: NavLink[] }[] = [
       { label: "Careers", href: "/careers/" },
       { label: "Contact", href: "/contact/" },
       { label: "Support", href: "/support/" },
+      { label: "App feedback", href: "/feedback/" },
     ],
   },
   {
