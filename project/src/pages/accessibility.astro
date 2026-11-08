@@ -66,13 +66,21 @@ import SupportEmail from "../components/SupportEmail.astro";
     not as a conformance claim.
   </p>
 
-  <h2>Accessibility in BreatheFree</h2>
+  <h2>Accessibility in the Tether Health app</h2>
   <p>
-    The application is held to a higher bar than the website, because it is used
-    in harder circumstances. Before release it must support VoiceOver, TalkBack,
-    keyboard-only navigation and switch control; 200% text scaling; a 4.5:1
-    contrast minimum; reduced motion; and meaning that never depends on colour
-    alone. Audio and video education must carry captions and transcripts.
+    Every button and control in the app has a label that screen readers such as
+    VoiceOver read aloud, screen titles are marked as headings, and charts and
+    timers are read as words. Body text follows your phone's text size; we check
+    layouts at 200% and 300%, and a few compact controls still shorten their
+    labels at the largest sizes. Zones, alerts and selections are shown with
+    words or symbols, not colour alone. The app has no audio or video content.
+  </p>
+  <p>
+    What the app does not do yet: it has no dark appearance, it does not follow
+    the phone's increased-contrast setting, and its breathing animation does not
+    yet follow the phone's reduce-motion setting. We are working on these. Our
+    checks so far are automated; screen-reader and voice-control users have not
+    yet tested the app on a phone, and there has been no independent audit.
   </p>
 
   <h2>Tell us about a barrier</h2>
