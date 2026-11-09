@@ -290,6 +290,14 @@ Since 2026-11-09 both steps run by themselves:
    same as "Update from Remote" then "Deploy HEAD Commit"). Its output goes to
    `/home2/safecode/www-autodeploy.log`.
 
+Measured on 2026-11-09 (cPanel Domains page and File Manager): the domain's
+document root is now the checkout itself, `/home2/safecode/tetherhealthgroup.com`,
+so the cron's fast-forward is what publishes the site; the `.cpanel.yml` copy
+into `public_html/tetherhealthgroup.com` reaches a folder Apache no longer
+serves. `project/public/.gitignore` ships to the branch root so that files the
+server writes into the checkout (PHP's `api/error_log`) do not count as
+uncommitted changes, which made cPanel refuse "Deploy HEAD Commit".
+
 So a push to `master` is live within about 15 minutes of CI going green.
 The manual commands above still work and produce the same result. The Node
 security check below now applies to the floor in `ci.yml`, which is what the
