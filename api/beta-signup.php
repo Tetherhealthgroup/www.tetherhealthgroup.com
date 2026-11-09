@@ -23,8 +23,10 @@ declare(strict_types=1);
  * again with the same address sends at most one confirmation a day; an
  * address that has already confirmed is left as it is.
  *
- * Configuration and data live OUTSIDE the web root: see beta-lib.inc and
- * docs/beta-config.example.php. Without the config nothing is stored or sent.
+ * Storage: Supabase when the private config has its three keys (P-116), with
+ * the CSV file outside the web root as the fallback; the file alone when it
+ * does not. See beta-lib.inc and docs/beta-config.example.php. Without the
+ * config nothing is stored or sent.
  */
 
 require __DIR__ . '/beta-lib.inc';
@@ -85,6 +87,40 @@ $valid = $firstName !== null && $firstName !== '' && strlen($firstName) <= BETA_
     && $consent === 'yes';
 if (!$valid) {
     beta_fail('fields');
+}
+
+// Supabase first when it is configured (P-116). Whatever it answers, the
+// visitor sees the same "check your email" page, so nothing reveals whether an
+// address is already on the list. Unreachable, forbidden, 5xx or an unusable
+// answer falls through to the file below, so a sign-up is never lost.
+if ($config['supabase'] === false) {
+    beta_supabase_fallback_log('beta-signup', 'config');
+} elseif (is_array($config['supabase'])) {
+    $answer = beta_supabase_call($config['supabase'], 'beta_waitlist_signup', [
+        'p_first_name' => $firstName,
+        'p_email' => $email,
+        'p_phone' => $phone,
+        'p_heard_from' => $source === '' ? null : $source,
+        'p_age_confirmed' => true,
+        'p_consent' => true,
+    ]);
+    if (is_array($answer)) {
+        // Opportunistic: expired pending sign-ups are deleted; the result does
+        // not affect this request.
+        $cleanup = beta_supabase_call($config['supabase'], 'beta_waitlist_cleanup', []);
+        if (is_string($cleanup)) {
+            beta_supabase_fallback_log('beta-signup', 'cleanup ' . $cleanup);
+        }
+        if ($answer['status'] === 'invalid') {
+            beta_fail('fields');
+        }
+        if ($answer['status'] === 'sent'
+            && !beta_send_confirmation($email, $answer['token'], $config['from'])) {
+            error_log('beta-signup: mail() failed for 1 confirmation message');
+        }
+        beta_redirect('/beta/thanks/');
+    }
+    beta_supabase_fallback_log('beta-signup', $answer);
 }
 
 $now = time();

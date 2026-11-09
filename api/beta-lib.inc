@@ -43,6 +43,42 @@ const BETA_SOURCES = [
     'other' => 'Other',
 ];
 
+/** Contact form topics: submitted value => label shown in the subject. */
+const BETA_CONTACT_TOPICS = [
+    'support' => 'Support',
+    'app_feedback' => 'App feedback',
+    'sales_partnerships' => 'Sales & partnerships',
+    'careers' => 'Careers',
+    'privacy' => 'Privacy',
+    'finance' => 'Finance',
+];
+
+/**
+ * Contact topics that share another topic's mailbox unless the private config
+ * routes them itself: topic => the topic whose route it uses. Only a topic
+ * absent from 'contact_routes' falls back; one that is present but invalid
+ * still fails closed, so a typo in the config is not silently redirected.
+ */
+const BETA_CONTACT_ROUTE_FALLBACKS = [
+    'app_feedback' => 'support',
+];
+
+/** Contact form caps: bytes for single-line fields, characters for the message. */
+const BETA_MAX_ORGANISATION = 120;
+const BETA_MAX_MESSAGE_CHARS = 2000;
+
+/**
+ * Supabase (P-116): the statuses each waitlist function may answer. Anything
+ * else is treated as an unusable response and the file path is used.
+ */
+const BETA_SUPABASE_STATUSES = [
+    'beta_waitlist_signup' => ['sent', 'already', 'throttled', 'invalid', 'forbidden'],
+    'beta_waitlist_token_status' => ['valid', 'invalid', 'forbidden'],
+    'beta_waitlist_confirm' => ['confirmed', 'invalid', 'forbidden'],
+    'beta_waitlist_cleanup' => ['ok', 'forbidden'],
+];
+const BETA_SUPABASE_TIMEOUT = 5;
+
 const BETA_COLUMNS = [
     'submitted_at_utc', 'first_name', 'email', 'phone', 'heard_from',
     'confirmed_18_plus', 'consent_beta_email', 'status', 'confirmed_at_utc',
@@ -170,6 +206,24 @@ function beta_load_config(): ?array
             return null;
         }
     }
+    // Contact form routes (topic => mailbox). Optional here; the contact
+    // handler fails closed when the route it needs is absent or invalid.
+    $routes = [];
+    $rawRoutes = $config['contact_routes'] ?? [];
+    if (!is_array($rawRoutes)) {
+        return null;
+    }
+    foreach ($rawRoutes as $topic => $address) {
+        if (is_string($topic) && array_key_exists($topic, BETA_CONTACT_TOPICS) && beta_is_email($address)) {
+            $routes[$topic] = $address;
+        }
+    }
+    foreach (BETA_CONTACT_ROUTE_FALLBACKS as $topic => $fallback) {
+        if (!array_key_exists($topic, $rawRoutes) && isset($routes[$fallback])) {
+            $routes[$topic] = $routes[$fallback];
+        }
+    }
+    $supabase = beta_supabase_settings($config);
     $max = $config['rate_limit_max'] ?? 8;
     $window = $config['rate_limit_window'] ?? 3600;
     if (!is_int($max) || $max < 1 || !is_int($window) || $window < 1) {
@@ -182,7 +236,123 @@ function beta_load_config(): ?array
         'from' => $from,
         'rate_limit_max' => $max,
         'rate_limit_window' => $window,
+        'contact_routes' => $routes,
+        // array when Supabase is configured, null when it is not, false when
+        // its keys are present but unusable (the caller logs and uses the file).
+        'supabase' => $supabase,
     ];
+}
+
+/**
+ * The Supabase settings from the raw config: an array when all three keys are
+ * present and valid, null when none is present (the file path, as before), and
+ * false when they are present but unusable.
+ *
+ * The URL must be https (a plain-http 127.0.0.1 or localhost address is
+ * accepted for local tests). The key must be the publishable key: a secret key
+ * (sb_secret_...) or a service_role JWT is refused. The server secret is the
+ * 64-hex value from `openssl rand -hex 32`.
+ */
+function beta_supabase_settings(array $config): array|false|null
+{
+    $url = $config['supabase_url'] ?? null;
+    $key = $config['supabase_publishable_key'] ?? null;
+    $secret = $config['supabase_waitlist_secret'] ?? null;
+    if ($url === null && $key === null && $secret === null) {
+        return null;
+    }
+    if (!is_string($url) || !is_string($key) || !is_string($secret)) {
+        return false;
+    }
+    $url = rtrim($url, '/');
+    $https = preg_match('#^https://[a-z0-9-]+(?:\.[a-z0-9-]+)+$#', $url) === 1;
+    $local = preg_match('#^http://(?:127\.0\.0\.1|localhost):[0-9]{2,5}$#', $url) === 1;
+    if (!$https && !$local) {
+        return false;
+    }
+    if (preg_match('/^[A-Za-z0-9._-]{20,1024}$/', $key) !== 1 || str_starts_with($key, 'sb_secret_')) {
+        return false;
+    }
+    $parts = explode('.', $key);
+    if (count($parts) === 3) {
+        $payload = base64_decode(strtr($parts[1], '-_', '+/'), false);
+        if (is_string($payload) && str_contains($payload, 'service_role')) {
+            return false;
+        }
+    }
+    if (preg_match('/^[0-9a-f]{64}$/', $secret) !== 1) {
+        return false;
+    }
+    $timeout = $config['supabase_timeout'] ?? BETA_SUPABASE_TIMEOUT;
+    if (!is_int($timeout) || $timeout < 1 || $timeout > BETA_SUPABASE_TIMEOUT) {
+        return false;
+    }
+    return ['url' => $url, 'key' => $key, 'secret' => $secret, 'local' => $local, 'timeout' => $timeout];
+}
+
+/**
+ * Call one waitlist function. Returns the decoded answer, or a short reason
+ * ('transport', 'http', 'response', 'forbidden') when the answer cannot be
+ * used and the caller must fall back to the file. The reason is safe to log;
+ * the secret, key, token and personal data never are.
+ */
+function beta_supabase_call(array $sb, string $fn, array $args): array|string
+{
+    if (!function_exists('curl_init')) {
+        return 'transport';
+    }
+    $payload = json_encode(['p_server_secret' => $sb['secret']] + $args, JSON_UNESCAPED_UNICODE);
+    if (!is_string($payload)) {
+        return 'transport';
+    }
+    $ch = curl_init($sb['url'] . '/rest/v1/rpc/' . $fn);
+    if ($ch === false) {
+        return 'transport';
+    }
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_HTTPHEADER => [
+            'apikey: ' . $sb['key'],
+            'Authorization: Bearer ' . $sb['key'],
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_CONNECTTIMEOUT => $sb['timeout'],
+        CURLOPT_TIMEOUT => $sb['timeout'],
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_PROTOCOLS => $sb['local'] ? CURLPROTO_HTTP : CURLPROTO_HTTPS,
+    ]);
+    $body = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    unset($ch);
+    if (!is_string($body)) {
+        return 'transport';
+    }
+    if ($code < 200 || $code >= 300) {
+        return 'http';
+    }
+    $data = json_decode($body, true);
+    $status = is_array($data) ? ($data['status'] ?? null) : null;
+    if (!is_string($status) || !in_array($status, BETA_SUPABASE_STATUSES[$fn] ?? [], true)) {
+        return 'response';
+    }
+    if ($status === 'forbidden') {
+        return 'forbidden';
+    }
+    if ($status === 'sent' && (!is_string($data['token'] ?? null) || preg_match('/^[0-9a-f]{64}$/', $data['token']) !== 1)) {
+        return 'response';
+    }
+    return $data;
+}
+
+/** One log line for a fallback to the file: the handler and a fixed reason. */
+function beta_supabase_fallback_log(string $handler, string $reason): void
+{
+    error_log($handler . ': waitlist database unavailable (' . $reason . '); using the file fallback');
 }
 
 /**
@@ -218,7 +388,7 @@ function beta_cleanup(array $config): bool
  * Returns true when this attempt is allowed, false when over the limit, and
  * null when the counter cannot be kept (the caller fails closed).
  */
-function beta_rate_limit(array $config): ?bool
+function beta_rate_limit(array $config, string $scope = 'tether-beta'): ?bool
 {
     $dir = $config['rate_limit_dir'];
     if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) {
@@ -226,7 +396,7 @@ function beta_rate_limit(array $config): ?bool
     }
     $now = time();
     $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
-    $file = $dir . '/' . hash('sha256', 'tether-beta|' . $ip) . '.rate';
+    $file = $dir . '/' . hash('sha256', $scope . '|' . $ip) . '.rate';
     $handle = @fopen($file, 'c+');
     if ($handle === false) {
         return null;
@@ -373,6 +543,14 @@ function beta_new_token(): array
 {
     $token = bin2hex(random_bytes(32));
     return [$token, hash('sha256', $token)];
+}
+
+/** A header value made safe for any UTF-8: RFC 2047 base64 when not ASCII. */
+function beta_header_text(string $text): string
+{
+    return preg_match('/^[\x20-\x7E]*$/', $text) === 1
+        ? $text
+        : '=?UTF-8?B?' . base64_encode($text) . '?=';
 }
 
 /** Plain-text mail with fixed headers and no Reply-To. */
