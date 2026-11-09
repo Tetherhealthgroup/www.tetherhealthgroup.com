@@ -276,6 +276,25 @@ cPanel copies it into the document root. The second step is what
 `project/public/.cpanel.yml` provides — see "The document root was the
 blocker" below for why a copy step is needed at all.
 
+### Automatic publishing
+
+Since 2026-11-09 both steps run by themselves:
+
+1. **GitHub Actions** (`.github/workflows/ci.yml`, job `deploy`): after the
+   `verify` job passes on a push to `master`, it builds on the same Node floor
+   and runs `npm run deploy`, which pushes a new `deploy` commit.
+2. **A cPanel cron job** (cPanel → Cron Jobs, every 15 minutes) fetches
+   `deploy` into `/home2/safecode/tetherhealthgroup.com`, and only when the
+   tip changed, fast-forwards it and runs
+   `uapi VersionControlDeployment create`, which executes `.cpanel.yml` (the
+   same as "Update from Remote" then "Deploy HEAD Commit"). Its output goes to
+   `/home2/safecode/www-autodeploy.log`.
+
+So a push to `master` is live within about 15 minutes of CI going green.
+The manual commands above still work and produce the same result. The Node
+security check below now applies to the floor in `ci.yml`, which is what the
+CI build uses.
+
 **Before each publish, check Node's security releases. This is a manual
 check: nothing watches it automatically** (source: WEB-020). From the
 repository root, `git log -s -L '/node-version:/,+1:.github/workflows/ci.yml'`

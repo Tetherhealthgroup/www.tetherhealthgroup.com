@@ -120,3 +120,51 @@ jobs:
       - name: Test (performance)
         working-directory: project
         run: npm run test:performance
+
+  # Publishes the site after every green master push: builds on the same
+  # Node floor as verify and runs scripts/deploy.sh, which commits dist/ to
+  # the orphan `deploy` branch and pushes it. The host's cPanel cron job
+  # (README, "Automatic publishing") then pulls `deploy` and runs
+  # .cpanel.yml, which copies it into the document root.
+  deploy:
+    name: Publish to the deploy branch
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          # Same floor as the verify job; see the reasons there.
+          node-version: "^22.23.4"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        working-directory: project
+        run: npm run build
+
+      # deploy.sh parents the new commit on the live tip so the push is a
+      # fast-forward.
+      - name: Fetch the deploy branch
+        run: git fetch --depth=1 origin deploy:refs/remotes/origin/deploy
+
+      - name: Publish
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: npm run deploy
