@@ -18,7 +18,7 @@ const PORT = 4331; // deliberately not 4321, so a dev server can stay running
 const BASE = `http://127.0.0.1:${PORT}`;
 
 /**
- * `astro preview` daemonises: it forks a background server and returns
+ * `astro preview --background` daemonises: it forks a background server and returns
  * immediately, so the spawned process is NOT the server and killing it leaves
  * the port held. The CLI's own `stop` subcommand is the only thing that ends
  * it — an earlier version of this file killed the wrong process and leaked a
@@ -50,7 +50,11 @@ async function waitForServer(timeoutMs = 45000) {
 before(async () => {
   // Leave nothing behind from an interrupted earlier run.
   stopPreview();
-  previewCli("--port", String(PORT), "--host", "127.0.0.1");
+  // --background explicitly: astro only backgrounds by itself when it detects
+  // an AI agent's environment, so without the flag spawnSync waits on the
+  // foreground server forever (every CI run since 2026-10-28 hit the 20-minute
+  // job timeout here).
+  previewCli("--background", "--port", String(PORT), "--host", "127.0.0.1");
   await waitForServer();
 });
 
