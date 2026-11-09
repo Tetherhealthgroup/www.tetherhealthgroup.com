@@ -8,7 +8,7 @@ import SupportEmail from "../components/SupportEmail.astro";
   description="Our accessibility commitment for this site and our products: what we have done, what we have not yet verified, and how to tell us about a barrier."
   eyebrow="Trust"
   intro="People who are unwell, tired, distracted or in distress are exactly who our products are for. An interface they cannot use is not a minor defect."
-  updated="2026-08-29"
+  updated="2026-11-09"
   scopeNote="We aim to meet WCAG 2.2 Level AA. We have not yet commissioned an independent accessibility audit of this site, so this page states what we have built and tested ourselves — not a certified conformance claim."
 >
   <h2>What we have built into this site</h2>
@@ -73,14 +73,16 @@ import SupportEmail from "../components/SupportEmail.astro";
     timers are read as words. Body text follows your phone's text size; we check
     layouts at 200% and 300%, and a few compact controls still shorten their
     labels at the largest sizes. Zones, alerts and selections are shown with
-    words or symbols, not colour alone. The app has no audio or video content.
+    words or symbols, not colour alone. When your phone asks for reduced motion,
+    the breathing ring and loading placeholders stand still and pages cross-fade
+    instead of sliding. The app has no audio or video content.
   </p>
   <p>
-    What the app does not do yet: it has no dark appearance, it does not follow
-    the phone's increased-contrast setting, and its breathing animation does not
-    yet follow the phone's reduce-motion setting. We are working on these. Our
-    checks so far are automated; screen-reader and voice-control users have not
-    yet tested the app on a phone, and there has been no independent audit.
+    What the app does not do yet: it has no dark appearance, and it does not
+    follow the phone's increased-contrast setting, although its text colours are
+    chosen to meet WCAG AA contrast. We are working on these. Our checks so far
+    are automated; screen-reader and voice-control users have not yet tested the
+    app on a phone, and there has been no independent audit.
   </p>
 
   <h2>Tell us about a barrier</h2>
