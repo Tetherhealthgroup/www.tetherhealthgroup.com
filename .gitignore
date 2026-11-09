@@ -1,0 +1,7 @@
+# Shipped to the root of the `deploy` branch, which cPanel checks out as the
+# live document root. Files the server writes there (PHP's error_log next to
+# the api/ scripts, for example) would otherwise be untracked changes, and
+# cPanel refuses "Deploy HEAD Commit" while the checkout has any. Not served:
+# the .htaccess deny-list refuses every dotfile.
+error_log
+php_errorlog
