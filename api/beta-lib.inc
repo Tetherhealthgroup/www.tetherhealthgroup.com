@@ -68,6 +68,15 @@ const BETA_MAX_ORGANISATION = 120;
 const BETA_MAX_MESSAGE_CHARS = 2000;
 
 /**
+ * Contact topics whose message text is also queued for the team's private
+ * issue tracker (see beta_feedback_queue), and how long a queued entry is
+ * kept on this server. The office collects the queue every 30 minutes.
+ */
+const BETA_FEEDBACK_TOPICS = ['app_feedback', 'support'];
+const BETA_FEEDBACK_TTL = 14 * 86400;
+const BETA_FEEDBACK_FILE = 'feedback-queue.jsonl';
+
+/**
  * Supabase (P-116): the statuses each waitlist function may answer. Anything
  * else is treated as an unusable response and the file path is used.
  */
@@ -357,9 +366,10 @@ function beta_supabase_fallback_log(string $handler, string $reason): void
 
 /**
  * Cleanup, run at the start of every request to either handler once the
- * config is loaded: rate-limit files untouched for a day are removed, and
- * pending rows whose token has expired are deleted. Returns false when the
- * waitlist file could not be processed.
+ * config is loaded: rate-limit files untouched for a day are removed,
+ * queued feedback older than BETA_FEEDBACK_TTL is dropped, and pending rows
+ * whose token has expired are deleted. Returns false when the waitlist file
+ * could not be processed.
  */
 function beta_cleanup(array $config): bool
 {
@@ -369,6 +379,12 @@ function beta_cleanup(array $config): bool
         if ($mtime !== false && $mtime < $now - BETA_RATE_FILE_TTL) {
             @unlink($stale);
         }
+    }
+    // Queued feedback older than BETA_FEEDBACK_TTL goes on any form request,
+    // not only when the next message is queued.
+    $feedback = beta_feedback_path();
+    if ($feedback !== null && is_file($feedback) && !beta_feedback_rewrite($feedback, null)) {
+        error_log('cleanup: feedback queue could not be pruned');
     }
     if (!is_file($config['storage_path'])) {
         return true;
@@ -579,4 +595,93 @@ function beta_send_confirmation(string $to, string $token, string $from): bool
         'Questions or deletion: privacy@tetherhealthgroup.com',
     ]);
     return beta_mail($to, 'Confirm your spot on the Tether Health beta waitlist', $body, $from);
+}
+
+/** The feedback queue's path beside the private config, or null when unusable. */
+function beta_feedback_path(): ?string
+{
+    $config = beta_config_path();
+    if ($config === null) {
+        return null;
+    }
+    $path = dirname($config) . '/' . BETA_FEEDBACK_FILE;
+    return beta_outside_web_root($path) ? $path : null;
+}
+
+/**
+ * Rewrites the feedback queue under an exclusive lock on a sibling .lock file:
+ * reads the entries, drops those older than BETA_FEEDBACK_TTL and unreadable
+ * lines, appends $add when given, and replaces the file through a temporary
+ * file and a rename, so a failed write never empties the queue. Returns false
+ * when the queue cannot be read or written.
+ */
+function beta_feedback_rewrite(string $path, ?string $add): bool
+{
+    $lock = @fopen($path . '.lock', 'c');
+    if ($lock === false) {
+        return false;
+    }
+    try {
+        if (!flock($lock, LOCK_EX)) {
+            return false;
+        }
+        $since = beta_utc(time() - BETA_FEEDBACK_TTL);
+        $raw = is_file($path) ? @file_get_contents($path) : '';
+        if ($raw === false) {
+            return false;
+        }
+        $keep = [];
+        foreach (explode("\n", $raw) as $line) {
+            $entry = json_decode($line, true);
+            if (is_array($entry) && is_string($entry['sent'] ?? null) && $entry['sent'] >= $since) {
+                $keep[] = $line;
+            }
+        }
+        if ($add === null && count($keep) === count(array_filter(explode("\n", $raw), 'strlen'))) {
+            flock($lock, LOCK_UN);
+            return true;
+        }
+        if ($add !== null) {
+            $keep[] = $add;
+        }
+        $data = $keep === [] ? '' : implode("\n", $keep) . "\n";
+        $tmp = $path . '.tmp';
+        $out = @fopen($tmp, 'wb');
+        if ($out === false) {
+            return false;
+        }
+        @chmod($tmp, 0600);
+        $ok = fwrite($out, $data) === strlen($data) && fflush($out);
+        fclose($out);
+        if (!$ok || !@rename($tmp, $path)) {
+            @unlink($tmp);
+            return false;
+        }
+        flock($lock, LOCK_UN);
+        return true;
+    } finally {
+        fclose($lock);
+    }
+}
+
+/**
+ * Queues one contact message for the team's private issue tracker: one JSON
+ * line in feedback-queue.jsonl beside the private config (outside the web
+ * root), holding only a random id, the topic, the time and the message text.
+ * The visitor's name, email address, organisation and IP address are never
+ * written. Returns false when the queue cannot be written.
+ */
+function beta_feedback_queue(string $topic, string $message): bool
+{
+    $path = beta_feedback_path();
+    if ($path === null || !in_array($topic, BETA_FEEDBACK_TOPICS, true)) {
+        return false;
+    }
+    $json = json_encode([
+        'id' => bin2hex(random_bytes(8)),
+        'topic' => $topic,
+        'sent' => beta_utc(time()),
+        'message' => $message,
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    return $json !== false && beta_feedback_rewrite($path, $json);
 }
