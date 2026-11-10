@@ -24,7 +24,7 @@ test("the feedback page is one form that POSTs to the contact handler", () => {
   const form = main.match(/<form\b[^>]*id="contact-form"[^>]*>/)?.[0];
   assert.ok(form, "no contact form on /feedback/");
   assert.match(form, /method="post"/);
-  assert.match(form, /action="\/api\/contact\.php"/);
+  assert.match(form, /action="\/api\/message\.php"/);
   assert.doesNotMatch(form, /novalidate/);
   assert.equal((html().match(/<form\b/g) ?? []).length, 1, "exactly one form");
   assert.doesNotMatch(main, /mailto:/, "the feedback page lists a mailbox");
@@ -50,7 +50,7 @@ test("App feedback is the one preselected topic, and it is on the handler's allo
 
 test("every error the handler can send back to /feedback/ has a message shown by :target", () => {
   const handler = readFileSync(
-    join(projectRoot, "public", "api", "contact.php"),
+    join(projectRoot, "public", "api", "message.php"),
     "utf8",
   );
   const codes = new Set(

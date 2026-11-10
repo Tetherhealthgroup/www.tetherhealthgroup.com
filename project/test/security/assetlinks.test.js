@@ -105,7 +105,7 @@ test("the dotfile deny-list still refuses every other dot-name", () => {
     "error_log",
   ])
     assert.equal(re.test(name), true, `${name} is no longer refused`);
-  for (const name of ["beta-signup.php", "contact.php", "index.html"])
+  for (const name of ["beta-signup.php", "message.php", "index.html"])
     assert.equal(re.test(name), false, `${name} is refused`);
 });
 

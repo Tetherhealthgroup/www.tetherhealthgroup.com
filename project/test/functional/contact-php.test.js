@@ -1,4 +1,4 @@
-// Functional — the contact handler, public/api/contact.php, under a real PHP
+// Functional — the contact handler, public/api/message.php, under a real PHP
 // interpreter over HTTP (PHP's built-in server; sendmail is a capture script,
 // so nothing leaves the machine). Every address is synthetic or a role
 // mailbox. Skipped, with the reason, when no PHP interpreter is found.
@@ -30,7 +30,7 @@ const skip = phpAvailable
   : "no PHP interpreter (set PHP_BIN or put php on PATH)";
 
 const PORT = 4335; // e2e 4331, beta 4332, Apache 4333-4334
-const ENDPOINT = `http://127.0.0.1:${PORT}/api/contact.php`;
+const ENDPOINT = `http://127.0.0.1:${PORT}/api/message.php`;
 const ROUTES = {
   support: "support@tetherhealthgroup.com",
   sales_partnerships: "partnerships@tetherhealthgroup.com",
@@ -137,7 +137,7 @@ before(async () => {
   privateDir = join(tmp, "private");
   mkdirSync(join(docroot, "api"), { recursive: true });
   mkdirSync(privateDir);
-  for (const name of ["contact.php", "beta-lib.inc"])
+  for (const name of ["message.php", "beta-lib.inc"])
     copyFileSync(
       join(projectRoot, "public", "api", name),
       join(docroot, "api", name),

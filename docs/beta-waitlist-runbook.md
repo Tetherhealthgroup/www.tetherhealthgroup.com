@@ -237,7 +237,7 @@ curl -sI https://www.tetherhealthgroup.com/beta/                          # 200
 
 `/contact/` has one form with a required topic: Support, App feedback,
 Sales & partnerships, Careers, Privacy or Finance. It POSTs to
-`/api/contact.php`, which sends **one** plain-text email to the mailbox for
+`/api/message.php`, which sends **one** plain-text email to the mailbox for
 that topic and redirects to `/contact/thanks/`. The mailboxes are set only in
 the private config; the page never shows them.
 
@@ -295,8 +295,14 @@ using a mailbox you control as the visitor email, and check each arrives at
 its team mailbox with the subject `[Contact · <Topic>]` and no Reply-To.
 Send one more from `/feedback/` and check it arrives at the support mailbox
 (or the `app_feedback` one, if you added it).
-`curl -sI https://www.tetherhealthgroup.com/api/contact.php` should answer
+`curl -sI https://www.tetherhealthgroup.com/api/message.php` should answer
 405.
+
+The handler must not be named `contact*.php`: the host answers any request
+for `/api/contact.php` or `/api/contact-us.php` with a 409 bot challenge (an
+inline script that sets a `humans_…` cookie), and the site's CSP blocks that
+script, so visitors got a blank page and no message was ever delivered. Other
+names under `/api/` are not challenged (checked 2026-11-10).
 
 ## 7. Supabase as the source of truth (P-116)
 

@@ -3,7 +3,7 @@
 /*
  * Example configuration for the beta waitlist handler (api/beta-signup.php).
  *
- * Used by the beta waitlist handlers and the contact form (api/contact.php).
+ * Used by the beta waitlist handlers and the contact form (api/message.php).
  *
  * Copy this file to the server OUTSIDE the web root, as
  *

@@ -1,4 +1,4 @@
-// Security — static checks on the contact handler, public/api/contact.php.
+// Security — static checks on the contact handler, public/api/message.php.
 // Runs without PHP; the behaviour is exercised over HTTP in
 // test/functional/contact-php.test.js when an interpreter exists.
 
@@ -12,7 +12,7 @@ const read = (name) =>
   readFileSync(join(projectRoot, "public", "api", name), "utf8")
     .replace(/^\s*\/\*[\s\S]*?\*\//gm, "")
     .replace(/^\s*\/\/.*$/gm, "");
-const handler = read("contact.php");
+const handler = read("message.php");
 const lib = read("beta-lib.inc");
 
 test("POST only, through the shared guards", () => {
@@ -154,4 +154,18 @@ test("errors return to a page from a fixed map, never a URL from the request", (
   assert.match(fail, /CONTACT_ERROR_PAGES\[\$topic\]/);
   assert.match(fail, /: '\/contact\/';/);
   assert.doesNotMatch(fail, /\$_(?:GET|SERVER|REQUEST)|HTTP_REFERER/);
+});
+
+test("no handler is named contact*: the host answers those with a 409 bot challenge the CSP blocks", async () => {
+  const { readdirSync } = await import("node:fs");
+  const names = readdirSync(join(projectRoot, "public", "api"));
+  assert.deepEqual(
+    names.filter((n) => /^contact/i.test(n)),
+    [],
+  );
+  const form = readFileSync(
+    join(projectRoot, "src", "components", "ContactForm.astro"),
+    "utf8",
+  );
+  assert.match(form, /action="\/api\/message\.php"/);
 });

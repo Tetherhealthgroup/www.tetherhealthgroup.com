@@ -2,7 +2,7 @@
 /**
  * Contact form.
  *
- * An ordinary HTML form that POSTs to /api/contact.php, so it works with
+ * An ordinary HTML form that POSTs to /api/message.php, so it works with
  * JavaScript off. The handler sends one email to the team for the chosen topic
  * and redirects to /contact/thanks/, or back here with a fragment naming the
  * error; the matching message below is shown with CSS :target.
@@ -83,7 +83,7 @@ const errors = [
   <form
     id="contact-form"
     method="post"
-    action="/api/contact.php"
+    action="/api/message.php"
     class="grid gap-5 sm:grid-cols-2"
   >
     <div class="sm:col-span-2">

@@ -21,7 +21,7 @@ test("the contact page is one form that POSTs to the handler, with no mailbox li
   const form = main.match(/<form\b[^>]*id="contact-form"[^>]*>/)?.[0];
   assert.ok(form, "no contact form");
   assert.match(form, /method="post"/);
-  assert.match(form, /action="\/api\/contact\.php"/);
+  assert.match(form, /action="\/api\/message\.php"/);
   assert.doesNotMatch(form, /novalidate/);
   assert.doesNotMatch(
     main,
@@ -98,7 +98,7 @@ test("required fields, caps, consent line, honeypot and fill time are in the mar
 
 test("every error the handler redirects to has a message shown by :target", () => {
   const handler = readFileSync(
-    join(projectRoot, "public", "api", "contact.php"),
+    join(projectRoot, "public", "api", "message.php"),
     "utf8",
   );
   const codes = new Set(
