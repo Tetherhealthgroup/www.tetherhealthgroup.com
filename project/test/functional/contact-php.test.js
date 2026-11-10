@@ -49,10 +49,15 @@ const LABELS = {
 
 let tmp, docroot, privateDir, configPath, mailLog, server;
 
-function writeConfig({ routes = ROUTES, max = 1000, omitRoutes = false } = {}) {
+function writeConfig({
+  routes = ROUTES,
+  max = 1000,
+  omitRoutes = false,
+  storage = join(privateDir, "beta-waitlist.csv"),
+} = {}) {
   const q = (v) => `'${String(v).replace(/['\\]/g, "\\$&")}'`;
   const lines = [
-    `  'storage_path' => ${q(join(privateDir, "beta-waitlist.csv"))},`,
+    `  'storage_path' => ${q(storage)},`,
     `  'rate_limit_dir' => ${q(join(privateDir, "rate"))},`,
     `  'notify' => ['support@tetherhealthgroup.com'],`,
     `  'from' => 'support@tetherhealthgroup.com',`,
@@ -434,6 +439,27 @@ test(
       queue().map((e) => e.message),
       ["kept"],
     );
+  },
+);
+
+test(
+  "a rejected config logs which check failed, never the value",
+  { skip },
+  async () => {
+    const bad = join(docroot, "waitlist-in-web-root.csv");
+    reset({ storage: bad });
+    const res = await post({ ...VALID, topic: "support" });
+    assert.equal(res.location, "/contact/#error-unavailable");
+    const log = readFileSync(join(tmp, "php-error.log"), "utf8");
+    assert.match(
+      log,
+      /config: rejected: storage_path missing, relative or inside the web root/,
+    );
+    assert.ok(
+      !log.includes(bad),
+      "the log must not contain the configured path",
+    );
+    reset();
   },
 );
 

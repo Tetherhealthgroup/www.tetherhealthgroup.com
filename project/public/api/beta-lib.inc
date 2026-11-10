@@ -186,33 +186,43 @@ function beta_is_email(mixed $value): bool
         && filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
 }
 
+/**
+ * Logs why the private config was rejected, naming only the failed check and
+ * never a value from the file, and returns null.
+ */
+function beta_config_reject(string $why): ?array
+{
+    error_log('config: rejected: ' . $why);
+    return null;
+}
+
 /** The config, validated, or null when it is missing or unusable. */
 function beta_load_config(): ?array
 {
     $path = beta_config_path();
     if ($path === null || !is_file($path) || !is_readable($path)) {
-        return null;
+        return beta_config_reject($path === null ? 'no config path for this directory' : 'config file missing or unreadable');
     }
     $config = include $path;
     if (!is_array($config)) {
-        return null;
+        return beta_config_reject('config file does not return an array');
     }
     $storage = $config['storage_path'] ?? null;
     $rateDir = $config['rate_limit_dir'] ?? null;
     $notify = $config['notify'] ?? null;
     $from = $config['from'] ?? null;
     if (!is_string($storage) || !beta_outside_web_root($storage)) {
-        return null;
+        return beta_config_reject('storage_path missing, relative or inside the web root');
     }
     if (!is_string($rateDir) || !beta_outside_web_root($rateDir)) {
-        return null;
+        return beta_config_reject('rate_limit_dir missing, relative or inside the web root');
     }
     if (!is_array($notify) || $notify === [] || !beta_is_email($from)) {
-        return null;
+        return beta_config_reject('notify list empty or from address invalid');
     }
     foreach ($notify as $address) {
         if (!beta_is_email($address)) {
-            return null;
+            return beta_config_reject('an address in notify is invalid');
         }
     }
     // Contact form routes (topic => mailbox). Optional here; the contact
@@ -220,7 +230,7 @@ function beta_load_config(): ?array
     $routes = [];
     $rawRoutes = $config['contact_routes'] ?? [];
     if (!is_array($rawRoutes)) {
-        return null;
+        return beta_config_reject('contact_routes is not an array');
     }
     foreach ($rawRoutes as $topic => $address) {
         if (is_string($topic) && array_key_exists($topic, BETA_CONTACT_TOPICS) && beta_is_email($address)) {
@@ -236,7 +246,7 @@ function beta_load_config(): ?array
     $max = $config['rate_limit_max'] ?? 8;
     $window = $config['rate_limit_window'] ?? 3600;
     if (!is_int($max) || $max < 1 || !is_int($window) || $window < 1) {
-        return null;
+        return beta_config_reject('rate_limit_max or rate_limit_window is not a positive integer');
     }
     return [
         'storage_path' => $storage,
