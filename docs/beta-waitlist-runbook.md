@@ -253,8 +253,21 @@ form say it is unavailable rather than falling back.
 - From: the config's `from`. No Reply-To: reply to the visitor's address,
   which is in the body.
 - Subject: `[Contact · <Topic>]`, nothing the visitor typed.
-- Nothing is stored, and the visitor is not emailed (an automatic copy would
-  repeat what they typed to any address they enter).
+- The visitor is not emailed (an automatic copy would repeat what they typed
+  to any address they enter).
+- For App feedback and Support only, after the email is sent, the message
+  text is queued for the team's private issue tracker: one JSON line (random
+  id, topic, time, message; never the name, email address or organisation)
+  in `feedback-queue.jsonl`, in the same `tether-private` folder as the
+  config. Entries older than 14 days are dropped on the next request to any
+  form, and the file is replaced through a temporary file and a rename under
+  `feedback-queue.jsonl.lock`, so a failed write never empties it. The office
+  collects the file every 30 minutes and files each entry as a GitHub issue
+  in the private app repository, with email addresses and phone numbers
+  removed. If the queue cannot be written, the error log says `contact:
+  feedback queue unavailable for 1 message` and the visitor still sees the
+  thank-you page. Apart from that queue, only the per-IP rate-limit record
+  is stored. The office collector only reads the file; it never edits it.
 - Same guards as the beta form: POST only, length caps (message up to 2,000
   characters), control characters refused, honeypot, minimum fill time, and a
   per-IP limit with its own counter in `beta-rate-limit`.

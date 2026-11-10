@@ -122,7 +122,7 @@ ErrorDocument 404 /404.html
   # connect-src is 'self' because the form has no endpoint by default. Setting
   # PUBLIC_WAITLIST_ENDPOINT means adding that origin here, or the browser
   # blocks the POST — see README.
-  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-eFQE4oGVWjqb6tI/eOYqb+vJD8Ks3TS+aOeN/fOahfg=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-gdu2/aNZoTP1rDFzeFxVkgaCrN/Z0wHcN+2IXgIu9Nk=' 'sha256-63n01SFGTutZHkD1UWiG42GwPbSxE+btioXIa7MRoPU=' 'sha256-SRIauFt3ncH+nyOx5iqeDPulb5Jl+iLxfYdqhU0qnkU='; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'sha256-kEcf/rb4N3S873de1waXQdVKB88uCcFt26WUs8ZWj2g=' 'sha256-gdjihLHRG1fy+YCgLIPIT42ERkPDjf0O/Pu+J5eE3hA=' 'sha256-gdu2/aNZoTP1rDFzeFxVkgaCrN/Z0wHcN+2IXgIu9Nk=' 'sha256-63n01SFGTutZHkD1UWiG42GwPbSxE+btioXIa7MRoPU=' 'sha256-SRIauFt3ncH+nyOx5iqeDPulb5Jl+iLxfYdqhU0qnkU='; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; manifest-src 'self'; upgrade-insecure-requests"
 
   # HSTS — one year, and the ramp is finished.
   #

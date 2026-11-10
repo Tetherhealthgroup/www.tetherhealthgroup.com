@@ -22,7 +22,15 @@ declare(strict_types=1);
  * page or this file. App feedback uses the support route when the config
  * names no route of its own (BETA_CONTACT_ROUTE_FALLBACKS). One plain-text email goes to that mailbox: fixed From,
  * no Reply-To, a fixed subject naming only the topic, and the visitor's
- * details in the body. Nothing is stored and nothing is sent to the visitor.
+ * details in the body. Nothing is sent to the visitor.
+ *
+ * For App feedback and Support only, once the email is sent, the message text
+ * (no name, email address or organisation) is also queued for the team's
+ * private issue tracker by beta_feedback_queue, beside the private config;
+ * entries older than 14 days are dropped by beta_cleanup on the next request
+ * to a form. A queue failure is logged and does not fail the submission,
+ * which has already reached the mailbox. Apart from that queue, only the
+ * per-IP rate-limit record (a hash, see beta_rate_limit) is stored.
  *
  * Single-line fields reject CR, LF and every other control character. The
  * message may contain line breaks (it is body text only, never a header);
@@ -133,6 +141,10 @@ $body = implode("\n", [
 if (!beta_mail($to, beta_header_text('[Contact · ' . $label . ']'), $body, $config['from'])) {
     error_log('contact: sending failed for 1 message');
     contact_fail('unavailable');
+}
+
+if (in_array($topic, BETA_FEEDBACK_TOPICS, true) && !beta_feedback_queue($topic, $message)) {
+    error_log('contact: feedback queue unavailable for 1 message');
 }
 
 beta_redirect('/contact/thanks/');

@@ -15,6 +15,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  statSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -93,8 +94,19 @@ const decodeHeader = (v) =>
 function reset(options) {
   if (existsSync(mailLog)) unlinkSync(mailLog);
   rmSync(join(privateDir, "rate"), { recursive: true, force: true });
+  for (const f of [queuePath(), `${queuePath()}.lock`, `${queuePath()}.tmp`])
+    rmSync(f, { recursive: true, force: true });
   writeConfig(options);
 }
+
+const queuePath = () => join(privateDir, "feedback-queue.jsonl");
+const queue = () =>
+  existsSync(queuePath())
+    ? readFileSync(queuePath(), "utf8")
+        .split("\n")
+        .filter(Boolean)
+        .map((l) => JSON.parse(l))
+    : [];
 
 const VALID = {
   topic: "support",
@@ -135,7 +147,7 @@ before(async () => {
   const sendmail = join(tmp, "sendmail.sh");
   writeFileSync(
     sendmail,
-    '#!/bin/sh\n{ echo "ARGS: $*"; cat; echo "--END--"; } >> "$MAIL_LOG"\n',
+    '#!/bin/sh\n[ -f "$MAIL_FAIL" ] && exit 1\n{ echo "ARGS: $*"; cat; echo "--END--"; } >> "$MAIL_LOG"\n',
   );
   chmodSync(sendmail, 0o755);
   writeConfig();
@@ -162,6 +174,7 @@ before(async () => {
         ...process.env,
         TETHER_BETA_CONFIG: configPath,
         MAIL_LOG: mailLog,
+        MAIL_FAIL: join(tmp, "mail.fail"),
       },
       stdio: "ignore",
     },
@@ -250,13 +263,185 @@ test(
   },
 );
 
-test("nothing is stored", { skip }, async () => {
+test(
+  "topics other than App feedback and Support store nothing",
+  { skip },
+  async () => {
+    for (const topic of [
+      "sales_partnerships",
+      "careers",
+      "privacy",
+      "finance",
+    ]) {
+      reset();
+      const res = await post({ ...VALID, topic });
+      assert.equal(res.location, "/contact/thanks/", topic);
+      const files = readdirSync(privateDir).filter(
+        (f) => f !== "beta-config.php" && f !== "rate",
+      );
+      assert.deepEqual(files, [], topic);
+    }
+  },
+);
+
+test(
+  "App feedback and Support queue only id, topic, time and message, owner-only",
+  { skip },
+  async () => {
+    reset();
+    for (const topic of ["support", "app_feedback"]) {
+      const res = await post({ ...VALID, topic });
+      assert.equal(res.location, "/contact/thanks/");
+    }
+    const entries = queue();
+    assert.equal(entries.length, 2);
+    assert.deepEqual(
+      entries.map((e) => [Object.keys(e), e.topic, e.message]),
+      [
+        [["id", "topic", "sent", "message"], "support", VALID.message],
+        [["id", "topic", "sent", "message"], "app_feedback", VALID.message],
+      ],
+    );
+    for (const e of entries) {
+      assert.match(e.id, /^[0-9a-f]{16}$/);
+      assert.match(e.sent, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
+    }
+    assert.notEqual(entries[0].id, entries[1].id);
+    const raw = readFileSync(queuePath(), "utf8");
+    for (const secret of [VALID.first_name, VALID.email, VALID.organisation])
+      assert.ok(!raw.includes(secret), `queue must not hold ${secret}`);
+    assert.equal(statSync(queuePath()).mode & 0o777, 0o600);
+    assert.equal(mails().length, 2, "each message is still emailed");
+  },
+);
+
+test(
+  "queued entries older than 14 days are dropped on the next write",
+  { skip },
+  async () => {
+    reset();
+    const day = 86400000;
+    const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
+    const old = {
+      id: "0".repeat(16),
+      topic: "support",
+      sent: iso(Date.now() - 15 * day),
+      message: "stale",
+    };
+    const recent = {
+      id: "1".repeat(16),
+      topic: "support",
+      sent: iso(Date.now() - 13 * day),
+      message: "recent",
+    };
+    writeFileSync(
+      queuePath(),
+      `${JSON.stringify(old)}\n${JSON.stringify(recent)}\nnot json\n`,
+    );
+    await post({ ...VALID, topic: "app_feedback" });
+    assert.deepEqual(
+      queue().map((e) => e.message),
+      ["recent", VALID.message],
+    );
+  },
+);
+
+test(
+  "a queue that cannot be written is logged; the visitor is thanked and the email sent",
+  { skip },
+  async () => {
+    reset();
+    mkdirSync(queuePath());
+    const res = await post({ ...VALID, topic: "app_feedback" });
+    assert.equal(res.location, "/contact/thanks/");
+    assert.equal(mails().length, 1);
+    assert.match(
+      readFileSync(join(tmp, "php-error.log"), "utf8"),
+      /contact: feedback queue unavailable for 1 message/,
+    );
+    rmSync(queuePath(), { recursive: true, force: true });
+  },
+);
+
+test("a message whose email fails is not queued", { skip }, async () => {
   reset();
-  await post(VALID);
-  const files = readdirSync(privateDir).filter(
-    (f) => f !== "beta-config.php" && f !== "rate",
-  );
-  assert.deepEqual(files, []);
+  writeFileSync(join(tmp, "mail.fail"), "");
+  try {
+    const res = await post({ ...VALID, topic: "app_feedback" });
+    assert.equal(res.location, "/feedback/#error-unavailable");
+  } finally {
+    unlinkSync(join(tmp, "mail.fail"));
+  }
+  assert.deepEqual(queue(), []);
+});
+
+test(
+  "old entries are dropped on any form request, even with no new message",
+  { skip },
+  async () => {
+    reset();
+    const day = 86400000;
+    const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
+    const recent = {
+      id: "1".repeat(16),
+      topic: "support",
+      sent: iso(Date.now() - day),
+      message: "recent",
+    };
+    const old = {
+      id: "0".repeat(16),
+      topic: "support",
+      sent: iso(Date.now() - 15 * day),
+      message: "stale",
+    };
+    writeFileSync(
+      queuePath(),
+      `${JSON.stringify(old)}\n${JSON.stringify(recent)}\n`,
+    );
+    await fetch(ENDPOINT); // a GET: refused with 405, but cleanup still runs
+    assert.deepEqual(
+      queue().map((e) => e.message),
+      ["recent"],
+    );
+    await post({ ...VALID, topic: "careers" });
+    assert.deepEqual(
+      queue().map((e) => e.message),
+      ["recent"],
+    );
+  },
+);
+
+test(
+  "a failed queue write leaves the existing queue intact",
+  { skip },
+  async () => {
+    reset();
+    const kept = {
+      id: "2".repeat(16),
+      topic: "support",
+      sent: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
+      message: "kept",
+    };
+    writeFileSync(queuePath(), `${JSON.stringify(kept)}\n`);
+    mkdirSync(`${queuePath()}.tmp`);
+    try {
+      const res = await post({ ...VALID, topic: "support" });
+      assert.equal(res.location, "/contact/thanks/");
+    } finally {
+      rmSync(`${queuePath()}.tmp`, { recursive: true, force: true });
+    }
+    assert.deepEqual(
+      queue().map((e) => e.message),
+      ["kept"],
+    );
+  },
+);
+
+test("a rejected or honeypot submission queues nothing", { skip }, async () => {
+  reset();
+  await post({ ...VALID, email: "not-an-address" });
+  await post({ ...VALID, contact_ref: "bot" });
+  assert.deepEqual(queue(), []);
 });
 
 const INVALID = [

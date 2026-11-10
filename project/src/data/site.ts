@@ -39,6 +39,16 @@ export const contact = {
 
 export type Mailbox = keyof typeof contact;
 
+/**
+ * The company's public channels (owner, 2026-11-09: the Tether Health YouTube
+ * channel, id UCGRfNROetaJbtUlJUyU5V3w). Linked from the footer and listed as
+ * the Organization's sameAs in the structured data; changing it re-pins a CSP
+ * hash.
+ */
+export const social = {
+  youtube: "https://www.youtube.com/@TetherHealth",
+} as const;
+
 /** The public mailboxes other than support, as listed on /support/. */
 export const mailboxDirectory: {
   mailbox: Mailbox;

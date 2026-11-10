@@ -10,6 +10,7 @@ import {
   htmlFiles,
   ALLOWED_ORIGINS,
   OUTBOUND_LINK_HOSTS,
+  COMPANY_CHANNELS,
   htaccess as readHtaccess,
   cspLine as readCspLine,
 } from "../helpers/dist.js";
@@ -23,23 +24,56 @@ const cspLine = readCspLine();
  * rel="noopener noreferrer". Everything else stays and is still checked.
  */
 function withoutOutboundLinks(html) {
-  return html.replace(/<a\b[^>]*>/g, (tag) => {
-    const host = tag.match(/\shref="https:\/\/([^/"]+)\/[^"]*"/)?.[1];
-    if (!host || !OUTBOUND_LINK_HOSTS.includes(host)) return tag;
-    if (!/\srel="noopener noreferrer"/.test(tag)) return tag;
-    return "<a>";
-  });
+  return html
+    .replace(/<a\b[^>]*>/g, (tag) => {
+      const href = tag.match(/\shref="(https:\/\/[^"]*)"/)?.[1];
+      const host = href?.match(/^https:\/\/([^/"]+)\//)?.[1];
+      const listed =
+        (host && OUTBOUND_LINK_HOSTS.includes(host)) ||
+        COMPANY_CHANNELS.includes(href);
+      if (!listed) return tag;
+      if (!/\srel="noopener noreferrer"/.test(tag)) return tag;
+      return "<a>";
+    })
+    .replace(`"sameAs":${JSON.stringify(COMPANY_CHANNELS)}`, `"sameAs":[]`);
 }
 
 test("the outbound-link exemption covers only rel=noopener links on the listed hosts", () => {
   const ok = '<a href="https://smokefree.gov/" rel="noopener noreferrer">';
   assert.equal(withoutOutboundLinks(ok), "<a>");
+  const channel = `<a href="${COMPANY_CHANNELS[0]}" rel="noopener noreferrer">`;
+  assert.equal(withoutOutboundLinks(channel), "<a>");
+  assert.equal(
+    withoutOutboundLinks(`"sameAs":["${COMPANY_CHANNELS[0]}"]`),
+    `"sameAs":[]`,
+  );
   for (const tag of [
     '<a href="https://smokefree.gov/">',
     '<a href="https://example.com/" rel="noopener noreferrer">',
     '<img src="https://www.cancer.gov/x.png">',
+    `<a href="${COMPANY_CHANNELS[0]}">`,
+    '<a href="https://www.youtube.com/watch?v=x" rel="noopener noreferrer">',
+    `<img src="${COMPANY_CHANNELS[0]}">`,
+    `"sameAs":["${COMPANY_CHANNELS[0]}","https://example.com/"]`,
   ])
     assert.equal(withoutOutboundLinks(tag), tag, tag);
+});
+
+test("the footer links the company's YouTube channel, and only it, on every page", async () => {
+  const { social } = await import("../../src/data/site.ts");
+  assert.deepEqual(Object.values(social), COMPANY_CHANNELS);
+  for (const page of await htmlFiles()) {
+    const html = readFileSync(join(dist, page), "utf8");
+    const links = html.match(/<a\b[^>]*youtube\.com[^>]*>/g) ?? [];
+    assert.deepEqual(
+      links.map((t) => [
+        t.match(/href="([^"]*)"/)?.[1],
+        t.match(/rel="([^"]*)"/)?.[1],
+      ]),
+      [[COMPANY_CHANNELS[0], "noopener noreferrer"]],
+      page,
+    );
+  }
 });
 
 test("no page loads a third-party resource", async () => {

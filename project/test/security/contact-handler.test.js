@@ -75,7 +75,7 @@ test("the mailbox comes only from the private config, and fails closed", () => {
   );
 });
 
-test("one email to the team: fixed headers, no Reply-To, nothing to the visitor, nothing stored", () => {
+test("one email to the team: fixed headers, no Reply-To, nothing to the visitor, no direct storage", () => {
   const sends = [...handler.matchAll(/\bbeta_mail\(([^,]+),/g)].map((m) =>
     m[1].trim(),
   );
@@ -93,6 +93,38 @@ test("one email to the team: fixed headers, no Reply-To, nothing to the visitor,
   assert.doesNotMatch(
     handler,
     /fopen|file_put_contents|fputcsv|beta_with_rows|beta_store/,
+  );
+});
+
+test("only the topic and message are queued, after the email, for App feedback and Support", () => {
+  const calls = [...handler.matchAll(/beta_feedback_queue\(([^)]*)\)/g)].map(
+    (m) => m[1],
+  );
+  assert.deepEqual(calls, ["$topic, $message"]);
+  const failBranch =
+    handler.match(/if \(!beta_mail\([\s\S]*?\n\}\n/)?.[0] ?? "";
+  assert.ok(failBranch, "the mail failure branch exists");
+  assert.ok(
+    handler.indexOf("beta_feedback_queue(") >
+      handler.indexOf(failBranch) + failBranch.length,
+    "the queue is written only after the email is sent, outside its failure branch",
+  );
+  assert.match(
+    lib,
+    /const BETA_FEEDBACK_TOPICS = \['app_feedback', 'support'\];/,
+  );
+  const fn = lib.match(/function beta_feedback_queue\([\s\S]*?\n\}/)?.[0] ?? "";
+  assert.ok(fn, "beta_feedback_queue exists");
+  const pathFn =
+    lib.match(/function beta_feedback_path\([\s\S]*?\n\}/)?.[0] ?? "";
+  assert.match(pathFn, /beta_outside_web_root\(\$path\)/);
+  assert.doesNotMatch(
+    fn,
+    /email|first_?name|organisation|REMOTE_ADDR|\$_POST|\$_SERVER/i,
+  );
+  assert.deepEqual(
+    [...fn.matchAll(/'([a-z]+)' =>/g)].map((m) => m[1]),
+    ["id", "topic", "sent", "message"],
   );
 });
 

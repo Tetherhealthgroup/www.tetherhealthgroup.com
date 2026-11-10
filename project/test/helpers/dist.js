@@ -87,6 +87,14 @@ export const OUTBOUND_LINK_HOSTS = [
   "www.uspreventiveservicestaskforce.org",
 ];
 
+/**
+ * The company's own public channels (src/data/site.ts `social`), by exact URL.
+ * Exempt only as the href of an <a> with rel="noopener noreferrer" and as the
+ * Organization's structured-data sameAs, which no browser fetches. Any other
+ * use of the host is still a third-party resource.
+ */
+export const COMPANY_CHANNELS = ["https://www.youtube.com/@TetherHealth"];
+
 /** Every built HTML page, as paths relative to dist/. */
 export function htmlFiles(dir = dist, prefix = "") {
   const found = [];
